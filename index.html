@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Promotional Video Creator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Create Your Promotional Video</h1>
+    <form id="video-form">
+      <div class="form-group">
+        <label for="company-name">Company Name</label>
+        <input type="text" id="company-name" name="company-name" required>
+      </div>
+      <div class="form-group">
+        <label for="company-url">Company URL</label>
+        <input type="url" id="company-url" name = "company-url" required>
+      </div>
+      <div class="form-group">
+        <label for="press-release">Press Release/Product Description</label>
+        <textarea id="press-release" name="press-release" required></textarea>
+      </div>
+      <div class="form-group">
+        <label>Images (max 5)</label>
+        <div id="image-shelf">
+          <div class="image-container">
+            <img src="" alt="Image Preview" class="image-preview">
+            <button class="move-left" disabled>&larr;</button>
+            <button class="move-right">&rarr;</button>
+          </div>
+          <!-- Add four more empty image containers -->
+          <div class="image-container">
+            <img src="" alt="Image Preview" class="image-preview">
+            <button class="move-left" disabled>&larr;</button>
+            <button class="move-right">&rarr;</button>
+          </div>
+          <div class="image-container">
+            <img src="" alt="Image Preview" class="image-preview">
+            <button class="move-left" disabled>&larr;</button>
+            <button class="move-right">&rarr;</button>
+          </div>
+          <div class="image-container">
+            <img src="" alt="Image Preview" class="image-preview">
+            <button class="move-left" disabled>&larr;</button>
+            <button class="move-right">&rarr;</button>
+          </div>
+          <div class="image-container">
+            <img src="" alt="Image Preview" class="image-preview">
+            <button class="move-left" disabled>&larr;</button>
+            <button class="move-right" disabled>&rarr;</button>
+          </div>
+          <input type="file" id="image-input" name="images" accept="image/*" multiple>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Video Tone and Style</label>
+        <div class="radio-group">
+          <label>
+            <input type="radio" name="tone" value="professional" required>
+            Professional
+          </label>
+          <label>
+            <input type="radio" name="tone" value="friendly">
+            Friendly
+          </label>
+          <label>
+            <input type="radio" name="tone" value="energetic">
+            Energetic
+          </label>
+        </div>
+        <div class="radio-group">
+          <label>
+            <input type="radio" name="mood" value="upbeat" required>
+            Upbeat
+          </label>
+          <label>
+            <input type="radio" name="mood" value="calm">
+            Calm
+          </label>
+          <label>
+            <input type="radio" name="mood" value="inspirational">
+            Inspirational
+          </label>
+        </div>
+      </div>
+      <button type="submit" id="generate-btn">Generate Video</button>
+    </form>
+    <div id="video-container" style="display: none;">
+      <h2>Generated Video</h2>
+      <video id="generated-video" controls></video>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
