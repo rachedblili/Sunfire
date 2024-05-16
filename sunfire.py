@@ -38,6 +38,8 @@ def call_api_gateway(s3_keys, total_duration, fps, aspect_ratio, bucket):
 openai.api_key = OPENAI_API_KEY
 def describe_and_recommend(images,url_maker):
     for image in images:
+        print(f"Image: {image['original_file']}")
+        print(f"S3: {image['s3_key']}")
         # Create pre-signed URL to the S3 objects
         image_url = url_maker(
                 'get_object',
@@ -110,6 +112,7 @@ def generate_video():
         i += 1
 
     # Analyze our images
+    print("Launching Image Analysis...")
     images = describe_and_recommend(images,s3.generate_presigned_url)    
 
     for image in images:
