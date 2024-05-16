@@ -47,16 +47,19 @@ def describe_and_recommend(images,url_maker):
                 Params={'Bucket': image['bucket'], 'Key': image['s3_key']},
                 ExpiresIn=120  # URL expires in 2 minutes
             )
-        describe_prompt = f'''
-            Examine the image at {image_url} 
-            Provide a description of the image dimension and content in JSON format.
-            Example: {{"dimension" : {{"height" : 100, "width" : 200}} , "content" : "A beautiful Oak tree in a green field on a sunny day"}}
-            '''
+        print(f"URL: {image_url}")
+#        describe_prompt = f'''
+#            Examine the image at {image_url} 
+#            Provide a description of the image dimension and content in JSON format.
+#            Example: {{"dimension" : {{"height" : 100, "width" : 200}} , "content" : "A beautiful Oak tree in a green field on a sunny day"}}
+#            '''
         describe_response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "You are an intelligent subsystem."},
-                {"role": "user", "content": describe_prompt}
+                {"role": "system", "content": "You are the assistant. You only answer in JSON."},
+                {"role": "user", "content": "Examine the image at http://someplace.com/image.jpg and describe the dimensions and content"},
+                {"role": "assistant", "content": "{'dimension' : {'height' : 100, 'width' : 200} , 'content' : 'A beautiful Oak tree in a green field on a sunny day'}"},
+                {"role": "user", "content": f"Examine the image at {image_url} and describe the dimensions and content"}
             ],
             max_tokens=100
         ) 
@@ -64,16 +67,18 @@ def describe_and_recommend(images,url_maker):
         image['description'] = json.dumps(json.loads(describe_response.model_dump_json()))
 
         # Recommend cropping and scaling strategy in JSON format
-        strategy_prompt = f'''
-            Given the image description '{image["description"]}', recommend a cropping and scaling strategy to fit into a 16:9 video.
-            Provide the recommendation in JSON format with fields 'crop', 'scale', and 'pad'.
-            Example: {{"crop": {{"x": 10, "y": 20, "width": 100, "height": 200}}, "scale": {{"width": 1920, "height": 1080}}, "pad": {{"width": 1920, "height": 1080, "color": "black"}}}}
-            '''
+#        strategy_prompt = f'''
+#            Given the image description '{image["description"]}', recommend a cropping and scaling strategy to fit into a 16:9 video.
+#            Provide the recommendation in JSON format with fields 'crop', 'scale', and 'pad'.
+#            Example: {{"crop": {{"x": 10, "y": 20, "width": 100, "height": 200}}, "scale": {{"width": 1920, "height": 1080}}, "pad": {{"width": 1920, "height": 1080, "color": "black"}}}}
+#            '''
         strategy_response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "You are an intelligent subsystem."},
-                {"role": "user", "content": strategy_prompt}
+                {"role": "system", "content": "You are the assistant. You only answer in JSON."},
+                {"role": "user", "content": "Given the image description \"{'dimension' : {'height' : 100, 'width' : 200} , 'content' : 'A beautiful Oak tree in a green field on a sunny day'}\", recommend a cropping and scaling strategy to fit into a 16:9 video."},
+                {"role": "assistant", "content": '{"crop": {"x": 10, "y": 20, "width": 100, "height": 200}, "scale": {"width": 1920, "height": 1080}, "pad": {"width": 1920, "height": 1080, "color": "black"}}'},
+                {"role": "user", "content": f"Given the image description \"{image['description']}\", recommend a cropping and scaling strategy to fit into a 16:9 video."}
             ],
             max_tokens=150
         )
