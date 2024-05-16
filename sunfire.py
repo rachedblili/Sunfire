@@ -3,6 +3,7 @@ import os
 import boto3
 import requests
 from openai import OpenAI
+import json
 OPENAI_API_KEY = os.environ.get('OPENAI_KEY')
 app = Flask(__name__)
 
@@ -64,7 +65,7 @@ def describe_and_recommend(images,url_maker):
 
         # Recommend cropping and scaling strategy in JSON format
         strategy_prompt = f'''
-            Given the image description '{description}', recommend a cropping and scaling strategy to fit into a 16:9 video.
+            Given the image description '{image["description"]}', recommend a cropping and scaling strategy to fit into a 16:9 video.
             Provide the recommendation in JSON format with fields 'crop', 'scale', and 'pad'.
             Example: {{"crop": {{"x": 10, "y": 20, "width": 100, "height": 200}}, "scale": {{"width": 1920, "height": 1080}}, "pad": {{"width": 1920, "height": 1080, "color": "black"}}}}
             '''
