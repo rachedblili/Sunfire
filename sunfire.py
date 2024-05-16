@@ -57,14 +57,21 @@ def describe_and_recommend(images,url_maker):
             model="gpt-4o",
             messages=[
                 {"role": "system", "content": "You are the assistant. You only answer in JSON."},
-                {"role": "user", "content": "Examine the image at http://someplace.com/image.jpg and describe the dimensions and content"},
+                {"role": "user", "content": [
+                    {"type": "text", "text": "Examine this image and describe the dimensions and content"},
+                    {"type": "image_url", "image_url": {"url": "http://www.someplace.com/image.jpg"}}
+                ]}
                 {"role": "assistant", "content": "{'dimension' : {'height' : 100, 'width' : 200} , 'content' : 'A beautiful Oak tree in a green field on a sunny day'}"},
-                {"role": "user", "content": f"Examine the image at {image_url} and describe the dimensions and content"}
+                {"role": "user", "content": [
+                    {"type": "text", "text": "Examine this image and describe the dimensions and content"},
+                    {"type": "image_url", "image_url": {"url": image_url}}
+                ]}
             ],
             max_tokens=100
         ) 
         #image['description'] = describe_response.choices[0].text.strip()
-        image['description'] = json.dumps(json.loads(describe_response.model_dump_json()))
+        #image['description'] = json.dumps(json.loads(describe_response.model_dump_json()))
+        image['description'] = describe_response.choices[0]
 
         # Recommend cropping and scaling strategy in JSON format
 #        strategy_prompt = f'''
