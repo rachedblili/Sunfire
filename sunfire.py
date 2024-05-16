@@ -139,6 +139,9 @@ def generate_video():
     image_files = request.files.getlist('images')
     print("Image Files:", image_files)
 
+    for image_file in image_files:
+        image_file.save(os.path.join(app.config['UPLOAD_FOLDER'], image_file.filename))
+
     # Upload images to S3
     s3_keys = upload_images_to_s3(image_files)
     print("S3 Keys:",s3_keys)    
