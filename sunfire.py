@@ -6,6 +6,8 @@ from openai import OpenAI
 import json
 OPENAI_API_KEY = os.environ.get('OPENAI_KEY')
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = 'uploads/'
+app.config['VIDEOS_FOLDER'] = 'videos/'
 
 # Initialize S3 client
 s3 = boto3.client('s3')
