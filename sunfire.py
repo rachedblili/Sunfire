@@ -51,12 +51,16 @@ def describe_and_recommend(images,url_maker):
             Provide a description of the image dimension and content in JSON format.
             Example: {{"dimension" : {{"height" : 100, "width" : 200}} , "content" : "A beautiful Oak tree in a green field on a sunny day"}}
             '''
-        describe_response = client.completions.create(
+        describe_response = client.chat.completions.create(
             model="gpt-4o",
-            prompt=describe_prompt,
+            messages=[
+                {"role": "system", "content": "You are an intelligent subsystem."},
+                {"role": "user", "content": describe_prompt}
+            ],
             max_tokens=100
         ) 
-        image['description'] = describe_response.choices[0].text.strip()
+        #image['description'] = describe_response.choices[0].text.strip()
+        image['description'] = json.dumps(json.loads(describe_response.model_dump_json()))
 
         # Recommend cropping and scaling strategy in JSON format
         strategy_prompt = f'''
@@ -64,12 +68,15 @@ def describe_and_recommend(images,url_maker):
             Provide the recommendation in JSON format with fields 'crop', 'scale', and 'pad'.
             Example: {{"crop": {{"x": 10, "y": 20, "width": 100, "height": 200}}, "scale": {{"width": 1920, "height": 1080}}, "pad": {{"width": 1920, "height": 1080, "color": "black"}}}}
             '''
-        strategy_response = client.completions.create(
+        strategy_response = client.chat.completions.create(
             model="gpt-4o",
-            prompt=strategy_prompt,
+            messages=[
+                {"role": "system", "content": "You are an intelligent subsystem."},
+                {"role": "user", "content": strategy_prompt}
+            ],
             max_tokens=150
         )
-        image['strategy'] = strategy_response.choices[0].text.strip()
+        image['strategy'] = json.dumps(json.loads(strategy_response.model_dump_json()))
 
     return(images)
 
