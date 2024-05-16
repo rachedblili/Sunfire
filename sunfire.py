@@ -49,7 +49,7 @@ def describe_and_recommend(images,url_maker):
         describe_prompt = f'''
             Examine the image at {image_url} 
             Provide a description of the image dimension and content in JSON format.
-            Example: {"dimension" : {"height" : 100, "width" : 200} , "content" : "A beautiful Oak tree in a green field on a sunny day"}
+            Example: {{"dimension" : {{"height" : 100, "width" : 200}} , "content" : "A beautiful Oak tree in a green field on a sunny day"}}
             '''
         describe_response = openai.Completion.create(
             engine="text-davinci-003",
