@@ -51,7 +51,7 @@ def describe_and_recommend(images,url_maker):
             Provide a description of the image dimension and content in JSON format.
             Example: {{"dimension" : {{"height" : 100, "width" : 200}} , "content" : "A beautiful Oak tree in a green field on a sunny day"}}
             '''
-        describe_response = openai.completions.create(
+        describe_response = client.completions.create(
             engine="gpt-4o",
             prompt=describe_prompt,
             max_tokens=100
@@ -64,7 +64,7 @@ def describe_and_recommend(images,url_maker):
             Provide the recommendation in JSON format with fields 'crop', 'scale', and 'pad'.
             Example: {{"crop": {{"x": 10, "y": 20, "width": 100, "height": 200}}, "scale": {{"width": 1920, "height": 1080}}, "pad": {{"width": 1920, "height": 1080, "color": "black"}}}}
             '''
-        strategy_response = openai.completions.create(
+        strategy_response = client.completions.create(
             engine="gpt-4o",
             prompt=strategy_prompt,
             max_tokens=150
