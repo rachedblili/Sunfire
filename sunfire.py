@@ -60,7 +60,7 @@ def describe_and_recommend(images,url_maker):
                 {"role": "user", "content": [
                     {"type": "text", "text": "Examine this image and describe the dimensions and content"},
                     {"type": "image_url", "image_url": {"url": "http://www.someplace.com/image.jpg"}}
-                ]}
+                ]},
                 {"role": "assistant", "content": "{'dimension' : {'height' : 100, 'width' : 200} , 'content' : 'A beautiful Oak tree in a green field on a sunny day'}"},
                 {"role": "user", "content": [
                     {"type": "text", "text": "Examine this image and describe the dimensions and content"},
