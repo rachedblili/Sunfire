@@ -67,7 +67,7 @@ def describe_and_recommend(images,url_maker):
                     {"type": "image_url", "image_url": {"url": image_url}}
                 ]}
             ],
-            max_tokens=100
+            max_tokens=1500
         ) 
         #image['description'] = describe_response.choices[0].text.strip()
         #image['description'] = json.dumps(json.loads(describe_response.model_dump_json()))
