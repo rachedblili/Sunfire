@@ -36,6 +36,26 @@ def call_api_gateway(s3_keys, total_duration, fps, aspect_ratio, bucket):
     else:
         return None
 
+import base64
+
+def file_storage_to_base64_data_url(file_storage):
+    """
+    Converts a FileStorage object to a base64-encoded data URL.
+
+    Args:
+        file_storage (werkzeug.datastructures.FileStorage): The FileStorage object representing the uploaded file.
+
+    Returns:
+        str: The base64-encoded data URL in the format 'data:image/png;base64,aW1nIGJ5dGVzIGhlcmU='.
+    """
+    file_data = file_storage.read()
+    mime_type = file_storage.content_type
+
+    base64_bytes = base64.b64encode(file_data)
+    base64_string = base64_bytes.decode('utf-8')
+
+    return f"data:{mime_type};base64,{base64_string}"
+
 client = OpenAI(api_key = OPENAI_API_KEY)
 def describe_and_recommend(images,url_maker):
     for image in images:
@@ -47,6 +67,7 @@ def describe_and_recommend(images,url_maker):
                 Params={'Bucket': image['bucket'], 'Key': image['s3_key']},
                 ExpiresIn=120  # URL expires in 2 minutes
             )
+        image_url = file_storage_to_base64_data_url(image['original_file'])
         print(f"URL: {image_url}")
 #        describe_prompt = f'''
 #            Examine the image at {image_url} 
