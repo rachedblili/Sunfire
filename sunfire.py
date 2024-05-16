@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 import os
 import boto3
 import requests
-import openai
+from openai import OpenAI
 OPENAI_API_KEY = os.environ.get('OPENAI_KEY')
 app = Flask(__name__)
 
@@ -35,7 +35,7 @@ def call_api_gateway(s3_keys, total_duration, fps, aspect_ratio, bucket):
     else:
         return None
 
-openai.api_key = OPENAI_API_KEY
+client = OpenAI(api_key = OPENAI_API_KEY)
 def describe_and_recommend(images,url_maker):
     for image in images:
         print(f"Image: {image['original_file']}")
@@ -51,26 +51,26 @@ def describe_and_recommend(images,url_maker):
             Provide a description of the image dimension and content in JSON format.
             Example: {{"dimension" : {{"height" : 100, "width" : 200}} , "content" : "A beautiful Oak tree in a green field on a sunny day"}}
             '''
-        describe_response = openai.Completion.create(
-            engine="text-davinci-003",
+        describe_response = openai.completions.create(
+            engine="gpt-4o",
             prompt=describe_prompt,
             max_tokens=100
         ) 
         image['description'] = describe_response.choices[0].text.strip()
-    
+
         # Recommend cropping and scaling strategy in JSON format
         strategy_prompt = f'''
             Given the image description '{description}', recommend a cropping and scaling strategy to fit into a 16:9 video.
             Provide the recommendation in JSON format with fields 'crop', 'scale', and 'pad'.
             Example: {{"crop": {{"x": 10, "y": 20, "width": 100, "height": 200}}, "scale": {{"width": 1920, "height": 1080}}, "pad": {{"width": 1920, "height": 1080, "color": "black"}}}}
             '''
-        strategy_response = openai.Completion.create(
-            engine="text-davinci-003",
+        strategy_response = openai.completions.create(
+            engine="gpt-4o",
             prompt=strategy_prompt,
             max_tokens=150
         )
         image['strategy'] = strategy_response.choices[0].text.strip()
-        
+
     return(images)
 
 @app.route('/api/generate-video', methods=['POST'])
@@ -92,12 +92,12 @@ def generate_video():
     if request.data:
         print("Raw Data Received:", request.data)
     print("Generating a Video")
-    
+
     images = []
     # Get the uploaded images from the request
     image_files = request.files.getlist('images')
     print("Image Files:", image_files)
-         
+
     # Upload images to S3
     s3_keys = upload_images_to_s3(image_files)
     print("S3 Keys:",s3_keys)    
@@ -126,12 +126,12 @@ def generate_video():
     total_duration = 10  # Total duration of the video
     fps = 24  # Frames per second
     aspect_ratio = '16:9'  # Aspect ratio of the video
-    
+
     # Call the API Gateway to process the video
     video_url = call_api_gateway(
             s3_keys, total_duration, fps, 
             aspect_ratio, DESTINATION_BUCKET_NAME)
-    
+
     if video_url:
         # Return the video URL as a response
         print("GOT URL:",video_url)
