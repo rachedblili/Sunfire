@@ -46,11 +46,10 @@ def describe_and_recommend(images,url_maker):
                 Params={'Bucket': image['bucket'], 'Key': image['s3_key']},
                 ExpiresIn=120  # URL expires in 2 minutes
             )
-        describe_prompt = f"""
+        describe_prompt = f'
             Examine the image at {image_url} 
             Provide a description of the image dimension and content in JSON format.
-            Example: {"dimension" : {"height" : 100, "width" : 200} , "content" : "A beautiful Oak tree in a green field on a sunny day"}
-        """
+            Example: {"dimension" : {"height" : 100, "width" : 200} , "content" : "A beautiful Oak tree in a green field on a sunny day"}'
         describe_response = openai.Completion.create(
             engine="text-davinci-003",
             prompt=describe_prompt,
@@ -59,11 +58,10 @@ def describe_and_recommend(images,url_maker):
         image['description'] = describe_response.choices[0].text.strip()
     
         # Recommend cropping and scaling strategy in JSON format
-        strategy_prompt = f"""
+        strategy_prompt = f'
         Given the image description '{description}', recommend a cropping and scaling strategy to fit into a 16:9 video.
         Provide the recommendation in JSON format with fields 'crop', 'scale', and 'pad'.
-        Example: {{"crop": {{"x": 10, "y": 20, "width": 100, "height": 200}}, "scale": {{"width": 1920, "height": 1080}}, "pad": {{"width": 1920, "height": 1080, "color": "black"}}}}
-        """
+        Example: {{"crop": {{"x": 10, "y": 20, "width": 100, "height": 200}}, "scale": {{"width": 1920, "height": 1080}}, "pad": {{"width": 1920, "height": 1080, "color": "black"}}}}'
         strategy_response = openai.Completion.create(
             engine="text-davinci-003",
             prompt=strategy_prompt,
