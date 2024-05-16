@@ -105,7 +105,7 @@ def generate_video():
     for image in image_files:
         images.append(
             {'original_file' : image, 
-             's3_key' : s3_key[i],
+             's3_key' : s3_keys[i],
              'bucket' : SOURCE_BUCKET_NAME})
         i += 1
 
