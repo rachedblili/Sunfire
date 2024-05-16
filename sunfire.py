@@ -18,7 +18,7 @@ def upload_images_to_s3(image_files):
         filename = image_file.filename
         s3_key = f'uploads/{filename}'
         s3.upload_fileobj(image_file, SOURCE_BUCKET_NAME, s3_key)
-        s3_keys.append({'bucket': SOURCE_BUCKET_NAME, 'key': s3_key})
+        s3_keys.append(s3_key)
     return s3_keys
 
 def call_api_gateway(s3_keys, total_duration, fps, aspect_ratio, bucket):
