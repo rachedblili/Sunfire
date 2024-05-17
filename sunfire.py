@@ -104,7 +104,7 @@ def describe_and_recommend(images,url_maker):
                         {
                             "type": "image_url",
                             "image_url": {
-                                "url": "https://www.strikerit.com/image.png"
+                                "url": image_url
                             }
                         },
                     ],
