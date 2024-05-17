@@ -25,6 +25,15 @@ def upload_images_to_s3(image_files):
         s3_keys.append(s3_key)
     return s3_keys
 
+def upload_images_from_disk_to_s3(images):
+    for image in images:
+        s3_key = f'uploads/{image["filename"]}'
+        with open(image['local_dir']+image['filename'], 'rb') as image_file:
+            s3.upload_fileobj(image_file, image['bucket'], s3_key)
+        image['s3_key'] = s3_key
+    return images
+
+
 def call_api_gateway(s3_keys, total_duration, fps, aspect_ratio, bucket):
     payload = {
         's3_objects': s3_keys,
@@ -62,7 +71,7 @@ def file_storage_to_base64_data_url(file_storage):
 client = OpenAI(api_key = OPENAI_API_KEY)
 def describe_and_recommend(images,url_maker):
     for image in images:
-        print(f"Image: {image['original_file']}")
+        print(f"Image: {image['filename']}")
         print(f"S3: {image['s3_key']}")
         # Create pre-signed URL to the S3 objects
         image_url = url_maker(
@@ -163,7 +172,6 @@ def generate_video():
         print("Raw Data Received:", request.data)
     print("Generating a Video")
 
-    images = []
     # Get the uploaded images from the request
     image_files = request.files.getlist('images')
     print("Image Files:", image_files)
@@ -171,26 +179,25 @@ def generate_video():
     for image_file in image_files:
         image_file.save(os.path.join(app.config['UPLOAD_FOLDER'], image_file.filename))
 
-    # Upload images to S3
-    s3_keys = upload_images_to_s3(image_files)
-    print("S3 Keys:",s3_keys)    
-
     # Keep track of image attributes
-    i = 0
+    images = []
     for image in image_files:
         images.append(
-            {'original_file' : image, 
+            {'filename' : image.filename, 
              'local_dir' : app.config['UPLOAD_FOLDER'],
-             's3_key' : s3_keys[i],
              'bucket' : SOURCE_BUCKET_NAME})
-        i += 1
+
+    # Upload images to S3
+    images = upload_images_from_disk_to_s3(images)
+    print("S3 Keys:",[item["s3_key"] for item in images]))    
+
 
     # Analyze our images
     print("Launching Image Analysis...")
     images = describe_and_recommend(images,s3.generate_presigned_url)    
 
     for image in images:
-        print(f"Image: {image['original_file']}")
+        print(f"Image: {image['filename']}")
         print(f"S3: {image['s3_key']}")
         print(f"Description: {image['description']}")
         print(f"Strategy: {image['strategy']}")
