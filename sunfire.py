@@ -189,7 +189,7 @@ def generate_video():
 
     # Upload images to S3
     images = upload_images_from_disk_to_s3(images)
-    print("S3 Keys:",[item["s3_key"] for item in images]))    
+    print("S3 Keys:",[item["s3_key"] for item in images])    
 
 
     # Analyze our images
