@@ -202,7 +202,11 @@ def generate_video():
 
     # Upload images to S3
     modified_images = upload_images_from_disk_to_s3(modified_images)
-    s3_keys = [item["s3_key"] for item in modified_images]
+
+    s3_keys = []
+    for item in modified_images:
+        s3_keys.append({'bucket': item['bucket'], 'key': item['s3_key']})
+
     print("FINAL S3 Keys:",s3_keys)    
 
     #return jsonify({'error': 'Video generation failed'}), 500
