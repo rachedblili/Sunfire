@@ -118,7 +118,7 @@ def describe_and_recommend(images,url_maker):
                     },
                     {
                         "role": "user",
-                        "content": "I have an image with height 530px and width 800px and the dominant color is #32DF34. I need to fit this image into a video with a 16:9 aspect ratio. Please provide a cropping, scaling (while maintaining aspect ratio), and padding recommendation that balances image quality and screen coverage without losing important content."
+                        "content": "I have an image with height 530px and width 800px and the dominant color is #32DF34. I need to fit this image into a video with a 16:9 aspect ratio in Standard HD resolution. Please provide a cropping, scaling (while maintaining aspect ratio), and padding recommendation that balances image quality and screen coverage without losing important content."
                     },
                     {
                         "role": "assistant",
