@@ -4,7 +4,6 @@ import boto3
 import requests
 from openai import OpenAI
 import json
-OPENAI_API_KEY = os.environ.get('OPENAI_KEY')
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 app.config['VIDEOS_FOLDER'] = 'videos/'
@@ -15,6 +14,10 @@ s3 = boto3.client('s3')
 SOURCE_BUCKET_NAME = 'sunfire-source-bucket'
 DESTINATION_BUCKET_NAME = 'sunfire-destination-bucket'
 API_GATEWAY_URL = 'https://0h8a50ruye.execute-api.us-east-1.amazonaws.com/sunfire-generate-video-from-images'
+
+# Initialize OpenAI client
+OPENAI_API_KEY = os.environ.get('OPENAI_KEY')
+client = OpenAI(api_key = OPENAI_API_KEY)
 
 def upload_images_to_s3(image_files):
     s3_keys = []
@@ -48,27 +51,7 @@ def call_api_gateway(s3_keys, total_duration, fps, aspect_ratio, bucket):
     else:
         return None
 
-import base64
 
-def file_storage_to_base64_data_url(file_storage):
-    """
-    Converts a FileStorage object to a base64-encoded data URL.
-
-    Args:
-        file_storage (werkzeug.datastructures.FileStorage): The FileStorage object representing the uploaded file.
-
-    Returns:
-        str: The base64-encoded data URL in the format 'data:image/png;base64,aW1nIGJ5dGVzIGhlcmU='.
-    """
-    file_data = file_storage.read()
-    mime_type = file_storage.content_type
-
-    base64_bytes = base64.b64encode(file_data)
-    base64_string = base64_bytes.decode('utf-8')
-
-    return f"data:{mime_type};base64,{base64_string}"
-
-client = OpenAI(api_key = OPENAI_API_KEY)
 def describe_and_recommend(images,url_maker):
     for image in images:
         print(f"Image: {image['filename']}")
@@ -152,6 +135,17 @@ def describe_and_recommend(images,url_maker):
 
     return(images)
 
+def modify_images(images):
+    modified_images = images
+    for image in modified_images:
+        original_name = image['filename']
+        local_dir = image['local_dir']
+        new_name = "modified"+original_name
+        full_spec = image['strategy']
+        modify_image(local_dir+original_name,full_spec,local_dir+new_name)
+        image['filename'] = new_name
+    return(modified_images)
+
 @app.route('/api/generate-video', methods=['POST'])
 def generate_video():
     # Log headers
@@ -201,6 +195,11 @@ def generate_video():
         print(f"S3: {image['s3_key']}")
         print(f"Description: {image['description']}")
         print(f"Strategy: {image['strategy']}")
+
+    # Modify the images according to the AI suggestions
+    print("Modifying Images...")
+    modified_images = modify_images(images)
+
     return jsonify({'error': 'Video generation failed'}), 500
 
     # Define video parameters
