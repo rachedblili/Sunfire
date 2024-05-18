@@ -200,7 +200,11 @@ def generate_video():
     print("Modifying Images...")
     modified_images = modify_images(images)
 
-    return jsonify({'error': 'Video generation failed'}), 500
+    # Upload images to S3
+    modified_images = upload_images_from_disk_to_s3(modified_images)
+    print("S3 Keys:",[item["s3_key"] for item in modified_images])    
+
+    #return jsonify({'error': 'Video generation failed'}), 500
 
     # Define video parameters
     total_duration = 10  # Total duration of the video
