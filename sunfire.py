@@ -156,14 +156,14 @@ def video_callback():
     print("Got a call back!")
     # Retrieve the video URL from the callback data
     #video_url = request.get_json().get('video_url')
-    logging.debug(f"Headers: {request.headers}")
-    logging.debug(f"Body: {request.data}")
+    print(f"Headers: {request.headers}")
+    print(f"Body: {request.data}")
 
     if not request.is_json:
         return jsonify({"error": "Invalid content type"}), 400
 
     data = request.get_json()
-    logging.debug(f"JSON data: {data}")
+    print(f"JSON data: {data}")
 
     # Process the data here
     return jsonify({"message": "Callback received", "data": data}), 200
