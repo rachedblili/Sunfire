@@ -28,7 +28,10 @@ client = get_openai_client()
 
 
 def call_api_gateway(s3_keys, total_duration, fps, aspect_ratio, bucket):
-    callback_url = request.url_root + 'api/video-callback'
+    #callback_url = request.url_root + 'api/video-callback'
+    scheme = request.headers.get('X-Forwarded-Proto', request.scheme)
+    host = request.headers.get('Host', request.host)
+    callback_url = f"{scheme}://{host}/api/video-callback"
     payload = {
         's3_objects': s3_keys,
         'duration': total_duration,
@@ -140,7 +143,7 @@ def generate_video():
     if api_response:
         # Return the video URL as a response
         print("GOT RESPONSE:",api_response)
-        return jsonify({'api_response': api_response})
+        return api_response
     else:
         # Return an error response if the video generation failed
         return jsonify({'error': 'Video generation failed'}), 500
