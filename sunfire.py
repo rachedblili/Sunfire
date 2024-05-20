@@ -40,7 +40,7 @@ def call_api_gateway(s3_keys, total_duration, fps, aspect_ratio, bucket):
     response = requests.post(API_GATEWAY_URL, json=payload)
     print(response)
     if response.status_code == 200:
-        return response.json().get('video_url')
+        return response
     else:
         return None
 
