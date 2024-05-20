@@ -56,7 +56,7 @@ def generate_filter_complex(images, total_duration, pad_color="black"):
     # last_audio_output = next_audio_output
 
 
-def process_images_and_generate_video(images, total_duration, fps, aspect_ratio, output_bucket):
+def process_images_and_generate_video(images, total_duration, fps, aspect_ratio, output_bucket, callback_url):
     try:
         # Calculate duration per image
         num_images = len(images)
@@ -139,7 +139,11 @@ def process_images_and_generate_video(images, total_duration, fps, aspect_ratio,
                 ExpiresIn=3600  # URL expires in 1 hour
             )
             print(video_url)
-            return video_url
+            # Post the video URL to the callback URL
+            if callback_url:
+                response = requests.post(callback_url, json={"video_url": video_url})
+                print(f"Callback response status: {response.status_code}, response text: {response.text}")
+            return response.status_code
 
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -148,28 +152,58 @@ def process_images_and_generate_video(images, total_duration, fps, aspect_ratio,
 
 def lambda_handler(event, context):
     try:
-        # Extract body from event
-        body = event.get('body')
-        if body:
-            data = json.loads(body)
-            s3_objects = data.get('s3_objects')
-            duration = data.get('duration')  # Total duration of the video
-            fps = data.get('fps', 24)  # Default 24 frames per second
-            aspect_ratio = data.get('aspect_ratio', '16:9')  # Default aspect ratio 16:9
-            output_bucket = data.get('output_bucket')
+        if event.get('async'):
+            # Asynchronous invocation
+            s3_objects = event.get('s3_objects')
+            duration = event.get('duration')
+            fps = event.get('fps', 24)
+            aspect_ratio = event.get('aspect_ratio', '16:9')
+            output_bucket = event.get('output_bucket')
+            callback_url = event.get('callback_url')
 
-            if not s3_objects or not duration:
-                return {'statusCode': 400, 'body': json.dumps({'message': 'S3 objects and duration must be provided'})}
+            process_images_and_generate_video(s3_objects, duration, fps, aspect_ratio, output_bucket, callback_url)
+            return {'statusCode': 200}
 
-            # Process S3 objects and generate video
-            video_url = process_images_and_generate_video(s3_objects, duration, fps, aspect_ratio, output_bucket)
-
-            return {
-                'statusCode': 200,
-                'body': json.dumps({'video_url': video_url})
-            }
         else:
-            return {'statusCode': 400, 'body': json.dumps({'message': 'Invalid request body'})}
+            # Synchronous invocation
+            body = event.get('body')
+            if body:
+                data = json.loads(body)
+                s3_objects = data.get('s3_objects')
+                duration = data.get('duration')
+                fps = data.get('fps', 24)
+                aspect_ratio = data.get('aspect_ratio', '16:9')
+                output_bucket = data.get('output_bucket')
+                callback_url = data.get('callback_url')
+
+                if not s3_objects or not duration or not output_bucket or not callback_url:
+                    return {'statusCode': 400, 'body': json.dumps({'message': 'S3 objects, duration, output bucket, and callback URL must be provided'})}
+
+                # Return success immediately after validation
+                response = {
+                    'statusCode': 200,
+                    'body': json.dumps({'message': 'Job accepted and processing will continue'})
+                }
+
+                # Continue processing asynchronously
+                boto3.client('lambda').invoke(
+                    FunctionName=context.invoked_function_arn,
+                    InvocationType='Event',
+                    Payload=json.dumps({
+                        's3_objects': s3_objects,
+                        'duration': duration,
+                        'fps': fps,
+                        'aspect_ratio': aspect_ratio,
+                        'output_bucket': output_bucket,
+                        'callback_url': callback_url,
+                        'async': True
+                    })
+                )
+
+                return response
+            else:
+                return {'statusCode': 400, 'body': json.dumps({'message': 'Invalid request body'})}
+
     except Exception as e:
         return {
             'statusCode': 500,
