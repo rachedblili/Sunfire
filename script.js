@@ -5,7 +5,7 @@ const imageContainers = imageShelf.querySelectorAll('.image-container');
 const generateBtn = document.getElementById('generate-btn');
 const videoContainer = document.getElementById('video-container');
 const generatedVideo = document.getElementById('generated-video');
-const socket = io();
+const socket = io('https://www.strikerit.com:5000');
 
 socket.on('log_message', (data) => {
   appendLog(data.message);
