@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import os
 #import boto3
 from s3_utils import get_s3_client, upload_images_to_s3, upload_images_from_disk_to_s3
@@ -7,6 +8,7 @@ import requests
 #from openai import OpenAI
 import json
 app = Flask(__name__)
+CORS(app)
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 app.config['VIDEOS_FOLDER'] = 'videos/'
 from image_utils import modify_image
@@ -151,13 +153,16 @@ def generate_video():
 
 @app.route('/api/video-callback', methods=['POST'])
 def video_callback():
+    print("Got a call back!")
     # Retrieve the video URL from the callback data
     video_url = request.get_json().get('video_url')
 
     if video_url:
+        print("SUCCESS!!")
         # Return the video URL as a response
-        return jsonify({'video_url': video_url})
+        return jsonify({'video_url': video_url}), 200
     else:
+        print("BOOOO!!!")
         # Return an error response if the video URL is not provided
         return jsonify({'error': 'Video URL not provided'}), 500
 
