@@ -100,7 +100,7 @@ def generate_video():
 
     # Analyze our images
     print("Launching Image Analysis...")
-    images = describe_and_recommend(images,s3.generate_presigned_url)    
+    images = describe_and_recommend(client, images,s3.generate_presigned_url)
 
     for image in images:
         print(f"Image: {image['filename']}")

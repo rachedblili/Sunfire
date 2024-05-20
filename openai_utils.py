@@ -9,7 +9,7 @@ def get_openai_client():
     OPENAI_API_KEY = os.environ.get('OPENAI_KEY')
     return(OpenAI(api_key=OPENAI_API_KEY))
 
-def describe_and_recommend(images,url_maker):
+def describe_and_recommend(client, images,url_maker):
     for image in images:
         print(f"Image: {image['filename']}")
         print(f"S3: {image['s3_key']}")
