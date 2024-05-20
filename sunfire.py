@@ -155,16 +155,18 @@ def generate_video():
 def video_callback():
     print("Got a call back!")
     # Retrieve the video URL from the callback data
-    video_url = request.get_json().get('video_url')
+    #video_url = request.get_json().get('video_url')
+    logging.debug(f"Headers: {request.headers}")
+    logging.debug(f"Body: {request.data}")
 
-    if video_url:
-        print("SUCCESS!!")
-        # Return the video URL as a response
-        return jsonify({'video_url': video_url}), 200
-    else:
-        print("BOOOO!!!")
-        # Return an error response if the video URL is not provided
-        return jsonify({'error': 'Video URL not provided'}), 500
+    if not request.is_json:
+        return jsonify({"error": "Invalid content type"}), 400
+
+    data = request.get_json()
+    logging.debug(f"JSON data: {data}")
+
+    # Process the data here
+    return jsonify({"message": "Callback received", "data": data}), 200
 
 # Set up a stream handler for logging
 log_stream = io.StringIO()
