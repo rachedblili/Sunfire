@@ -91,3 +91,16 @@ button[type="submit"] {
 button[type="submit"]:hover {
   background-color: #45a049;
 }
+
+#results-area {
+  width: 80%;
+  height: 500px;
+  border: 1px solid #ccc;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+#log-container {
+  font-family: monospace;
+  white-space: pre-wrap;
+}

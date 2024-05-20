@@ -9,47 +9,53 @@ import time
 import string
 import random
 
-def generate_unique_filename(prefix=""):
 
-  timestamp = int(time.time())
-  random_string = ''.join(random.choices(string.ascii_lowercase, k=5))
-  return f"{prefix}{timestamp}_{random_string}"
+def generate_unique_filename(prefix=""):
+    timestamp = int(time.time())
+    random_string = ''.join(random.choices(string.ascii_lowercase, k=5))
+    return f"{prefix}{timestamp}_{random_string}"
 
 
 # Initialize S3 client
 s3 = boto3.client('s3')
 
-def generate_filter_complex(images, total_duration):
-  """
-  Generates ffmpeg filter_complex string for transitions between images.
 
-  Args:
-      images: List of dictionaries containing image information.
-      total_duration: Total duration of the final video (seconds).
-      fps: Frames per second for the output video.
+def generate_filter_complex(images, total_duration, pad_color="black"):
+    """
+    Generates ffmpeg filter_complex string for transitions between images with padding.
 
-  Returns:
-      String containing the filter_complex command.
-  """
-  filters = []
-  duration_per_image = total_duration / len(images)  # Calculate duration per image
+    Args:
+        images: List of dictionaries containing image information.
+        total_duration: Total duration of the final video (seconds).
+        pad_color: The color to use for padding (defaults to black, specify hex code for colors).
 
-  # Scale and prepare each image for transition
-  for i, image in enumerate(images):
-    filter_name = f"v{i}"
-    filters.append(f"[{i}:v]scale=in_w:-1,setsar=1[{filter_name}]")
+    Returns:
+        String containing the filter_complex command
+        String containing the name of the last segment
+    """
+    duration_per_image = total_duration / len(images)  # Calculate duration per image
 
-  # Add transitions between images
-  for i in range(len(images) - 1):
-    current_filter = f"[v{i}]"
-    next_filter = f"[v{i+1}]"
-    transition_filter = f"{current_filter}[{next_filter}]xfade=transition=slide:duration={duration_per_image}[vout{i+1}]"
-    filters.append(transition_filter)
+    # Prepare the filter graph
+    video_fades = ""
+    # audio_fades = ""
+    last_fade_output = "0:v"
+    # last_audio_output = "0:a"
+    video_length = 0
+    for i in range(len(images) - 1):
+        # Video graph: chain the xfade operator together
+        video_length += duration_per_image
+        next_fade_output = "v%d%d" % (i, i + 1)
+        video_fades += "[%s][%d:v]xfade=duration=0.5:offset=%.3f[%s]; " % \
+                       (last_fade_output, i + 1, video_length - 1, next_fade_output)
+        last_fade_output = next_fade_output
+    return (video_fades, last_fade_output)
+    ## Audio graph:
+    # next_audio_output = "a%d%d" % (i, i + 1)
+    # audio_fades += "[%s][%d:a]acrossfade=d=1[%s]%s " % \
+    #    (last_audio_output, i + 1, next_audio_output, ";" if (i+1) < len(segments)-1 else "")
+    # last_audio_output = next_audio_output
 
-  # Use the last processed image as the final output
-  final_filter = f"[v{len(images)-1}]"
-  return ";".join(filters + [final_filter])
-  
+
 def process_images_and_generate_video(images, total_duration, fps, aspect_ratio, output_bucket):
     try:
         # Calculate duration per image
@@ -82,9 +88,8 @@ def process_images_and_generate_video(images, total_duration, fps, aspect_ratio,
                 print("No files were downloaded.")
                 return None
 
+            (filter_complex, last_clip) = generate_filter_complex(images, total_duration)
 
-            filter_complex = generate_filter_complex(images, total_duration)
-            
             # Output video file path
             filename = generate_unique_filename(prefix="video-")
             output_file = os.path.join(tmp_dir, f"{filename}.mp4")
@@ -92,19 +97,23 @@ def process_images_and_generate_video(images, total_duration, fps, aspect_ratio,
             # Construct ffmpeg command
             cmd = ["ffmpeg"]
             for file in local_files:
-                cmd.extend(["-i", file])
+                cmd.extend([
+                    "-loop", '1',
+                    "-t", str(duration_per_image),
+                    "-i", file]
+                )
             cmd.extend([
-                    "-pix_fmt", "yuv420p",
-                    "-filter_complex", filter_complex,
-                    "-map", f"[v{num_images - 1}]",
-                    "-c:v", "libx264",
-                    "-r", str(fps),
-                    "-aspect", aspect_ratio,
-                    output_file
+                "-pix_fmt", "yuv420p",
+                "-filter_complex", filter_complex,
+                "-map", f"[{last_clip}]",
+                "-c:v", "libx264",
+                "-r", str(fps),
+                "-aspect", aspect_ratio,
+                output_file
             ])
             # Print the ffmpeg command for debugging
             print("FFmpeg command:", ' '.join(cmd))
-            
+
             # Execute ffmpeg command
             result = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             # Log stdout and stderr from ffmpeg
@@ -123,18 +132,19 @@ def process_images_and_generate_video(images, total_duration, fps, aspect_ratio,
                 return None
 
             # Return the URL to the generated video
-            #video_url = f"https://{output_bucket}.s3.amazonaws.com/{output_key}"
+            # video_url = f"https://{output_bucket}.s3.amazonaws.com/{output_key}"
             video_url = s3.generate_presigned_url(
                 'get_object',
                 Params={'Bucket': output_bucket, 'Key': output_key},
                 ExpiresIn=3600  # URL expires in 1 hour
-            ) 
+            )
             print(video_url)
             return video_url
 
     except Exception as e:
         print(f"An error occurred: {e}")
         return None
+
 
 def lambda_handler(event, context):
     try:
@@ -147,13 +157,13 @@ def lambda_handler(event, context):
             fps = data.get('fps', 24)  # Default 24 frames per second
             aspect_ratio = data.get('aspect_ratio', '16:9')  # Default aspect ratio 16:9
             output_bucket = data.get('output_bucket')
-            
+
             if not s3_objects or not duration:
                 return {'statusCode': 400, 'body': json.dumps({'message': 'S3 objects and duration must be provided'})}
-            
+
             # Process S3 objects and generate video
             video_url = process_images_and_generate_video(s3_objects, duration, fps, aspect_ratio, output_bucket)
-            
+
             return {
                 'statusCode': 200,
                 'body': json.dumps({'video_url': video_url})
@@ -165,4 +175,3 @@ def lambda_handler(event, context):
             'statusCode': 500,
             'body': json.dumps({'message': str(e)})
         }
-
