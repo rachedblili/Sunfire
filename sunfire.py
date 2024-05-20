@@ -161,6 +161,7 @@ log_stream = io.StringIO()
 stream_handler = logging.StreamHandler(log_stream)
 stream_handler.setLevel(logging.INFO)
 app.logger.addHandler(stream_handler)
+logger = logging.getLogger(__name__)
 
 @socketio.on('connect')
 def handle_connect():
