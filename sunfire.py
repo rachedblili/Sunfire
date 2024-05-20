@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
 import os
-import boto3
+#import boto3
+from s3_utils import get_s3_client, upload_images_to_s3, upload_images_from_disk_to_s3
+from openai_utils import get_openai_client, describe_and_recommend
 import requests
-from openai import OpenAI
+#from openai import OpenAI
 import json
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads/'
@@ -10,31 +12,12 @@ app.config['VIDEOS_FOLDER'] = 'videos/'
 from image_utils import modify_image
 
 # Initialize S3 client
-s3 = boto3.client('s3')
+s3 = get_s3_client()
 SOURCE_BUCKET_NAME = 'sunfire-source-bucket'
 DESTINATION_BUCKET_NAME = 'sunfire-destination-bucket'
 API_GATEWAY_URL = 'https://0h8a50ruye.execute-api.us-east-1.amazonaws.com/sunfire-generate-video-from-images'
 
-# Initialize OpenAI client
-OPENAI_API_KEY = os.environ.get('OPENAI_KEY')
-client = OpenAI(api_key = OPENAI_API_KEY)
-
-def upload_images_to_s3(image_files):
-    s3_keys = []
-    for image_file in image_files:
-        filename = image_file.filename
-        s3_key = f'uploads/{filename}'
-        s3.upload_fileobj(image_file, SOURCE_BUCKET_NAME, s3_key)
-        s3_keys.append(s3_key)
-    return s3_keys
-
-def upload_images_from_disk_to_s3(images):
-    for image in images:
-        s3_key = f'uploads/{image["filename"]}'
-        with open(image['local_dir']+image['filename'], 'rb') as image_file:
-            s3.upload_fileobj(image_file, image['bucket'], s3_key)
-        image['s3_key'] = s3_key
-    return images
+client = get_openai_client()
 
 
 def call_api_gateway(s3_keys, total_duration, fps, aspect_ratio, bucket):
@@ -51,89 +34,6 @@ def call_api_gateway(s3_keys, total_duration, fps, aspect_ratio, bucket):
     else:
         return None
 
-
-def describe_and_recommend(images,url_maker):
-    for image in images:
-        print(f"Image: {image['filename']}")
-        print(f"S3: {image['s3_key']}")
-        # Create pre-signed URL to the S3 objects
-        image_url = url_maker(
-                'get_object',
-                Params={'Bucket': image['bucket'], 'Key': image['s3_key']},
-                ExpiresIn=120  # URL expires in 2 minutes
-            )
-        print(f"URL: {image_url}")
-        describe_response = client.chat.completions.create(
-            model='gpt-4o',
-            messages=[
-                {
-                    "role": "system", 
-                    "content": "You are the assistant. You only answer in pure JSON. Your response will be parsed by a script and should have no formatting characters or extraneous artifacts. This includes newlines and other formatting."
-                },
-                {
-                    "role": "system", 
-                    "content": "EXPLICIT REQUIREMENT: You only answer in pure JSON. No formatting characters."
-                },
-                {
-                    "role": "system", 
-                    "content": "EXPLICIT REQUIREMENT: Legal output key names: color, dimensions, height, width, content"
-                },
-                {
-                    "role": "user",
-                    "content": "Examine the given image and describe the dominant colour, the dimensions, and content."
-                },
-                {
-                    "role": "assistant", 
-                    "content": '{"color" : "#DDFFE1", "dimensions" : {"height" : 100, "width" : 200} , "content" : "A beautiful Oak tree in a green field on a sunny day"}'
-                },
-                {
-                    "role": "user",
-                    "content": "Examine the given image and describe the dominant colour, the dimensions, and content."
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": image_url
-                            }
-                        },
-                    ],
-                }
-            ],
-            max_tokens=1500
-        )
-        descr = json.loads(describe_response.choices[0].message.content)
-        image['color'] = descr['color']
-        image['height'] = descr['dimensions']['height']
-        image['width'] = descr['dimensions']['width']
-        image['description'] = descr['content']
-        strategy_response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                    {
-                        "role": "system",
-                        "content": "You are the assistant. Respond in pure JSON with no formatting characters or extraneous artifacts. Legal output key names: crop, color, x, y, height, width, scale, pad. Ensure the proportions of the original image are preserved using symmetrical scaling, cropping, and padding to achieve the desired dimensions. Return the operations (crop, pad, scale) in the correct order. Output should have Standard HD resolution."
-                    },
-                    {
-                        "role": "user",
-                        "content": "I have an image with height 530px and width 800px and the dominant color is #32DF34. I need to fit this image into a video with a 16:9 aspect ratio in Standard HD resolution. Please provide a cropping, scaling (while maintaining aspect ratio), and padding recommendation that balances image quality and screen coverage without losing important content."
-                    },
-                    {
-                        "role": "assistant",
-                        "content": '[{"crop": {"x": 0, "y": 0, "width": 800, "height": 450}}, {"scale": {"width": 1600, "height": 900}}, {"pad": {"width": 1920, "height": 1080, "color": "#32DF34"}}]'
-                    },
-                    {
-                        "role": "user",
-                        "content": f"I have an image with height {image['height']} and width {image['width']} and the dominant color is {image['color']}. I need to fit this image into a video with a 16:9 aspect ratio in Standard HD resolution. Please provide a cropping, scaling (while maintaining aspect ratio), and padding recommendation that balances image quality and screen coverage without losing important content."
-                    }
-            ],
-            max_tokens=800
-        )
-        image['strategy'] = json.loads(strategy_response.choices[0].message.content)
-
-    return(images)
 
 def modify_images(images):
     modified_images = images
