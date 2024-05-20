@@ -68,7 +68,7 @@ def generate_video():
 
     # Log files data
     print("Files Received:", request.files)
-
+    logger.info("Received Files")
     # For JSON data (if you were sending JSON):
     if request.is_json:
         print("JSON Received:", request.get_json())
@@ -77,7 +77,7 @@ def generate_video():
     if request.data:
         print("Raw Data Received:", request.data)
     print("Generating a Video")
-
+    logger.info("Getting started...")
     # Get the uploaded images from the request
     image_files = request.files.getlist('images')
     print("Image Files:", image_files)
@@ -94,12 +94,14 @@ def generate_video():
              'bucket' : SOURCE_BUCKET_NAME})
 
     # Upload images to S3
+    logger.info("Uploading to the cloud...")
     images = upload_images_from_disk_to_s3(s3,images)
     print("S3 Keys:",[item["s3_key"] for item in images])    
 
 
     # Analyze our images
     print("Launching Image Analysis...")
+    logger.info("Analyzing images...")
     images = describe_and_recommend(client, images,s3.generate_presigned_url)
 
     for image in images:
@@ -110,6 +112,7 @@ def generate_video():
 
     # Modify the images according to the AI suggestions
     print("Modifying Images...")
+    logger.info("Modifying Images...")
     modified_images = modify_images(images)
 
     # Upload images to S3
@@ -127,12 +130,12 @@ def generate_video():
     total_duration = 10  # Total duration of the video
     fps = 24  # Frames per second
     aspect_ratio = '16:9'  # Aspect ratio of the video
-
+    logger.info("Generating video...")
     # Call the API Gateway to process the video
     api_response = call_api_gateway(
             s3_keys, total_duration, fps, 
             aspect_ratio, DESTINATION_BUCKET_NAME)
-
+    logger.info("Job submitted...")
     if api_response:
         # Return the video URL as a response
         print("GOT RESPONSE:",api_response)
