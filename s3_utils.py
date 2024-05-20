@@ -3,7 +3,7 @@ import boto3
 def get_s3_client():
     return(boto3.client('s3'))
 
-def upload_images_to_s3(image_files):
+def upload_images_to_s3(s3,image_files):
     s3_keys = []
     for image_file in image_files:
         filename = image_file.filename
@@ -20,7 +20,7 @@ def upload_images_to_s3(image_files):
 #               'bucket' :  'some-s3-bucket-name'
 #           },
 #          ]
-def upload_images_from_disk_to_s3(images):
+def upload_images_from_disk_to_s3(s3,images):
     for image in images:
         s3_key = f'uploads/{image["filename"]}'
         with open(image['local_dir']+image['filename'], 'rb') as image_file:

@@ -94,7 +94,7 @@ def generate_video():
              'bucket' : SOURCE_BUCKET_NAME})
 
     # Upload images to S3
-    images = upload_images_from_disk_to_s3(images)
+    images = upload_images_from_disk_to_s3(s3,images)
     print("S3 Keys:",[item["s3_key"] for item in images])    
 
 
