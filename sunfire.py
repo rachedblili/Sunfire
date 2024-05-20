@@ -114,7 +114,7 @@ def describe_and_recommend(images,url_maker):
             messages=[
                     {
                         "role": "system",
-                        "content": "You are the assistant. Respond in pure JSON with no formatting characters or extraneous artifacts. Legal output key names: crop, color, x, y, height, width, scale, pad. Ensure the proportions of the original image are preserved using symmetrical scaling, cropping, and padding to achieve the desired dimensions. Return the operations (crop, pad, scale) in the correct order."
+                        "content": "You are the assistant. Respond in pure JSON with no formatting characters or extraneous artifacts. Legal output key names: crop, color, x, y, height, width, scale, pad. Ensure the proportions of the original image are preserved using symmetrical scaling, cropping, and padding to achieve the desired dimensions. Return the operations (crop, pad, scale) in the correct order. Output should have Standard HD resolution."
                     },
                     {
                         "role": "user",
