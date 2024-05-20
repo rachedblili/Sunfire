@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 import os
 #import boto3
 from s3_utils import get_s3_client, upload_images_to_s3, upload_images_from_disk_to_s3
-from openai_utils import get_openai_client, describe_and_recommend
+from openai_utils import get_openai_client, describe_and_recommend, logger as openai_logger
 import requests
 #from openai import OpenAI
 import json
@@ -10,6 +10,13 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 app.config['VIDEOS_FOLDER'] = 'videos/'
 from image_utils import modify_image
+
+import logging
+from flask_socketio import SocketIO, emit
+import io
+
+# Initialize SocketIO
+socketio = SocketIO(app)
 
 # Initialize S3 client
 s3 = get_s3_client()
@@ -21,12 +28,14 @@ client = get_openai_client()
 
 
 def call_api_gateway(s3_keys, total_duration, fps, aspect_ratio, bucket):
+    callback_url = request.url_root + 'api/video-callback'
     payload = {
         's3_objects': s3_keys,
         'duration': total_duration,
         'fps': fps,
         'aspect_ratio': aspect_ratio,
-        'output_bucket': bucket
+        'output_bucket': bucket,
+        'callback_url' : callback_url
     }
     response = requests.post(API_GATEWAY_URL, json=payload)
     if response.status_code == 200:
@@ -48,6 +57,9 @@ def modify_images(images):
 
 @app.route('/api/generate-video', methods=['POST'])
 def generate_video():
+    # Emit the 'start_log' event to start sending log messages
+    socketio.emit('start_log')
+
     # Log headers
     print("Headers:", request.headers)
 
@@ -117,17 +129,56 @@ def generate_video():
     aspect_ratio = '16:9'  # Aspect ratio of the video
 
     # Call the API Gateway to process the video
-    video_url = call_api_gateway(
+    api_response = call_api_gateway(
             s3_keys, total_duration, fps, 
             aspect_ratio, DESTINATION_BUCKET_NAME)
 
-    if video_url:
+    if api_response:
         # Return the video URL as a response
-        print("GOT URL:",video_url)
-        return jsonify({'video_url': video_url})
+        print("GOT RESPONSE:",api_response)
+        return jsonify({'api_response': api_response})
     else:
         # Return an error response if the video generation failed
         return jsonify({'error': 'Video generation failed'}), 500
+
+@app.route('/api/video-callback', methods=['POST'])
+def video_callback():
+    # Retrieve the video URL from the callback data
+    video_url = request.get_json().get('video_url')
+
+    if video_url:
+        # Return the video URL as a response
+        return jsonify({'video_url': video_url})
+    else:
+        # Return an error response if the video URL is not provided
+        return jsonify({'error': 'Video URL not provided'}), 500
+
+# Set up a stream handler for logging
+log_stream = io.StringIO()
+stream_handler = logging.StreamHandler(log_stream)
+stream_handler.setLevel(logging.INFO)
+app.logger.addHandler(stream_handler)
+
+@socketio.on('connect')
+def handle_connect():
+    print('Client connected')
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('Client disconnected')
+
+def send_log_messages():
+    while True:
+        socketio.sleep(0.1)  # Add a delay to prevent flooding the client
+        log_messages = log_stream.getvalue()
+        if log_messages:
+            socketio.emit('log_message', {'message': log_messages})
+            log_stream.truncate(0)
+            log_stream.seek(0)
+
+@socketio.on('start_log')
+def start_log():
+    socketio.start_background_task(target=send_log_messages)
 
 if __name__ == '__main__':
     app.run(debug=True)

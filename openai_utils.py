@@ -1,5 +1,8 @@
 import os
 from openai import OpenAI
+import logging
+
+logger = logging.getLogger(__name__)
 
 def get_openai_client():
     # Initialize OpenAI client
@@ -63,6 +66,7 @@ def describe_and_recommend(images,url_maker):
         image['height'] = descr['dimensions']['height']
         image['width'] = descr['dimensions']['width']
         image['description'] = descr['content']
+        logger.info(f'Received image:{image['description']}')
         strategy_response = client.chat.completions.create(
             model="gpt-4o",
             messages=[

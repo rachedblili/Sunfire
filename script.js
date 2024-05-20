@@ -5,7 +5,18 @@ const imageContainers = imageShelf.querySelectorAll('.image-container');
 const generateBtn = document.getElementById('generate-btn');
 const videoContainer = document.getElementById('video-container');
 const generatedVideo = document.getElementById('generated-video');
+const socket = io();
 
+socket.on('log_message', (data) => {
+  appendLog(data.message);
+});
+const logContainer = document.getElementById('log-container');
+
+function appendLog(message) {
+  const logEntry = document.createElement('div');
+  logEntry.textContent = message;
+  logContainer.appendChild(logEntry);
+}
 // Add event listener for file input
 imageInput.addEventListener('change', previewImages);
 
@@ -88,26 +99,40 @@ function updateButtonStates() {
   });
 }
 
+function waitForVideoCallback() {
+  const checkInterval = 5000; // Check every 5 seconds
+  const maxRetries = 60; // Maximum number of retries (5 minutes)
+  let retries = 0;
+
+  const intervalId = setInterval(() => {
+    fetch('/api/video-callback')
+      .then(response => response.json())
+      .then(responseData => {
+        if (responseData.video_url) {
+          clearInterval(intervalId);
+          generatedVideo.src = responseData.video_url;
+          videoContainer.style.display = 'block';
+        } else if (retries >= maxRetries) {
+          clearInterval(intervalId);
+          alert('Timeout: Video generation process failed.');
+        } else {
+          retries++;
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        clearInterval(intervalId);
+        alert('An error occurred while generating the video.');
+      });
+  }, checkInterval);
+}
+
 // Handle form submission
 form.addEventListener('submit', function (e) {
   e.preventDefault();
 
   const formData = new FormData(form);
-//  const data = {};
-//
-//  for (const [key, value] of formData.entries()) {
-//    if (key === 'image-input') {
-//      data[key] = [...value];
-//    } else {
-//      data[key] = value;
-//    }
-//  }
-//
-//  // Get image sources in the correct order
-//  const imageSources = Array.from(imageContainers)
-//    .filter(container => container.querySelector('.image-preview').src !== '')
-//    .map(container => container.querySelector('.image-preview').src);
-//  data.images = imageSources;
+
   // First, remove the existing file entries from formData if they exist
   formData.delete('images');
 
@@ -128,13 +153,20 @@ form.addEventListener('submit', function (e) {
     method: 'POST',
     body: formData 
   })
-	.then(response => response.json())
-    	.then(responseData => {
-      	  generatedVideo.src = responseData.video_url;
-          videoContainer.style.display = 'block';
-    	})
-    	.catch(error => {
-      	  console.error('Error:', error);
-      	  alert('An error occurred while generating the video.');
-    	});
+	.then(response => {
+        if (response.ok) {
+            return response.json();
+        } else {
+            throw new Error('Failed to initiate video generation process.');
+        }
+    })
+    .then(responseData => {
+        console.log(responseData.message);
+        // Wait for the callback with the video URL
+        waitForVideoCallback();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while generating the video.');
+    });
 });
