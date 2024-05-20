@@ -126,7 +126,7 @@ def describe_and_recommend(images,url_maker):
                     },
                     {
                         "role": "user",
-                        "content": f"I have an image with height {image['height']} and width {image['width']} and the dominant color is {image['color']}. I need to fit this image into a video with a 16:9 aspect ratio. Please provide a cropping, scaling (while maintaining aspect ratio), and padding recommendation that balances image quality and screen coverage without losing important content."
+                        "content": f"I have an image with height {image['height']} and width {image['width']} and the dominant color is {image['color']}. I need to fit this image into a video with a 16:9 aspect ratio in Standard HD resolution. Please provide a cropping, scaling (while maintaining aspect ratio), and padding recommendation that balances image quality and screen coverage without losing important content."
                     }
             ],
             max_tokens=800
