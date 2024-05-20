@@ -31,7 +31,7 @@ def call_api_gateway(s3_keys, total_duration, fps, aspect_ratio, bucket):
     #callback_url = request.url_root + 'api/video-callback'
     scheme = request.headers.get('X-Forwarded-Proto', request.scheme)
     host = request.headers.get('Host', request.host)
-    callback_url = f"http://{request.host}/api/video-callback"
+    callback_url = "http://54.166.183.35/api/video-callback"
     print("CALLBACK: ",callback_url)
     payload = {
         's3_objects': s3_keys,
