@@ -113,7 +113,7 @@ def generate_video():
     modified_images = modify_images(images)
 
     # Upload images to S3
-    modified_images = upload_images_from_disk_to_s3(modified_images)
+    modified_images = upload_images_from_disk_to_s3(s3,modified_images)
 
     s3_keys = []
     for item in modified_images:
