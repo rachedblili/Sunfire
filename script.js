@@ -6,42 +6,31 @@ const generateBtn = document.getElementById('generate-btn');
 const videoContainer = document.getElementById('video-container');
 const logContainer = document.getElementById('log-container');
 const generatedVideo = document.getElementById('generated-video');
-var socket = io('http://54.166.183.35', {
-    transports: ['websocket', 'polling']
-});
-
-socket.on('log_message', (data) => {
-  appendLog(data.message);
-});
-socket.on('connect', function() {
-    console.log('Connected to server');
-    socket.emit('log', 'Connected to server');
-    socket.emit('join','broadcast');
-});
-
-socket.on('log', function(data) {
-    console.log('Log:', data.message);
-});
-
-socket.on('disconnect', function() {
-    console.log('Disconnected from server');
-});
 
 
-socket.on('video_url', function(data) {
-    console.log('Video URL received:', data.url);
-    // Update the video player source
-    //var videoPlayer = document.getElementById('videoPlayer');
-    videoContainer.src = data.url;
-    videoContainer.load();
-    videoContainer.play();
+document.addEventListener("DOMContentLoaded", function() {
+    var eventSource = new EventSource("/api/messages");
+
+    eventSource.onmessage = function(event) {
+        console.log(event.data);
+        var messageParts = event.data.split(" : ");
+        if (messageParts[0] === "log") {
+            var logContainer = document.getElementById('logContainer');
+            var messageElement = document.createElement('p');
+            messageElement.textContent = messageParts[1];
+            logContainer.appendChild(messageElement);
+        } else if (facility === "video") {
+                videoContainer.src = message;
+                videoContainer.load();
+                videoContainer.play();
+        }
+    };
+
+    eventSource.onerror = function() {
+        console.log('EventSource failed.');
+    };
 });
 
-function appendLog(message) {
-  const logEntry = document.createElement('div');
-  logEntry.textContent = message;
-  logContainer.appendChild(logEntry);
-}
 // Add event listener for file input
 imageInput.addEventListener('change', previewImages);
 
@@ -124,33 +113,7 @@ function updateButtonStates() {
   });
 }
 
-function waitForVideoCallback() {
-  const checkInterval = 5000; // Check every 5 seconds
-  const maxRetries = 60; // Maximum number of retries (5 minutes)
-  let retries = 0;
 
-  const intervalId = setInterval(() => {
-    fetch('/api/video-callback')
-      .then(response => response.json())
-      .then(responseData => {
-        if (responseData.video_url) {
-          clearInterval(intervalId);
-          generatedVideo.src = responseData.video_url;
-          videoContainer.style.display = 'block';
-        } else if (retries >= maxRetries) {
-          clearInterval(intervalId);
-          alert('Timeout: Video generation process failed.');
-        } else {
-          retries++;
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        clearInterval(intervalId);
-        alert('An error occurred while generating the video.');
-      });
-  }, checkInterval);
-}
 
 // Handle form submission
 form.addEventListener('submit', function (e) {
@@ -180,15 +143,11 @@ form.addEventListener('submit', function (e) {
   })
 	.then(response => {
         if (response.ok) {
-            return response.json();
+            #return response.json();
+            pass
         } else {
             throw new Error('Failed to initiate video generation process.');
         }
-    })
-    .then(responseData => {
-        console.log(responseData.message);
-        // Wait for the callback with the video URL
-        waitForVideoCallback();
     })
     .catch(error => {
         console.error('Error:', error);
