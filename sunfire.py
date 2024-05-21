@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, Response
 import os
+import time
 #import boto3
 from s3_utils import get_s3_client, upload_images_to_s3, upload_images_from_disk_to_s3
 from openai_utils import get_openai_client, describe_and_recommend, logger as openai_logger
