@@ -126,7 +126,7 @@ def generate_video():
     api_response = call_api_gateway(
             s3_keys, total_duration, fps, 
             aspect_ratio, DESTINATION_BUCKET_NAME)
-    if api_response['statusCode'] == 200:
+    if api_response:
         return jsonify({'message': 'Video generation initiated'}), 200
     else:
         # Return an error response if the video generation failed
@@ -149,7 +149,7 @@ def video_callback():
 
     if video_url:
         # Emit the video URL to all connected clients
-        socketio.emit('video_url', {'url': video_url},room='broadcast')
+        logger('video',video_url)
     # Process the data here
     return jsonify({"message": "Callback received", "data": data}), 200
 
