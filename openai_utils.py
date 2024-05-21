@@ -73,19 +73,19 @@ def describe_and_recommend(client, images,url_maker):
             messages=[
                     {
                         "role": "system",
-                        "content": "You are the assistant. Respond in pure JSON with no formatting characters or extraneous artifacts. Legal output key names: crop, color, x, y, height, width, scale, pad. Ensure the proportions of the original image are preserved using symmetrical scaling, cropping, and padding to achieve the desired dimensions. Return the operations (crop, pad, scale) in the correct order. Output should have Standard HD resolution."
+                        "content": "You are the assistant. Respond in pure JSON with no formatting characters or extraneous artifacts. Legal output key names: color, x, y, height, width, scale, pad. Ensure the proportions of the original image are preserved using symmetrical scaling. Use padding to achieve the desired dimensions. Return the operations (scale, pad) in the correct order. Output should have Standard HD resolution."
                     },
                     {
                         "role": "user",
-                        "content": "I have an image with height 530px and width 800px and the dominant color is #32DF34. I need to fit this image into a video with a 16:9 aspect ratio in Standard HD resolution. Please provide a cropping, scaling (while maintaining aspect ratio), and padding recommendation that balances image quality and screen coverage without losing important content."
+                        "content": "I have an image with height 530px and width 800px and the dominant color is #32DF34. I need to fit this image into a video with a 16:9 aspect ratio in Standard HD resolution. Please provide a scaling (while maintaining aspect ratio), and padding recommendation that balances image quality and screen coverage without losing important content."
                     },
                     {
                         "role": "assistant",
-                        "content": '[{"crop": {"x": 0, "y": 0, "width": 800, "height": 450}}, {"scale": {"width": 1600, "height": 900}}, {"pad": {"width": 1920, "height": 1080, "color": "#32DF34"}}]'
+                        "content": '[{"scale": {"width": 1600, "height": 900}}, {"pad": {"width": 1920, "height": 1080, "color": "#32DF34"}}]'
                     },
                     {
                         "role": "user",
-                        "content": f"I have an image with height {image['height']} and width {image['width']} and the dominant color is {image['color']}. I need to fit this image into a video with a 16:9 aspect ratio in Standard HD resolution. Please provide a cropping, scaling (while maintaining aspect ratio), and padding recommendation that balances image quality and screen coverage without losing important content."
+                        "content": f"I have an image with height {image['height']} and width {image['width']} and the dominant color is {image['color']}. I need to fit this image into a video with a 16:9 aspect ratio in Standard HD resolution. Please provide a scaling (while maintaining aspect ratio), and padding recommendation that balances image quality and screen coverage without losing important content."
                     }
             ],
             max_tokens=800

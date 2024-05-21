@@ -7,6 +7,15 @@ const videoContainer = document.getElementById('video-container');
 const logContainer = document.getElementById('log-container');
 const generatedVideo = document.getElementById('generated-video');
 
+function clearContainers() {
+        if (logContainer) {
+            logContainer.innerHTML = '';
+        }
+        if (videoContainer && generatedVideo) {
+            videoContainer.style.display = 'none';
+            generatedVideo.src = '';
+        }
+}
 
 document.addEventListener("DOMContentLoaded", function() {
     console.log('DOMContentLoaded event fired');
@@ -14,6 +23,7 @@ document.addEventListener("DOMContentLoaded", function() {
     console.log('logContainer:', logContainer);
     console.log('generatedVideo:', generatedVideo);
 
+    clearContainers();
     var eventSource = new EventSource("/api/messages");
 
     eventSource.onmessage = function(event) {
@@ -142,7 +152,7 @@ function updateButtonStates() {
 // Handle form submission
 form.addEventListener('submit', function (e) {
   e.preventDefault();
-
+  clearContainers();
   const formData = new FormData(form);
 
   // First, remove the existing file entries from formData if they exist
