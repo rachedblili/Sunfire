@@ -9,6 +9,10 @@ const generatedVideo = document.getElementById('generated-video');
 
 
 document.addEventListener("DOMContentLoaded", function() {
+    console.log('videoContainer:', videoContainer);
+    console.log('logContainer:', logContainer);
+    console.log('generatedVideo:', generatedVideo);
+
     var eventSource = new EventSource("/api/messages");
 
     eventSource.onmessage = function(event) {
