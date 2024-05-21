@@ -143,8 +143,7 @@ form.addEventListener('submit', function (e) {
   })
 	.then(response => {
         if (response.ok) {
-            #return response.json();
-            pass
+            return response.json();
         } else {
             throw new Error('Failed to initiate video generation process.');
         }
