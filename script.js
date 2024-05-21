@@ -27,11 +27,6 @@ socket.on('disconnect', function() {
     console.log('Disconnected from server');
 });
 
-@socketio.on('join')
-def on_join(data):
-    room = data
-    join_room(room)
-    emit('log', {'message': f'Joined room: {room}'})
 
 socket.on('video_url', function(data) {
     console.log('Video URL received:', data.url);

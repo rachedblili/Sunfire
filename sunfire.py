@@ -187,6 +187,11 @@ def handle_connect():
 def handle_disconnect():
     print('Client disconnected')
 
+@socketio.on('join')
+def on_join(data):
+    room = data
+    join_room(room)
+    emit('log', {'message': f'Joined room: {room}'})
 def send_log_messages():
     while True:
         socketio.sleep(0.1)  # Add a delay to prevent flooding the client
