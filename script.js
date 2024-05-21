@@ -142,6 +142,7 @@ form.addEventListener('submit', function (e) {
     body: formData 
   })
 	.then(response => {
+	    console.log('Response:',response)
         if (response.ok) {
             return response.json();
         } else {

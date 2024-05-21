@@ -74,7 +74,7 @@ def generate_video():
     # For non-JSON body contents (e.g., for form-data, which includes files)
     if request.data:
         print("Raw Data Received:", request.data)
-    print("Generating a Video")
+    logger('log','Data Received.  Examining data...')
     # Get the uploaded images from the request
     image_files = request.files.getlist('images')
     print("Image Files:", image_files)
@@ -96,7 +96,7 @@ def generate_video():
 
 
     # Analyze our images
-    print("Launching Image Analysis...")
+    logger('log','Launching Image Analysis...')
     images = describe_and_recommend(client, images,s3.generate_presigned_url)
 
     for image in images:
@@ -106,7 +106,7 @@ def generate_video():
         print(f"Strategy: {image['strategy']}")
 
     # Modify the images according to the AI suggestions
-    print("Modifying Images...")
+    logger('log','Modifying Images...')
     modified_images = modify_images(images)
 
     # Upload images to S3
@@ -116,8 +116,8 @@ def generate_video():
     for item in modified_images:
         s3_keys.append({'bucket': item['bucket'], 'key': item['s3_key']})
 
-    print("FINAL S3 Keys:",s3_keys)    
-
+    print("FINAL S3 Keys:",s3_keys)
+    logger('log', 'Generating the video...')
     # Define video parameters
     total_duration = 10  # Total duration of the video
     fps = 24  # Frames per second
