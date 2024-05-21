@@ -168,7 +168,7 @@ def video_callback():
 
     if video_url:
         # Emit the video URL to all connected clients
-        socketio.emit('video_url', {'url': video_url}, broadcast=True)
+        socketio.emit('video_url', {'url': video_url},room='broadcast')
     # Process the data here
     return jsonify({"message": "Callback received", "data": data}), 200
 

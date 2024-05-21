@@ -6,7 +6,7 @@ const generateBtn = document.getElementById('generate-btn');
 const videoContainer = document.getElementById('video-container');
 const logContainer = document.getElementById('log-container');
 const generatedVideo = document.getElementById('generated-video');
-var socket = io('http://localhost:5000', {
+var socket = io('http://54.166.183.35', {
     transports: ['websocket', 'polling']
 });
 
@@ -16,6 +16,7 @@ socket.on('log_message', (data) => {
 socket.on('connect', function() {
     console.log('Connected to server');
     socket.emit('log', 'Connected to server');
+    socket.emit('join','broadcast');
 });
 
 socket.on('log', function(data) {
@@ -25,6 +26,12 @@ socket.on('log', function(data) {
 socket.on('disconnect', function() {
     console.log('Disconnected from server');
 });
+
+@socketio.on('join')
+def on_join(data):
+    room = data
+    join_room(room)
+    emit('log', {'message': f'Joined room: {room}'})
 
 socket.on('video_url', function(data) {
     console.log('Video URL received:', data.url);
