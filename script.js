@@ -9,6 +9,7 @@ const generatedVideo = document.getElementById('generated-video');
 
 
 document.addEventListener("DOMContentLoaded", function() {
+    console.log('DOMContentLoaded event fired');
     console.log('videoContainer:', videoContainer);
     console.log('logContainer:', logContainer);
     console.log('generatedVideo:', generatedVideo);
@@ -16,17 +17,36 @@ document.addEventListener("DOMContentLoaded", function() {
     var eventSource = new EventSource("/api/messages");
 
     eventSource.onmessage = function(event) {
-        console.log(event.data);
+        console.log('Received message:', event.data);
         var messageParts = event.data.split(" : ");
-        if (messageParts[0] === "log") {
-            var logContainer = document.getElementById('logContainer');
-            var messageElement = document.createElement('p');
-            messageElement.textContent = messageParts[1];
-            logContainer.appendChild(messageElement);
-        } else if (facility === "video") {
-                videoContainer.src = message;
-                videoContainer.load();
-                videoContainer.play();
+        if (messageParts.length === 2) {
+            var facility = messageParts[0];
+            var message = messageParts[1];
+
+            if (facility === "log") {
+                console.log('Handling log message:', message);
+                if (logContainer) {
+                    var messageElement = document.createElement('p');
+                    messageElement.textContent = message;
+                    logContainer.appendChild(messageElement);
+                } else {
+                    console.error("log-container not found");
+                }
+            } else if (facility === "video") {
+                console.log('Handling video message:', message);
+                if (videoContainer && generatedVideo) {
+                    generatedVideo.src = message;
+                    videoContainer.style.display = 'block';
+                    generatedVideo.load();
+                    generatedVideo.play().then(() => {
+                        console.log('Video started playing');
+                    }).catch((error) => {
+                        console.error('Error playing video:', error);
+                    });
+                } else {
+                    console.error("video-container or generated-video not found");
+                }
+            }
         }
     };
 
