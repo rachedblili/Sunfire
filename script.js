@@ -4,13 +4,36 @@ const imageShelf = document.getElementById('image-shelf');
 const imageContainers = imageShelf.querySelectorAll('.image-container');
 const generateBtn = document.getElementById('generate-btn');
 const videoContainer = document.getElementById('video-container');
+const logContainer = document.getElementById('log-container');
 const generatedVideo = document.getElementById('generated-video');
-const socket = io('https://www.strikerit.com:5000');
+var socket = io('http://localhost:5000', {
+    transports: ['websocket', 'polling']
+});
 
 socket.on('log_message', (data) => {
   appendLog(data.message);
 });
-const logContainer = document.getElementById('log-container');
+socket.on('connect', function() {
+    console.log('Connected to server');
+    socket.emit('log', 'Connected to server');
+});
+
+socket.on('log', function(data) {
+    console.log('Log:', data.message);
+});
+
+socket.on('disconnect', function() {
+    console.log('Disconnected from server');
+});
+
+socket.on('video_url', function(data) {
+    console.log('Video URL received:', data.url);
+    // Update the video player source
+    //var videoPlayer = document.getElementById('videoPlayer');
+    videoContainer.src = data.url;
+    videoContainer.load();
+    videoContainer.play();
+});
 
 function appendLog(message) {
   const logEntry = document.createElement('div');
