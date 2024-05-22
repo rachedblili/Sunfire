@@ -54,8 +54,9 @@
           <input type="file" id="image-input" name="images" accept="image/*" multiple>
         </div>
       </div>
-      <div class="form-group">
-        <label>Video Tone and Style</label>
+     <div class="form-group">
+      <div class="radio-container">
+        <label>Narration Tone and Style</label>
         <div class="radio-group">
           <label>
             <input type="radio" name="tone" value="professional" required>
@@ -70,6 +71,9 @@
             Energetic
           </label>
         </div>
+      </div>
+      <div class="radio-container">
+        <label>Music Mood</label>
         <div class="radio-group">
           <label>
             <input type="radio" name="mood" value="upbeat" required>
@@ -85,6 +89,7 @@
           </label>
         </div>
       </div>
+    </div>
       <button type="submit" id="generate-btn">Generate Video</button>
     </form>
     <div id="results-area">

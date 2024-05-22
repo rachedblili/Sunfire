@@ -10,9 +10,8 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 app.config['VIDEOS_FOLDER'] = 'videos/'
 from image_utils import modify_image
+from messaging_utils import message_manager, logger
 
-# Initialize message queue
-message_queue = []
 
 # Initialize S3 client
 s3 = get_s3_client()
@@ -153,16 +152,6 @@ def video_callback():
     # Process the data here
     return jsonify({"message": "Callback received", "data": data}), 200
 
-def message_manager():
-    """Generator function to yield progress messages."""
-    while True:
-        if message_queue:
-            (facility,message) = message_queue.pop(0)
-            yield f"data: {facility} : {message}\n\n"
-        time.sleep(1)
-
-def logger(facility,message):
-    message_queue.append((facility,message))
 @app.route('/api/messages')
 def stream_messages():
     return(Response(message_manager(),mimetype='text/event-stream'))
