@@ -31,6 +31,21 @@ def pad_image(image,spec):
     pad_x = (spec['width'] - w) / 2
     pad_y = (spec['height'] - h) / 2
 
+    # Check for non-integer padding and adjust dimensions
+    if pad_x % 1 != 0:
+        # Adjust width by 1 pixel to make padding an integer
+        new_width = w + 1 if w < spec['width'] else w - 1
+        image = image.resize((new_width, h), Image.ANTIALIAS)
+        pad_x = (spec['width'] - new_width) / 2
+
+    if pad_y % 1 != 0:
+        # Adjust height by 1 pixel to make padding an integer
+        new_height = h + 1 if h < spec['height'] else h - 1
+        image = image.resize((w, new_height), Image.ANTIALIAS)
+        pad_y = (spec['height'] - new_height) / 2
+
+    # Convert float padding to integer
+    pad_x, pad_y = int(pad_x), int(pad_y)
     # Add padding
     padded_image = ImageOps.expand(image, border=(pad_x, pad_y, pad_x, pad_y), fill=spec['color'])
 
