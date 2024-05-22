@@ -64,7 +64,7 @@ def generate_video():
     print("Image Files:", image_files)
 
     for image_file in image_files:
-        image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_file.filename
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_file.filename)
         image_file.save(image_path)
         if not compatible_image_format(image_path):
             with Image.open(image_path) as img:
