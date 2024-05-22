@@ -29,7 +29,7 @@ def pad_image(image,spec):
 
     # Calculate required padding
     pad_x = (spec['width'] - w) / 2
-    pad_y = (spect['height'] - h) / 2
+    pad_y = (spec['height'] - h) / 2
 
     # Add padding
     padded_image = ImageOps.expand(image, border=(pad_x, pad_y, pad_x, pad_y), fill=spec['color'])
