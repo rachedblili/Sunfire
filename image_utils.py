@@ -1,6 +1,6 @@
 import os
 import base64
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ExifTags
 from pillow_heif import register_heif_opener
 import imghdr
 from messaging_utils import logger
@@ -64,10 +64,33 @@ def pad_image(image,spec):
     
 def scale_image(image,spec):
     return(image.resize((spec["width"], spec["height"])))
-    
+
+
+def rotate_image_according_to_exif(image):
+    try:
+        exif = image._getexif()
+        if exif is not None:
+            for orientation in ExifTags.TAGS.keys():
+                if ExifTags.TAGS[orientation] == 'Orientation':
+                    break
+
+            if exif[orientation] == 3:
+                image = image.rotate(180, expand=True)
+            elif exif[orientation] == 6:
+                image = image.rotate(270, expand=True)
+            elif exif[orientation] == 8:
+                image = image.rotate(90, expand=True)
+    except (AttributeError, KeyError, IndexError):
+        # cases: image doesn't have getexif
+        pass
+    return image
+
 def modify_image(image_path, full_spec, output_path):
     # Open the image
     image = Image.open(image_path)
+    # Correct for image orientation based on EXIF data
+    image = rotate_image_according_to_exif(image)
+
     for spec in full_spec:
         operation = list(spec.keys())[0]
         if operation == 'crop':
