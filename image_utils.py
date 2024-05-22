@@ -24,8 +24,23 @@ def crop_image(image,spec):
     return(image.crop(crop_area))
     
 def pad_image(image,spec):
-    padded_image = ImageOps.expand(image, border=(0, 0, 0, 0), fill=spec["color"])
-    return(padded_image.resize((spec["width"], spec["height"]), Image.Resampling.LANCZOS))
+    # Get current size
+    w, h = image.size
+
+    # Calculate required padding
+    pad_x = (spec['width'] - w) / 2
+    pad_y = (spect['height'] - h) / 2
+
+    # Add padding
+    padded_image = ImageOps.expand(image, border=(pad_x, pad_y, pad_x, pad_y), fill=spec['color'])
+
+    # Try to fill transparency
+    if padded_image.mode in ('RGBA', 'LA') or (padded_image.mode == 'P' and 'transparency' in padded_image.info):
+        background = Image.new(padded_image.mode[:-1], padded_image.size, spec['color'])
+        background.paste(padded_image, padded_image.split()[-1])  # Paste using alpha channel as mask
+        padded_image = background
+    return(padded_image)
+
     
 def scale_image(image,spec):
     return(image.resize((spec["width"], spec["height"])))
