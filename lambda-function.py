@@ -8,6 +8,7 @@ from botocore.exceptions import ClientError
 import time
 import string
 import random
+import urllib3
 
 
 def generate_unique_filename(prefix=""):
@@ -93,13 +94,20 @@ def process_images_and_generate_video(images, total_duration, fps, aspect_ratio,
             # Output video file path
             filename = generate_unique_filename(prefix="video-")
             output_file = os.path.join(tmp_dir, f"{filename}.mp4")
-
+            firstIndex = 0
+            lastIndex = len(local_files) - 1
             # Construct ffmpeg command
             cmd = ["ffmpeg"]
-            for file in local_files:
+            for i, file in enumerate(local_files):
+                if i == firstIndex :
+                    dur = duration_per_image + 0.5
+                elif i == lastIndex :
+                    dur = duration_per_image
+                else :
+                    dur = duration_per_image + 1
                 cmd.extend([
                     "-loop", '1',
-                    "-t", str(duration_per_image),
+                    "-t", str(dur),
                     "-i", file]
                 )
             cmd.extend([
@@ -141,9 +149,17 @@ def process_images_and_generate_video(images, total_duration, fps, aspect_ratio,
             print(video_url)
             # Post the video URL to the callback URL
             if callback_url:
-                response = requests.post(callback_url, json={"video_url": video_url})
-                print(f"Callback response status: {response.status_code}, response text: {response.text}")
-            return response.status_code
+                http = urllib3.PoolManager()
+                headers = { 'Content-Type': 'application/json' }
+                payload = { "video_url": video_url }
+                response = http.request(
+                    "POST",
+                    callback_url,
+                    body=json.dumps(payload),
+                    headers=headers
+                )
+                print(f"Callback response status: {str(response.status)}, response text: {response.data.decode('utf-8')}")
+            return response.status
 
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -154,6 +170,7 @@ def lambda_handler(event, context):
     try:
         if event.get('async'):
             # Asynchronous invocation
+            print("ASYNCH EXECUTION")
             s3_objects = event.get('s3_objects')
             duration = event.get('duration')
             fps = event.get('fps', 24)
@@ -166,6 +183,7 @@ def lambda_handler(event, context):
 
         else:
             # Synchronous invocation
+            print("INITIAL REQUEST")
             body = event.get('body')
             if body:
                 data = json.loads(body)
@@ -205,6 +223,7 @@ def lambda_handler(event, context):
                 return {'statusCode': 400, 'body': json.dumps({'message': 'Invalid request body'})}
 
     except Exception as e:
+        print("BARFED:",str(e))
         return {
             'statusCode': 500,
             'body': json.dumps({'message': str(e)})
