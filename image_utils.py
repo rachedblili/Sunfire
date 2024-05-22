@@ -1,7 +1,12 @@
 import os
 import base64
 from PIL import Image, ImageOps
+from pillow_heif import register_heif_opener
+import imghdr
+from messaging_utils import logger
 
+# Make sure we can open heif files
+register_heif_opener()
 # Function to encode the image as base64
 def encode_image(image_path: str):
     # check if the image exists
@@ -76,3 +81,28 @@ def modify_image(image_path, full_spec, output_path):
     # Save the modified image
     image.save(output_path)
 
+def convert_image_to_png(image):
+    """
+    Converts an input image to PNG format.
+    Args:
+        image (PIL.Image.Image): An image object opened by Image.open().
+    Returns:
+        PIL.Image.Image: The converted image in PNG format.
+    """
+    logger('log',f'{image.filename} will be converted to a compatible format')
+    # Convert the image to PNG format by changing the mode if necessary
+    if image.mode != 'RGB':
+        image = image.convert('RGB')
+
+    # Use BytesIO to simulate saving and reloading the image, ensuring it is in PNG format
+    from io import BytesIO
+    png_image_io = BytesIO()
+    image.save(png_image_io, format='PNG')
+    png_image_io.seek(0)
+    png_image = Image.open(png_image_io)
+
+    return png_image
+
+def compatible_image_format(image_path):
+    allowed_formats = ['png', 'jpeg', 'webp']
+    return imghdr.what(image_path) in allowed_formats

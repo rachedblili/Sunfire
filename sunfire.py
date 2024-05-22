@@ -58,34 +58,27 @@ def modify_images(images):
 @app.route('/api/generate-video', methods=['POST'])
 def generate_video():
 
-    # Log headers
-    print("Headers:", request.headers)
-
-    # Attempt to log form data
-    print("Form Data:", request.form)
-
-    # Log files data
-    print("Files Received:", request.files)
-    # For JSON data (if you were sending JSON):
-    if request.is_json:
-        print("JSON Received:", request.get_json())
-
-    # For non-JSON body contents (e.g., for form-data, which includes files)
-    if request.data:
-        print("Raw Data Received:", request.data)
     logger('log','Data Received.  Examining data...')
     # Get the uploaded images from the request
     image_files = request.files.getlist('images')
     print("Image Files:", image_files)
 
     for image_file in image_files:
-        image_file.save(os.path.join(app.config['UPLOAD_FOLDER'], image_file.filename))
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_file.filename
+        image_file.save(image_path)
+        if not compatible_image_format(image_path):
+            with Image.open(image_path) as img:
+                img = convert_image_to_png(img)
+                new_filename = os.path.splitext(filename)[0] + '.png'
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
+                img.save(file_path, format='PNG')
+                image_file.filename = new_filename
 
     # Keep track of image attributes
     images = []
-    for image in image_files:
+    for image_file in image_files:
         images.append(
-            {'filename' : image.filename, 
+            {'filename' : image_file.filename,
              'local_dir' : app.config['UPLOAD_FOLDER'],
              'bucket' : SOURCE_BUCKET_NAME})
 
