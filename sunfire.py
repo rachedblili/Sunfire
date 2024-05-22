@@ -9,7 +9,7 @@ import json
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 app.config['VIDEOS_FOLDER'] = 'videos/'
-from image_utils import modify_image
+from image_utils import modify_image, compatible_image_format
 from messaging_utils import message_manager, logger
 
 
