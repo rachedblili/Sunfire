@@ -35,13 +35,13 @@ def pad_image(image,spec):
     if pad_x % 1 != 0:
         # Adjust width by 1 pixel to make padding an integer
         new_width = w + 1 if w < spec['width'] else w - 1
-        image = image.resize((new_width, h), Image.ANTIALIAS)
+        image = image.resize((new_width, h), Image.LANCZOS)
         pad_x = (spec['width'] - new_width) / 2
 
     if pad_y % 1 != 0:
         # Adjust height by 1 pixel to make padding an integer
         new_height = h + 1 if h < spec['height'] else h - 1
-        image = image.resize((w, new_height), Image.ANTIALIAS)
+        image = image.resize((w, new_height), Image.LANCZOS)
         pad_y = (spec['height'] - new_height) / 2
 
     # Convert float padding to integer
