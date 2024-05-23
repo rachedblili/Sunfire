@@ -1,17 +1,14 @@
 from flask import Flask, request, jsonify, Response
 import os
-import time
-#import boto3
-from s3_utils import get_s3_client, upload_images_to_s3, upload_images_from_disk_to_s3
-from openai_utils import get_openai_client, describe_and_recommend, logger as openai_logger
+from s3_utils import get_s3_client, upload_images_from_disk_to_s3
+from openai_utils import get_openai_client, describe_and_recommend
 import requests
-import json
+from PIL import Image
+from image_utils import modify_image, compatible_image_format, convert_image_to_png
+from messaging_utils import message_manager, logger
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 app.config['VIDEOS_FOLDER'] = 'videos/'
-from image_utils import modify_image, compatible_image_format
-from messaging_utils import message_manager, logger
-
 
 # Initialize S3 client
 s3 = get_s3_client()
@@ -23,18 +20,17 @@ client = get_openai_client()
 
 
 def call_api_gateway(s3_keys, total_duration, fps, aspect_ratio, bucket):
-    #callback_url = request.url_root + 'api/video-callback'
-    scheme = request.headers.get('X-Forwarded-Proto', request.scheme)
-    host = request.headers.get('Host', request.host)
+    # scheme = request.headers.get('X-Forwarded-Proto', request.scheme)
+    # host = request.headers.get('Host', request.host)
     callback_url = "http://54.166.183.35/api/video-callback"
-    print("CALLBACK: ",callback_url)
+    print("CALLBACK: ", callback_url)
     payload = {
         's3_objects': s3_keys,
         'duration': total_duration,
         'fps': fps,
         'aspect_ratio': aspect_ratio,
         'output_bucket': bucket,
-        'callback_url' : callback_url
+        'callback_url': callback_url
     }
     response = requests.post(API_GATEWAY_URL, json=payload)
     print(response)
@@ -51,14 +47,15 @@ def modify_images(images):
         local_dir = image['local_dir']
         new_name = "modified"+original_name
         full_spec = image['strategy']
-        modify_image(local_dir+original_name,full_spec,local_dir+new_name)
+        modify_image(local_dir+original_name, full_spec, local_dir+new_name)
         image['filename'] = new_name
-    return(modified_images)
+    return modified_images
+
 
 @app.route('/api/generate-video', methods=['POST'])
 def generate_video():
 
-    logger('log','Data Received.  Examining data...')
+    logger('log', 'Data Received.  Examining data...')
     # Get the uploaded images from the request
     image_files = request.files.getlist('images')
     print("Image Files:", image_files)
@@ -69,7 +66,7 @@ def generate_video():
         if not compatible_image_format(image_path):
             with Image.open(image_path) as img:
                 img = convert_image_to_png(img)
-                new_filename = os.path.splitext(filename)[0] + '.png'
+                new_filename = os.path.splitext(image_file.filename)[0] + '.png'
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
                 img.save(file_path, format='PNG')
                 image_file.filename = new_filename
@@ -78,18 +75,17 @@ def generate_video():
     images = []
     for image_file in image_files:
         images.append(
-            {'filename' : image_file.filename,
-             'local_dir' : app.config['UPLOAD_FOLDER'],
-             'bucket' : SOURCE_BUCKET_NAME})
+            {'filename': image_file.filename,
+             'local_dir': app.config['UPLOAD_FOLDER'],
+             'bucket': SOURCE_BUCKET_NAME})
 
     # Upload images to S3
-    images = upload_images_from_disk_to_s3(s3,images)
-    print("S3 Keys:",[item["s3_key"] for item in images])    
-
+    images = upload_images_from_disk_to_s3(s3, images)
+    print("S3 Keys:", [item["s3_key"] for item in images])
 
     # Analyze our images
-    logger('log','Launching Image Analysis...')
-    images = describe_and_recommend(client, images,s3.generate_presigned_url)
+    logger('log', 'Launching Image Analysis...')
+    images = describe_and_recommend(client, images, s3.generate_presigned_url)
 
     for image in images:
         print(f"Image: {image['filename']}")
@@ -98,20 +94,20 @@ def generate_video():
         print(f"Strategy: {image['strategy']}")
 
     # Modify the images according to the AI suggestions
-    logger('log','Modifying Images...')
+    logger('log', 'Modifying Images...')
     modified_images = modify_images(images)
 
     # Upload images to S3
-    modified_images = upload_images_from_disk_to_s3(s3,modified_images)
+    modified_images = upload_images_from_disk_to_s3(s3, modified_images)
 
     s3_keys = []
     for item in modified_images:
         s3_keys.append({'bucket': item['bucket'], 'key': item['s3_key']})
 
-    print("FINAL S3 Keys:",s3_keys)
+    print("FINAL S3 Keys:", s3_keys)
     logger('log', 'Generating the video...')
     # Define video parameters
-    total_duration = 10  # Total duration of the video
+    total_duration = 30  # Total duration of the video
     fps = 24  # Frames per second
     aspect_ratio = '16:9'  # Aspect ratio of the video
     # Call the API Gateway to process the video
@@ -124,11 +120,12 @@ def generate_video():
         # Return an error response if the video generation failed
         return jsonify({'error': 'Video generation failed'}), 500
 
+
 @app.route('/api/video-callback', methods=['POST'])
 def video_callback():
     print("Got a call back!")
     # Retrieve the video URL from the callback data
-    #video_url = request.get_json().get('video_url')
+    # video_url = request.get_json().get('video_url')
     print(f"Headers: {request.headers}")
     print(f"Body: {request.data}")
 
@@ -141,14 +138,15 @@ def video_callback():
 
     if video_url:
         # Emit the video URL to all connected clients
-        logger('video',video_url)
+        logger('video', video_url)
     # Process the data here
     return jsonify({"message": "Callback received", "data": data}), 200
 
+
 @app.route('/api/messages')
 def stream_messages():
-    return(Response(message_manager(),mimetype='text/event-stream'))
+    return Response(message_manager(), mimetype='text/event-stream')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
-
