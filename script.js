@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", function() {
     clearContainers();
     var eventSource = new EventSource("/api/messages");
 
-        const platformSelect = document.getElementById('platform-select');
+    const platformSelect = document.getElementById('platform-select');
     const videoContainer = document.getElementById('video-container');
     const generatedVideo = document.getElementById('generated-video');
 
@@ -36,28 +36,20 @@ document.addEventListener("DOMContentLoaded", function() {
         let aspectRatio;
         switch (selectedPlatform) {
             case 'youtube':
-                aspectRatio = { width: 1920, height: 1080 };
-                break;
             case 'facebook':
-                aspectRatio = { width: 1280, height: 720 };
+            case 'twitter':
+            case 'television':
+                aspectRatio = { width: 16, height: 9 };
                 break;
             case 'instagram':
-                aspectRatio = { width: 1080, height: 1920 };
-                break;
             case 'tiktok':
-                aspectRatio = { width: 1080, height: 1920 };
-                break;
-            case 'twitter':
-                aspectRatio = { width: 1280, height: 720 };
-                break;
-            case 'television':
-                aspectRatio = { width: 1920, height: 1080 };
+                aspectRatio = { width: 9, height: 16 };
                 break;
             default:
-                aspectRatio = { width: 1280, height: 720 };
+                aspectRatio = { width: 16, height: 9 };
         }
 
-        const containerWidth = 500; // Adjust this as needed for your layout
+        const containerWidth = 300; // Adjust this as needed for your layout
         const containerHeight = containerWidth * (aspectRatio.height / aspectRatio.width);
 
         videoContainer.style.width = `${containerWidth}px`;
