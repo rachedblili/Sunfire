@@ -7,6 +7,7 @@ import requests
 from PIL import Image
 from image_utils import modify_image, compatible_image_format, convert_image_to_png
 from messaging_utils import message_manager, logger
+from elevenlabs_utils import get_client, get_voice_tone_data
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 app.config['VIDEOS_FOLDER'] = 'videos/'
@@ -143,6 +144,12 @@ def video_callback():
         logger('video', video_url)
     # Process the data here
     return jsonify({"message": "Callback received", "data": data}), 200
+
+
+@app.route('/get_tones_data', methods=['GET'])
+def get_tones_data():
+    voice_tone_data = get_voice_tone_data()  # Use your actual voice data here
+    return jsonify(voice_tone_data)
 
 
 @app.route('/api/messages')

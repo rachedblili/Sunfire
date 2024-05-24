@@ -55,23 +55,17 @@
         </div>
       </div>
      <div class="form-group">
-      <div class="radio-container">
-        <label>Narration Tone and Style</label>
-        <div class="radio-group">
-          <label>
-            <input type="radio" name="tone" value="professional" required>
-            Professional
-          </label>
-          <label>
-            <input type="radio" name="tone" value="friendly">
-            Friendly
-          </label>
-          <label>
-            <input type="radio" name="tone" value="energetic">
-            Energetic
-          </label>
-        </div>
+
+      <div class="dropdown-container">
+          <label for="tone-select">Narration Tone and Style</label>
+          <select id="tone-select" name="tone" required>
+              <!-- Options will be populated by JavaScript -->
+          </select>
+          <select id="age-gender-select" name="age_gender" style="display:none;">
+              <!-- Options will be populated by JavaScript -->
+          </select>
       </div>
+
       <div class="radio-container">
         <label>Music Mood</label>
         <div class="radio-group">

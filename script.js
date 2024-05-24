@@ -25,6 +25,46 @@ document.addEventListener("DOMContentLoaded", function() {
 
     clearContainers();
     var eventSource = new EventSource("/api/messages");
+    let tonesData;
+
+    fetch('/get_tones_data')
+        .then(response => response.json())
+        .then(data => {
+            tonesData = data;
+            const toneSelect = document.getElementById('tone-select');
+            toneSelect.innerHTML = Object.keys(tonesData).map(tone =>
+                `<option value="${tone}">${tone.charAt(0).toUpperCase() + tone.slice(1)}</option>`
+            ).join('');
+        });
+
+    document.getElementById('tone-select').addEventListener('change', function() {
+        const selectedTone = this.value;
+        const ageGenderOptions = getAgeGenderCombinations(tonesData[selectedTone]);
+        const ageGenderSelect = document.getElementById('age-gender-select');
+        ageGenderSelect.innerHTML = ageGenderOptions.map(option =>
+            `<option value="${option}">${option}</option>`
+        ).join('');
+        ageGenderSelect.style.display = 'inline-block';
+    });
+
+    document.getElementById('age-gender-select').addEventListener('change', function() {
+        const toneSelect = document.getElementById('tone-select').value;
+        const ageGenderSelect = this.value;
+        const formInput = document.createElement('input');
+        formInput.type = 'hidden';
+        formInput.name = 'tone_age_gender';
+        formInput.value = `${toneSelect}:${ageGenderSelect}`;
+        document.querySelector('form').appendChild(formInput);
+    });
+
+    function getAgeGenderCombinations(voices) {
+        const combinations = new Set();
+        voices.forEach(voice => {
+            const combination = `${voice.age} ${voice.gender}`;
+            combinations.add(combination);
+        });
+        return Array.from(combinations).sort();
+    }
 
     eventSource.onmessage = function(event) {
         console.log('Received message:', event.data);
