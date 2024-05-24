@@ -1,5 +1,4 @@
 import os
-import uuid
 from elevenlabs import VoiceSettings
 from elevenlabs.client import ElevenLabs
 from typing import IO
@@ -8,11 +7,8 @@ import requests
 import json
 
 
-
-
 def get_client():
-    ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
-    client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
+    client = ElevenLabs(api_key=os.getenv("ELEVENLABS_API_KEY"))
     return client
 
 
@@ -20,7 +16,7 @@ def get_voice_data():
     url = "https://api.elevenlabs.io/v1/voices"
     response = requests.request("GET", url)
     d = json.loads(response.text)
-    return  d['voices']
+    return d['voices']
 
 
 def text_to_speech_stream(client, text: str, voice: str) -> IO[bytes]:
@@ -61,7 +57,7 @@ def dump_voice_stats():
     d = json.loads(response.text)
     voices = d['voices']
     # Extract unique values for each label category
-    for gender in ['male','female']:
+    for gender in ['male', 'female']:
         accents = {voice['labels'].get('accent') for voice in voices if voice['labels']['gender'] == gender and voice['labels']['accent'] in ['american', 'british', 'american-southern']}
         descriptions = {voice['labels'].get('description') for voice in voices if voice['labels']['gender'] == gender and voice['labels']['accent'] in ['american', 'british', 'american-southern']}
         ages = {voice['labels'].get('age') for voice in voices if voice['labels']['gender'] == gender and voice['labels']['accent'] in ['american', 'british', 'american-southern']}
