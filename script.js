@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", function() {
             ageGenderOptions.map(option =>
                 `<option value="${option}">${option}</option>`
             ).join('');
-        ageGenderSelect.style.display = 'inline-block';
+        ageGenderSelect.style.visibility = 'visible';
     });
 
     document.getElementById('age-gender-select').addEventListener('change', function() {
