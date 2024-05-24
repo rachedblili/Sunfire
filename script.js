@@ -18,10 +18,10 @@ function clearContainers() {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-    console.log('DOMContentLoaded event fired');
-    console.log('videoContainer:', videoContainer);
-    console.log('logContainer:', logContainer);
-    console.log('generatedVideo:', generatedVideo);
+    //console.log('DOMContentLoaded event fired');
+    //console.log('videoContainer:', videoContainer);
+    //console.log('logContainer:', logContainer);
+    //console.log('generatedVideo:', generatedVideo);
 
     clearContainers();
     var eventSource = new EventSource("/api/messages");
@@ -29,11 +29,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
     fetch('/api/get_tones_data')
         .then(response => {
-            console.log('Fetch response:', response);
+            //console.log('Fetch response:', response);
             return response.json();
         })
         .then(data => {
-            console.log('Fetched tones data:', data);
+            //console.log('Fetched tones data:', data);
             tonesData = data;
             const toneSelect = document.getElementById('tone-select');
             toneSelect.innerHTML = '<option value="" disabled selected>Select One</option>' +
@@ -47,10 +47,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
     document.getElementById('tone-select').addEventListener('change', function() {
         const selectedTone = this.value
-        console.log('Selected tone:', selectedTone);
-        console.log('Available tones data:', tonesData);
+        //console.log('Selected tone:', selectedTone);
+        //console.log('Available tones data:', tonesData);
         const ageGenderOptions = getAgeGenderCombinations(tonesData[selectedTone]);
-        console.log('Age-Gender Options:', ageGenderOptions);
+        //console.log('Age-Gender Options:', ageGenderOptions);
         const ageGenderSelect = document.getElementById('age-gender-select');
         ageGenderSelect.innerHTML = '<option value="" disabled selected>Select One</option>' +
             ageGenderOptions.map(option =>
@@ -85,14 +85,14 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     eventSource.onmessage = function(event) {
-        console.log('Received message:', event.data);
+        //console.log('Received message:', event.data);
         var messageParts = event.data.split(" : ");
         if (messageParts.length === 2) {
             var facility = messageParts[0];
             var message = messageParts[1];
 
             if (facility === "log") {
-                console.log('Handling log message:', message);
+                //console.log('Handling log message:', message);
                 if (logContainer) {
                     var messageElement = document.createElement('p');
                     messageElement.textContent = message;
@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     console.error("log-container not found");
                 }
             } else if (facility === "video") {
-                console.log('Handling video message:', message);
+                //console.log('Handling video message:', message);
                 if (videoContainer && generatedVideo) {
                     generatedVideo.src = message;
                     videoContainer.style.display = 'block';
@@ -234,7 +234,7 @@ form.addEventListener('submit', function (e) {
     body: formData 
   })
 	.then(response => {
-	    console.log('Response:',response)
+	    //console.log('Response:',response)
         if (response.ok) {
             return response.json();
         } else {
@@ -242,7 +242,7 @@ form.addEventListener('submit', function (e) {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        //console.error('Error:', error);
         alert('An error occurred while generating the video.');
     });
 });
