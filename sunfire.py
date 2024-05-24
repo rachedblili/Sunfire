@@ -54,7 +54,7 @@ def generate_video():
 
     # Initialize OpenAI client
     openai = get_openai_client()
-
+    print('Data Received.  Examining data...')
     logger('log', 'Data Received.  Examining data...')
     session_data = {
         'company_name': request.form.get('company-name'),

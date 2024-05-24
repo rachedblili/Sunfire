@@ -9,9 +9,10 @@
 <body>
   <div class="container">
     <h1>Create Your Promotional Video</h1>
+    <form id="video-form">
+
     <div class="card">
       <h2>Company Information</h2>
-      <form id="video-form">
         <div class="form-group">
           <label for="company-name">Company Name</label>
           <input type="text" id="company-name" name="company-name" required>
@@ -24,7 +25,6 @@
           <label for="press-release">Press Release/Product Description</label>
           <textarea id="press-release" name="press-release" required></textarea>
         </div>
-      </form>
     </div>
 
     <div class="card">
@@ -112,6 +112,7 @@
           </div>
           <button type="submit" id="generate-btn">Generate Video</button>
         </div>
+
         <div id="results-area">
           <h2>Log</h2>
           <div id="log-container"></div>
@@ -123,6 +124,8 @@
         </div>
       </div>
     </div>
+    </form>
+
   </div>
   <script src="script.js"></script>
 </body>
