@@ -146,7 +146,7 @@ def video_callback():
     return jsonify({"message": "Callback received", "data": data}), 200
 
 
-@app.route('/get_tones_data', methods=['GET'])
+@app.route('/api/get_tones_data', methods=['GET'])
 def get_tones_data():
     voice_tone_data = get_voice_tone_data()  # Use your actual voice data here
     return jsonify(voice_tone_data)
