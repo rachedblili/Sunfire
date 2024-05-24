@@ -36,9 +36,10 @@ document.addEventListener("DOMContentLoaded", function() {
             console.log('Fetched tones data:', data);
             tonesData = data;
             const toneSelect = document.getElementById('tone-select');
-            toneSelect.innerHTML = Object.keys(tonesData).map(tone =>
-                `<option value="${tone}">${tone}</option>`
-            ).join('');
+            toneSelect.innerHTML = '<option value="" disabled selected>Select One</option>' +
+                Object.keys(tonesData).map(tone =>
+                    `<option value="${tone}">${tone}</option>`
+                ).join('');
         })
         .catch(error => {
             console.error('Error fetching tones data:', error);
@@ -51,9 +52,10 @@ document.addEventListener("DOMContentLoaded", function() {
         const ageGenderOptions = getAgeGenderCombinations(tonesData[selectedTone]);
         console.log('Age-Gender Options:', ageGenderOptions);
         const ageGenderSelect = document.getElementById('age-gender-select');
-        ageGenderSelect.innerHTML = ageGenderOptions.map(option =>
-            `<option value="${option}">${option}</option>`
-        ).join('');
+        ageGenderSelect.innerHTML = '<option value="" disabled selected>Select One</option>' +
+            ageGenderOptions.map(option =>
+                `<option value="${option}">${option}</option>`
+            ).join('');
         ageGenderSelect.style.display = 'inline-block';
     });
 
