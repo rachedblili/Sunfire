@@ -21,14 +21,13 @@ def generate_unique_filename(prefix=""):
 s3 = boto3.client('s3')
 
 
-def generate_filter_complex(images, total_duration, pad_color="black"):
+def generate_filter_complex(images, total_duration):
     """
     Generates ffmpeg filter_complex string for transitions between images with padding.
 
     Args:
         images: List of dictionaries containing image information.
         total_duration: Total duration of the final video (seconds).
-        pad_color: The color to use for padding (defaults to black, specify hex code for colors).
 
     Returns:
         String containing the filter_complex command
@@ -49,12 +48,7 @@ def generate_filter_complex(images, total_duration, pad_color="black"):
         video_fades += "[%s][%d:v]xfade=duration=0.5:offset=%.3f[%s]; " % \
                        (last_fade_output, i + 1, video_length - 1, next_fade_output)
         last_fade_output = next_fade_output
-    return (video_fades, last_fade_output)
-    ## Audio graph:
-    # next_audio_output = "a%d%d" % (i, i + 1)
-    # audio_fades += "[%s][%d:a]acrossfade=d=1[%s]%s " % \
-    #    (last_audio_output, i + 1, next_audio_output, ";" if (i+1) < len(segments)-1 else "")
-    # last_audio_output = next_audio_output
+    return video_fades, last_fade_output
 
 
 def process_images_and_generate_video(session_data):
@@ -80,7 +74,7 @@ def process_images_and_generate_video(session_data):
             local_files = []
             for image in images:
                 bucket = image['bucket']
-                key = image['key']
+                key = image['s3_key']
                 local_path = os.path.join(tmp_dir, os.path.basename(key))
 
                 try:
@@ -101,16 +95,16 @@ def process_images_and_generate_video(session_data):
             # Output video file path
             filename = generate_unique_filename(prefix="video-")
             output_file = os.path.join(tmp_dir, f"{filename}.mp4")
-            firstIndex = 0
-            lastIndex = len(local_files) - 1
+            first_index = 0
+            last_index = len(local_files) - 1
             # Construct ffmpeg command
             cmd = ["ffmpeg"]
             for i, file in enumerate(local_files):
-                if i == firstIndex:
+                if i == first_index:
                     dur = duration_per_image + 0.5
-                elif i == lastIndex:
+                elif i == last_index:
                     dur = duration_per_image + 0.5
-                else :
+                else:
                     dur = duration_per_image + 1
                 cmd.extend([
                     "-loop", '1',
@@ -158,8 +152,8 @@ def process_images_and_generate_video(session_data):
             session_data['video_url'] = video_url
             if callback_url:
                 http = urllib3.PoolManager()
-                headers = { 'Content-Type': 'application/json' }
-                payload = { "session_data": session_data }
+                headers = {'Content-Type': 'application/json'}
+                payload = {"session_data": session_data}
                 response = http.request(
                     "POST",
                     callback_url,
@@ -193,13 +187,12 @@ def lambda_handler(event, context):
                 s3_objects = session_data.get('s3_objects')
                 video_data = session_data.get('video')
                 duration = video_data.get('duration')
-                fps = video_data.get('fps', 24)
-                aspect_ratio = video_data.get('aspect_ratio', '16:9')
                 output_bucket = session_data.get('write_bucket')
                 callback_url = session_data.get('callback_url')
 
                 if not s3_objects or not duration or not output_bucket or not callback_url:
-                    return {'statusCode': 400, 'body': json.dumps({'message': 'S3 objects, duration, output bucket, and callback URL must be provided'})}
+                    return {'statusCode': 400,
+                            'body': json.dumps({'message': 'S3 objects, duration, output bucket, and callback URL must be provided'})}
 
                 # Return success immediately after validation
                 response = {
@@ -220,7 +213,7 @@ def lambda_handler(event, context):
                 return {'statusCode': 400, 'body': json.dumps({'message': 'Invalid request body'})}
 
     except Exception as e:
-        print("BARFED:",str(e))
+        print("BARFED:", str(e))
         return {
             'statusCode': 500,
             'body': json.dumps({'message': str(e)})

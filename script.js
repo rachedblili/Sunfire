@@ -25,6 +25,47 @@ document.addEventListener("DOMContentLoaded", function() {
 
     clearContainers();
     var eventSource = new EventSource("/api/messages");
+
+        const platformSelect = document.getElementById('platform-select');
+    const videoContainer = document.getElementById('video-container');
+    const generatedVideo = document.getElementById('generated-video');
+
+    platformSelect.addEventListener('change', function() {
+        const selectedPlatform = platformSelect.value;
+
+        let aspectRatio;
+        switch (selectedPlatform) {
+            case 'youtube':
+                aspectRatio = { width: 1920, height: 1080 };
+                break;
+            case 'facebook':
+                aspectRatio = { width: 1280, height: 720 };
+                break;
+            case 'instagram':
+                aspectRatio = { width: 1080, height: 1920 };
+                break;
+            case 'tiktok':
+                aspectRatio = { width: 1080, height: 1920 };
+                break;
+            case 'twitter':
+                aspectRatio = { width: 1280, height: 720 };
+                break;
+            case 'television':
+                aspectRatio = { width: 1920, height: 1080 };
+                break;
+            default:
+                aspectRatio = { width: 1280, height: 720 };
+        }
+
+        const containerWidth = 500; // Adjust this as needed for your layout
+        const containerHeight = containerWidth * (aspectRatio.height / aspectRatio.width);
+
+        videoContainer.style.width = `${containerWidth}px`;
+        videoContainer.style.height = `${containerHeight}px`;
+        videoContainer.style.backgroundColor = '#f0f0f0'; // Slightly contrasted background
+        videoContainer.style.display = 'block';
+    });
+
     let tonesData;
 
     fetch('/api/get_tones_data')
@@ -85,7 +126,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     eventSource.onmessage = function(event) {
-        //console.log('Received message:', event.data);
+        console.log('Received message:', event.data);
         var messageParts = event.data.split(" : ");
         if (messageParts.length === 2) {
             var facility = messageParts[0];
