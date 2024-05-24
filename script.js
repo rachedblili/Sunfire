@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", function() {
     var eventSource = new EventSource("/api/messages");
     let tonesData;
 
-    fetch('/get_tones_data')
+    fetch('/api/get_tones_data')
         .then(response => response.json())
         .then(data => {
             tonesData = data;
