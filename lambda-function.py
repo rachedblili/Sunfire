@@ -57,7 +57,14 @@ def generate_filter_complex(images, total_duration, pad_color="black"):
     # last_audio_output = next_audio_output
 
 
-def process_images_and_generate_video(images, total_duration, fps, aspect_ratio, output_bucket, callback_url):
+def process_images_and_generate_video(session_data):
+    images = session_data.get('images')
+    video_data = session_data.get('video')
+    total_duration = video_data.get('duration')
+    fps = video_data.get('fps', 24)
+    aspect_ratio = video_data.get('aspect_ratio', '16:9')
+    output_bucket = session_data.get('write_bucket')
+    callback_url = session_data.get('callback_url')
     try:
         # Calculate duration per image
         num_images = len(images)
@@ -99,10 +106,10 @@ def process_images_and_generate_video(images, total_duration, fps, aspect_ratio,
             # Construct ffmpeg command
             cmd = ["ffmpeg"]
             for i, file in enumerate(local_files):
-                if i == firstIndex :
+                if i == firstIndex:
                     dur = duration_per_image + 0.5
-                elif i == lastIndex :
-                    dur = duration_per_image
+                elif i == lastIndex:
+                    dur = duration_per_image + 0.5
                 else :
                     dur = duration_per_image + 1
                 cmd.extend([
@@ -147,11 +154,12 @@ def process_images_and_generate_video(images, total_duration, fps, aspect_ratio,
                 ExpiresIn=3600  # URL expires in 1 hour
             )
             print(video_url)
-            # Post the video URL to the callback URL
+            # Add the video URL to session data and POST to the callback URL
+            session_data['video_url'] = video_url
             if callback_url:
                 http = urllib3.PoolManager()
                 headers = { 'Content-Type': 'application/json' }
-                payload = { "video_url": video_url }
+                payload = { "session_data": session_data }
                 response = http.request(
                     "POST",
                     callback_url,
@@ -171,14 +179,9 @@ def lambda_handler(event, context):
         if event.get('async'):
             # Asynchronous invocation
             print("ASYNCH EXECUTION")
-            s3_objects = event.get('s3_objects')
-            duration = event.get('duration')
-            fps = event.get('fps', 24)
-            aspect_ratio = event.get('aspect_ratio', '16:9')
-            output_bucket = event.get('output_bucket')
-            callback_url = event.get('callback_url')
+            session_data = event
 
-            process_images_and_generate_video(s3_objects, duration, fps, aspect_ratio, output_bucket, callback_url)
+            process_images_and_generate_video(session_data)
             return {'statusCode': 200}
 
         else:
@@ -186,13 +189,14 @@ def lambda_handler(event, context):
             print("INITIAL REQUEST")
             body = event.get('body')
             if body:
-                data = json.loads(body)
-                s3_objects = data.get('s3_objects')
-                duration = data.get('duration')
-                fps = data.get('fps', 24)
-                aspect_ratio = data.get('aspect_ratio', '16:9')
-                output_bucket = data.get('output_bucket')
-                callback_url = data.get('callback_url')
+                session_data = json.loads(body)
+                s3_objects = session_data.get('s3_objects')
+                video_data = session_data.get('video')
+                duration = video_data.get('duration')
+                fps = video_data.get('fps', 24)
+                aspect_ratio = video_data.get('aspect_ratio', '16:9')
+                output_bucket = session_data.get('write_bucket')
+                callback_url = session_data.get('callback_url')
 
                 if not s3_objects or not duration or not output_bucket or not callback_url:
                     return {'statusCode': 400, 'body': json.dumps({'message': 'S3 objects, duration, output bucket, and callback URL must be provided'})}
@@ -204,18 +208,11 @@ def lambda_handler(event, context):
                 }
 
                 # Continue processing asynchronously
+                session_data['async'] = True
                 boto3.client('lambda').invoke(
                     FunctionName=context.invoked_function_arn,
                     InvocationType='Event',
-                    Payload=json.dumps({
-                        's3_objects': s3_objects,
-                        'duration': duration,
-                        'fps': fps,
-                        'aspect_ratio': aspect_ratio,
-                        'output_bucket': output_bucket,
-                        'callback_url': callback_url,
-                        'async': True
-                    })
+                    Payload=json.dumps(session_data)
                 )
 
                 return response

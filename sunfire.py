@@ -12,29 +12,21 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 app.config['VIDEOS_FOLDER'] = 'videos/'
 
+# Set up environment
 load_dotenv()
-# Initialize S3 client
-s3 = get_s3_client()
+
 SOURCE_BUCKET_NAME = 'sunfire-source-bucket'
 DESTINATION_BUCKET_NAME = 'sunfire-destination-bucket'
 API_GATEWAY_URL = 'https://0h8a50ruye.execute-api.us-east-1.amazonaws.com/sunfire-generate-video-from-images'
 
-openai = get_openai_client()
 
-
-def call_api_gateway(s3_keys, total_duration, fps, aspect_ratio, bucket):
+def call_api_gateway(session_data):
     # scheme = request.headers.get('X-Forwarded-Proto', request.scheme)
     # host = request.headers.get('Host', request.host)
     callback_url = "http://54.166.183.35/api/video-callback"
+    session_data['callback_url'] = callback_url
     print("CALLBACK: ", callback_url)
-    payload = {
-        's3_objects': s3_keys,
-        'duration': total_duration,
-        'fps': fps,
-        'aspect_ratio': aspect_ratio,
-        'output_bucket': bucket,
-        'callback_url': callback_url
-    }
+    payload = session_data
     response = requests.post(API_GATEWAY_URL, json=payload)
     print(response)
     if response.status_code == 200:
@@ -57,8 +49,21 @@ def modify_images(images):
 
 @app.route('/api/generate-video', methods=['POST'])
 def generate_video():
+    # Initialize S3 client
+    s3 = get_s3_client()
+
+    # Initialize OpenAI client
+    openai = get_openai_client()
 
     logger('log', 'Data Received.  Examining data...')
+    session_data = {
+        'company_name': request.form.get('company-name'),
+        'company_url': request.form.get('company-url'),
+        'press_release': request.form.get('press-release'),
+        'tone_age_gender': request.form.get('tone_age_gender'),
+        'mood': request.form.get('mood')
+    }
+
     # Get the uploaded images from the request
     image_files = request.files.getlist('images')
     print("Image Files:", image_files)
@@ -107,16 +112,20 @@ def generate_video():
     for item in modified_images:
         s3_keys.append({'bucket': item['bucket'], 'key': item['s3_key']})
 
-    print("FINAL S3 Keys:", s3_keys)
+    # print("FINAL S3 Keys:", s3_keys)
     logger('log', 'Generating the video...')
     # Define video parameters
-    total_duration = 30  # Total duration of the video
-    fps = 24  # Frames per second
-    aspect_ratio = '16:9'  # Aspect ratio of the video
+    video_data = {
+        'duration': 30,
+        'fps': 24,
+        'aspect_ratio': '16:9',
+    }
+    session_data['video'] = video_data
+    session_data['images'] = modified_images
+    session_data['s3_objects'] = s3_keys
+    session_data['write_bucket'] = DESTINATION_BUCKET_NAME
     # Call the API Gateway to process the video
-    api_response = call_api_gateway(
-            s3_keys, total_duration, fps, 
-            aspect_ratio, DESTINATION_BUCKET_NAME)
+    api_response = call_api_gateway(session_data)
     if api_response:
         return jsonify({'message': 'Video generation initiated'}), 200
     else:
@@ -137,7 +146,8 @@ def video_callback():
 
     data = request.get_json()
     print(f"JSON data: {data}")
-    video_url = data.get('video_url')
+    session_data = data.get('session_data')
+    video_url = session_data.get('video_url')
 
     if video_url:
         # Emit the video URL to all connected clients
