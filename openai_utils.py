@@ -81,6 +81,7 @@ def describe_and_recommend(client, images, url_maker):
                                    "using symmetrical scaling. Use padding to achieve the desired dimensions. Return "
                                    "the operations (scale, pad) in the correct order. Output should have Standard HD "
                                    "resolution."
+                                   "**DO NOT DISTORT THE IMAGE. SCALE BOTH DIMENSIONS SYMMETRICALLY.**"
                     },
                     {
                         "role": "user",
