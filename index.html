@@ -73,50 +73,54 @@
       </div>
     </div>
 
-    <div class="card">
-      <h2>Video Settings</h2>
-      <div class="form-group">
-        <label for="tone-select">Narration Tone and Style</label>
-        <select id="tone-select" name="tone" required>
-            <!-- Options will be populated by JavaScript -->
-        </select>
-        <select id="age-gender-select" name="age_gender" style="visibility:hidden; width:200px;">
-            <!-- Options will be populated by JavaScript -->
-        </select>
+    <div id="main-content">
+      <div id="left-panel">
+        <div class="card">
+          <h2>Video Settings</h2>
+          <div class="form-group">
+            <label for="tone-select">Narration Tone and Style</label>
+            <select id="tone-select" name="tone" required>
+                <!-- Options will be populated by JavaScript -->
+            </select>
+            <select id="age-gender-select" name="age_gender" style="visibility:hidden; width:200px;">
+                <!-- Options will be populated by JavaScript -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="mood-select">Music Mood</label>
+            <select id="mood-select" name="mood" required>
+                <option value="" disabled selected>Select One</option>
+                <option value="ai">Choose for Me</option>
+                <option value="energetic-positive">Energetic and Positive</option>
+                <option value="relaxed-soothing">Relaxed and Soothing</option>
+                <option value="uplifting-motivational">Uplifting and Motivational</option>
+                <option value="professional-polished">Professional and Polished</option>
+                <option value="intense-powerful">Intense and Powerful</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="platform-select">Where do you want to display your video? (Choose one)</label>
+            <select id="platform-select" name="platform" required>
+                <option value="" disabled selected>Choose one</option>
+                <option value="youtube">YouTube</option>
+                <option value="facebook">Facebook</option>
+                <option value="instagram">Instagram</option>
+                <option value="tiktok">TikTok</option>
+                <option value="twitter">Twitter/X</option>
+                <option value="television">Television</option>
+            </select>
+          </div>
+          <button type="submit" id="generate-btn">Generate Video</button>
+        </div>
+        <div id="results-area">
+          <h2>Log</h2>
+          <div id="log-container"></div>
+        </div>
       </div>
-      <div class="form-group">
-        <label for="mood-select">Music Mood</label>
-        <select id="mood-select" name="mood" required>
-            <option value="" disabled selected>Select One</option>
-            <option value="ai">Choose for Me</option>
-            <option value="energetic-positive">Energetic and Positive</option>
-            <option value="relaxed-soothing">Relaxed and Soothing</option>
-            <option value="uplifting-motivational">Uplifting and Motivational</option>
-            <option value="professional-polished">Professional and Polished</option>
-            <option value="intense-powerful">Intense and Powerful</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="platform-select">Where do you want to display your video? (Choose one)</label>
-        <select id="platform-select" name="platform" required>
-            <option value="" disabled selected>Choose one</option>
-            <option value="youtube">YouTube</option>
-            <option value="facebook">Facebook</option>
-            <option value="instagram">Instagram</option>
-            <option value="tiktok">TikTok</option>
-            <option value="twitter">Twitter/X</option>
-            <option value="television">Television</option>
-        </select>
-      </div>
-    </div>
-
-    <button type="submit" id="generate-btn">Generate Video</button>
-
-    <div class="card" id="results-area">
-      <h2>Results</h2>
-      <div id="log-container"></div>
-      <div id="video-container" style="display: none;">
-        <video id="generated-video" controls></video>
+      <div id="right-panel">
+        <div id="video-container" style="display: none;">
+          <video id="generated-video" controls></video>
+        </div>
       </div>
     </div>
   </div>
