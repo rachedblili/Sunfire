@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function() {
             tonesData = data;
             const toneSelect = document.getElementById('tone-select');
             toneSelect.innerHTML = Object.keys(tonesData).map(tone =>
-                `<option value="${tone}">${tone.charAt(0).toUpperCase() + tone.slice(1)}</option>`
+                `<option value="${tone}">${tone}</option>`
             ).join('');
         })
         .catch(error => {
@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
 
     document.getElementById('tone-select').addEventListener('change', function() {
-        const selectedTone = this.value.toLowerCase(); // Ensure selected tone is in lowercase
+        const selectedTone = this.value
         console.log('Selected tone:', selectedTone);
         console.log('Available tones data:', tonesData);
         const ageGenderOptions = getAgeGenderCombinations(tonesData[selectedTone]);
