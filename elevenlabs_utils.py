@@ -102,6 +102,8 @@ def get_voice_tone_data():
         tone: [use_cases[use_case] for use_case in use_case_list]
         for tone, use_case_list in tones_to_use_cases.items()
     }
+    # Remove empty branches
+    tones_to_use_cases_refs = {tone: refs for tone, refs in tones_to_use_cases_refs.items() if refs}
 
     return tones_to_use_cases_refs
 
