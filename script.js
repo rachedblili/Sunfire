@@ -39,6 +39,7 @@ document.addEventListener("DOMContentLoaded", function() {
             toneSelect.innerHTML = Object.keys(tonesData).map(tone =>
                 `<option value="${tone}">${tone.charAt(0).toUpperCase() + tone.slice(1)}</option>`
             ).join('');
+        })
         .catch(error => {
             console.error('Error fetching tones data:', error);
         });
