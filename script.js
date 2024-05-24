@@ -193,11 +193,12 @@ function previewImages() {
 }
 
 // Move image left or right
+// Move image left or right
 imageShelf.addEventListener('click', (e) => {
   if (e.target.classList.contains('move-left')) {
-    moveImageLeft(e.target.parentElement);
+    moveImageLeft(e.target.closest('.image-container')); // Adjusted to find the closest .image-container
   } else if (e.target.classList.contains('move-right')) {
-    moveImageRight(e.target.parentElement);
+    moveImageRight(e.target.closest('.image-container')); // Adjusted to find the closest .image-container
   }
 });
 
@@ -237,6 +238,7 @@ function updateButtonStates() {
     moveRight.disabled = index === imageContainers.length - 1 || container.querySelector('.image-preview').src === '';
   });
 }
+
 
 
 
