@@ -66,22 +66,17 @@
           </select>
       </div>
 
-      <div class="radio-container">
-        <label>Music Mood</label>
-        <div class="radio-group">
-          <label>
-            <input type="radio" name="mood" value="upbeat" required>
-            Upbeat
-          </label>
-          <label>
-            <input type="radio" name="mood" value="calm">
-            Calm
-          </label>
-          <label>
-            <input type="radio" name="mood" value="inspirational">
-            Inspirational
-          </label>
-        </div>
+      <div class="dropdown-container">
+          <label for="mood-select">Music Mood</label>
+          <select id="mood-select" name="mood" required>
+              <option value="" disabled selected>Select One</option>
+              <option value="ai">Choose for Me</option>
+              <option value="energetic-positive">Energetic and Positive</option>
+              <option value="relaxed-soothing">Relaxed and Soothing</option>
+              <option value="uplifting-motivational">Uplifting and Motivational</option>
+              <option value="professional-polished">Professional and Polished</option>
+              <option value="intense-powerful">Intense and Powerful</option>
+          </select>
       </div>
     </div>
       <button type="submit" id="generate-btn">Generate Video</button>
