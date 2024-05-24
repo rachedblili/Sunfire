@@ -98,10 +98,11 @@ def get_voice_tone_data():
             use_cases[use_case].append(voice_info)
 
     # Replace use case names in tones_to_use_cases with references to use_cases entries
-    tones_to_use_cases_refs = {
-        tone: [use_cases[use_case] for use_case in use_case_list]
-        for tone, use_case_list in tones_to_use_cases.items()
-    }
+    tones_to_use_cases_refs = {tone: [] for tone in tones_to_use_cases}
+
+    for tone, use_case_list in tones_to_use_cases.items():
+        for use_case in use_case_list:
+            tones_to_use_cases_refs[tone].extend(use_cases[use_case])
     # Remove empty branches
     tones_to_use_cases_refs = {tone: refs for tone, refs in tones_to_use_cases_refs.items() if refs}
 
