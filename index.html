@@ -34,29 +34,39 @@
         <div id="image-shelf">
           <div class="image-container">
             <img src="" alt="Image Preview" class="image-preview">
-            <button class="move-left" disabled>&larr;</button>
-            <button class="move-right">&rarr;</button>
+            <div class="button-container">
+              <button class="move-left" disabled>&larr;</button>
+              <button class="move-right">&rarr;</button>
+            </div>
           </div>
           <!-- Add four more empty image containers -->
           <div class="image-container">
             <img src="" alt="Image Preview" class="image-preview">
-            <button class="move-left" disabled>&larr;</button>
-            <button class="move-right">&rarr;</button>
+            <div class="button-container">
+              <button class="move-left" disabled>&larr;</button>
+              <button class="move-right">&rarr;</button>
+            </div>
           </div>
           <div class="image-container">
             <img src="" alt="Image Preview" class="image-preview">
-            <button class="move-left" disabled>&larr;</button>
-            <button class="move-right">&rarr;</button>
+            <div class="button-container">
+              <button class="move-left" disabled>&larr;</button>
+              <button class="move-right">&rarr;</button>
+            </div>
           </div>
           <div class="image-container">
             <img src="" alt="Image Preview" class="image-preview">
-            <button class="move-left" disabled>&larr;</button>
-            <button class="move-right">&rarr;</button>
+            <div class="button-container">
+              <button class="move-left" disabled>&larr;</button>
+              <button class="move-right">&rarr;</button>
+            </div>
           </div>
           <div class="image-container">
             <img src="" alt="Image Preview" class="image-preview">
-            <button class="move-left" disabled>&larr;</button>
-            <button class="move-right" disabled>&rarr;</button>
+            <div class="button-container">
+              <button class="move-left" disabled>&larr;</button>
+              <button class="move-right" disabled>&rarr;</button>
+            </div>
           </div>
           <input type="file" id="image-input" name="images" accept="image/*" multiple>
         </div>
@@ -68,6 +78,9 @@
       <div class="form-group">
         <label for="tone-select">Narration Tone and Style</label>
         <select id="tone-select" name="tone" required>
+            <!-- Options will be populated by JavaScript -->
+        </select>
+        <select id="age-gender-select" name="age_gender" style="visibility:hidden; width:200px;">
             <!-- Options will be populated by JavaScript -->
         </select>
       </div>

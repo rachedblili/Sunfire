@@ -104,6 +104,18 @@ button:hover:not(:disabled) {
   background-color: #45a049;
 }
 
+button.move-left, button.move-right {
+  margin: 0;
+  padding: 5px 10px;
+  width: 48%;
+}
+
+.image-container .button-container {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
 #results-area {
   margin-top: 30px;
 }
