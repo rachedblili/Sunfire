@@ -7,17 +7,20 @@ from io import BytesIO
 import requests
 import json
 
-ELEVENLABS_API_KEY="fc0d74a3906f94edeb26a2e7619a142e"
-#ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
-client = ElevenLabs(
-    api_key=ELEVENLABS_API_KEY,
-)
+
+
+
+def get_client():
+    ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
+    client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
+    return client
+
 
 def text_to_speech_stream(text: str, voice: str) -> IO[bytes]:
     # Perform the text-to-speech conversion
     response = client.text_to_speech.convert(
-        #voice_id="pNInz6obpgDQGcFmaJgB", # Adam pre-made voice
-        #voice_id="XrExE9yKIg1WjnnlVkGX", # Friendly American Female
+        # voice_id="pNInz6obpgDQGcFmaJgB", # Adam pre-made voice
+        # voice_id="XrExE9yKIg1WjnnlVkGX", # Friendly American Female
         voice_id=voice,
         optimize_streaming_latency="0",
         output_format="mp3_22050_32",

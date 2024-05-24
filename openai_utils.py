@@ -6,8 +6,7 @@ from messaging_utils import logger
 
 def get_openai_client():
     # Initialize OpenAI client
-    OPENAI_API_KEY = os.environ.get('OPENAI_KEY')
-    return OpenAI(api_key=OPENAI_API_KEY)
+    return OpenAI(api_key=os.environ.get('OPENAI_KEY'))
 
 
 def describe_and_recommend(client, images, url_maker):
@@ -126,19 +125,14 @@ def generic_query(client, messages: list, response_type: str = 'txt'):
 def create_narration(client, data):
     duration = data['duration']
     images = data['images']
-    messages = []
-    messages.append(
-        {
-            "role": "system",
-            "content": "You are the assistant. Your job is to be a script writer for short videos. You only respond "
-                       "with the text of the requested narration. Your response will be parsed by a script and should "
-                       "have no formatting characters or extraneous artifacts. "
-        }
-    )
-    messages.append(
-        {
-            "role": "user",
-            "content": """
+    messages = [{
+        "role": "system",
+        "content": "You are the assistant. Your job is to be a script writer for short videos. You only respond "
+                   "with the text of the requested narration. Your response will be parsed by a script and should "
+                   "have no formatting characters or extraneous artifacts. "
+    }, {
+        "role": "user",
+        "content": """
                 Please generate a narrative for me.
                 
                 [General Instructions] 
@@ -151,16 +145,12 @@ def create_narration(client, data):
 
                 [HARD REQUIREMENTS] The narrative should fit inside the allotted 28 seconds. That means your 
                 narrative must be about 65 words long. DO NOT EXCEED 68 words!"""
-        }
-    )
-    messages.append(
-        {
-            "role": "user",
-            "content": f"""
+    }, {
+        "role": "user",
+        "content": f"""
                 [Overall Topic of the Video]
                 {data['topic']}"""
-        }
-    )
+    }]
 
     # Construct video section
     video_section = ["[Image Sequence, duration and descriptions]"]

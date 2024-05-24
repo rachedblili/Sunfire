@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, Response
 import os
+from dotenv import load_dotenv
 from s3_utils import get_s3_client, upload_images_from_disk_to_s3
 from openai_utils import get_openai_client, describe_and_recommend
 import requests
@@ -10,13 +11,14 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 app.config['VIDEOS_FOLDER'] = 'videos/'
 
+load_dotenv()
 # Initialize S3 client
 s3 = get_s3_client()
 SOURCE_BUCKET_NAME = 'sunfire-source-bucket'
 DESTINATION_BUCKET_NAME = 'sunfire-destination-bucket'
 API_GATEWAY_URL = 'https://0h8a50ruye.execute-api.us-east-1.amazonaws.com/sunfire-generate-video-from-images'
 
-client = get_openai_client()
+openai = get_openai_client()
 
 
 def call_api_gateway(s3_keys, total_duration, fps, aspect_ratio, bucket):
@@ -85,7 +87,7 @@ def generate_video():
 
     # Analyze our images
     logger('log', 'Launching Image Analysis...')
-    images = describe_and_recommend(client, images, s3.generate_presigned_url)
+    images = describe_and_recommend(openai, images, s3.generate_presigned_url)
 
     for image in images:
         print(f"Image: {image['filename']}")
