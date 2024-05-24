@@ -94,7 +94,7 @@ def get_voice_tone_data():
         }
 
         use_case = voice['labels'].get('use case')
-        if use_case in use_cases:
+        if use_case and use_case in use_cases:
             use_cases[use_case].append(voice_info)
 
     # Replace use case names in tones_to_use_cases with references to use_cases entries

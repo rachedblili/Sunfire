@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", function() {
     var eventSource = new EventSource("/api/messages");
     let tonesData;
 
-    fetch('/api/get_tones_data')
+    fetch('/get_tones_data')
         .then(response => response.json())
         .then(data => {
             tonesData = data;
@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
 
     document.getElementById('tone-select').addEventListener('change', function() {
-        const selectedTone = this.value;
+        const selectedTone = this.value.toLowerCase(); // Ensure selected tone is in lowercase
         const ageGenderOptions = getAgeGenderCombinations(tonesData[selectedTone]);
         const ageGenderSelect = document.getElementById('age-gender-select');
         ageGenderSelect.innerHTML = ageGenderOptions.map(option =>
@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     document.getElementById('age-gender-select').addEventListener('change', function() {
-        const toneSelect = document.getElementById('tone-select').value;
+        const toneSelect = document.getElementById('tone-select').value.toLowerCase();
         const ageGenderSelect = this.value;
         const formInput = document.createElement('input');
         formInput.type = 'hidden';
@@ -60,8 +60,10 @@ document.addEventListener("DOMContentLoaded", function() {
     function getAgeGenderCombinations(voices) {
         const combinations = new Set();
         voices.forEach(voice => {
-            const combination = `${voice.age} ${voice.gender}`;
-            combinations.add(combination);
+            if (voice.age && voice.gender) { // Check for non-empty age and gender
+                const combination = `${voice.age} ${voice.gender}`;
+                combinations.add(combination);
+            }
         });
         return Array.from(combinations).sort();
     }
