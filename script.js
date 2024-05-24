@@ -28,18 +28,27 @@ document.addEventListener("DOMContentLoaded", function() {
     let tonesData;
 
     fetch('/api/get_tones_data')
-        .then(response => response.json())
+        .then(response => {
+            console.log('Fetch response:', response);
+            return response.json();
+        })
         .then(data => {
+            console.log('Fetched tones data:', data);
             tonesData = data;
             const toneSelect = document.getElementById('tone-select');
             toneSelect.innerHTML = Object.keys(tonesData).map(tone =>
                 `<option value="${tone}">${tone.charAt(0).toUpperCase() + tone.slice(1)}</option>`
             ).join('');
+        .catch(error => {
+            console.error('Error fetching tones data:', error);
         });
 
     document.getElementById('tone-select').addEventListener('change', function() {
         const selectedTone = this.value.toLowerCase(); // Ensure selected tone is in lowercase
+        console.log('Selected tone:', selectedTone);
+        console.log('Available tones data:', tonesData);
         const ageGenderOptions = getAgeGenderCombinations(tonesData[selectedTone]);
+        console.log('Age-Gender Options:', ageGenderOptions);
         const ageGenderSelect = document.getElementById('age-gender-select');
         ageGenderSelect.innerHTML = ageGenderOptions.map(option =>
             `<option value="${option}">${option}</option>`
@@ -58,6 +67,10 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     function getAgeGenderCombinations(voices) {
+        if (!voices) {
+            console.error('Voices data is undefined or null');
+            return [];
+        }
         const combinations = new Set();
         voices.forEach(voice => {
             if (voice.age && voice.gender) { // Check for non-empty age and gender
