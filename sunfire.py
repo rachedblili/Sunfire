@@ -152,7 +152,7 @@ def generate_video():
     # Generate the narrative for the video
     logger('log', 'Generating the narration script...')
     narration_script = create_narration(openai, session_data)
-    print("Script: ", narration_script)
+    print("Script: ",narration_script)
     session_data['narration_script'] = narration_script
 
     logger('log', 'Choosing a voice...')
