@@ -73,6 +73,7 @@ def get_voice_tone_data():
         for tone, cases in tones_to_use_cases.items():
             if use_case in cases:
                 tones_details[tone]['voices'].append(voice_info)
+                print(f'Adding {voice_info['age']} {voice_info['gender']} to {tone} because it has {use_case}')
                 tones_details[tone]['age_gender'].add(f"{voice_info['age']} {voice_info['gender']}")
 
     # Convert age_gender sets to sorted lists
