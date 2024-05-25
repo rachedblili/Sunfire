@@ -112,6 +112,7 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .then(data => {
             tonesData = data;
+            console.log("Received tonesData:", tonesData);  // Check the structure
             const toneSelect = document.getElementById('tone-select');
             toneSelect.innerHTML = '<option value="" disabled selected>Select One</option>' +
                 Object.keys(tonesData).map(tone =>
@@ -124,7 +125,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
     document.getElementById('tone-select').addEventListener('change', function() {
         const selectedTone = this.value;
+        console.log("Selected tone:", selectedTone);
         const ageGenderOptions = tonesData[selectedTone]['age_gender']; // Directly use 'age_gender' from the new data structure
+        console.log("Age/Gender options for selected tone:", ageGenderOptions);
         const ageGenderSelect = document.getElementById('age-gender-select');
         ageGenderSelect.innerHTML = '<option value="" disabled selected>Select One</option>' +
             ageGenderOptions.map(option =>
