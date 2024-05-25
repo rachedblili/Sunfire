@@ -83,8 +83,18 @@ def generic_query(client, messages: list, response_type: str = 'txt'):
         model='gpt-4o',
         messages=messages,
         max_tokens=800)
-    return json.loads(response.choices[0].message.content)
+    content = response.choices[0].message.content
 
+    if response_type == 'json':
+        try:
+            # Try parsing as JSON if needed, useful if content is expected to be in JSON format sometimes
+            return json.loads(content)
+        except json.JSONDecodeError:
+            # Handle cases where the content isn't valid JSON
+            return {'error': 'Content is not valid JSON', 'content': content}
+    elif response_type == 'txt':
+        # Return content as plain text
+        return content
 
 
 def create_narration(client, session_data):
