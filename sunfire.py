@@ -107,7 +107,6 @@ def generate_video():
         print(f"Image: {image['filename']}")
         print(f"S3: {image['s3_key']}")
         print(f"Description: {image['description']}")
-        print(f"Strategy: {image['strategy']}")
 
     # Modify the images according to the AI suggestions
     logger('log', 'Modifying Images...')
