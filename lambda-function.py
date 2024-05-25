@@ -95,14 +95,10 @@ def process_images_and_generate_video(session_data):
             # Output video file path
             filename = generate_unique_filename(prefix="video-")
             output_file = os.path.join(tmp_dir, f"{filename}.mp4")
-            first_index = 0
-            last_index = len(local_files) - 1
             # Construct ffmpeg command
             cmd = ["ffmpeg"]
             for i, file in enumerate(local_files):
-                if i == first_index:
-                    dur = duration_per_image + 0.5
-                elif i == last_index:
+                if i == 0:
                     dur = duration_per_image + 0.5
                 else:
                     dur = duration_per_image + 1
