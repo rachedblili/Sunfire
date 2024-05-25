@@ -1,9 +1,6 @@
 import os
-from elevenlabs import VoiceSettings
 from elevenlabs import save
 from elevenlabs.client import ElevenLabs
-from typing import IO
-from io import BytesIO
 import requests
 import json
 
@@ -26,10 +23,11 @@ def text_to_speech(client, session_data):
         voice=session_data['voice']['name'],
         model="eleven_multilingual_v2"
     )
-    filename = f'{session_data['company_name']}_{voice}_narration.mp3'
+    filename = f'{session_data['company_name']}_{session_data['voice']['name']}_narration.mp3'
     dir_name = session_data['audio']['local_dir']
-    save(audio,f'{dir_name}/{filename}')
-    return({'filename': filename})
+    save(audio, f'{dir_name}/{filename}')
+    return {'filename': filename}
+
 
 def dump_voice_stats():
     url = "https://api.elevenlabs.io/v1/voices"
@@ -60,11 +58,7 @@ def get_voice_tone_data():
         "Energetic": ["video games", "animation", "characters"]
     }
 
-    # Initialize detailed dictionary to store tones with a consolidated list of voices and age/gender combinations
-    tones_details = {tone: {'voices': [], 'age_gender': []} for tone in tones_to_use_cases}
-
-    # Set to collect unique age/gender combinations for each tone
-    age_gender_combinations = {tone: set() for tone in tones_to_use_cases}
+    tones_details = {tone: {'voices': [], 'age_gender': set()} for tone in tones_to_use_cases}
 
     for voice in voice_data:
         voice_info = {
@@ -75,17 +69,18 @@ def get_voice_tone_data():
             "gender": normalize_attribute(voice['labels'].get('gender', '')),
             "age": normalize_attribute(voice['labels'].get('age', ''))
         }
-
-        # Determine which tone(s) the voice belongs to based on its use case
         use_case = voice['labels'].get('use case')
         for tone, cases in tones_to_use_cases.items():
             if use_case in cases:
                 tones_details[tone]['voices'].append(voice_info)
-                age_gender_combinations[tone].add(f"{voice_info['age']} {voice_info['gender']}")
+                tones_details[tone]['age_gender'].add(f"{voice_info['age']} {voice_info['gender']}")
 
-    # Assign the unique age/gender combinations to each tone
+    # Convert age_gender sets to sorted lists
     for tone in tones_details:
-        tones_details[tone]['age_gender'] = sorted(age_gender_combinations[tone])
+        tones_details[tone]['age_gender'] = sorted(tones_details[tone]['age_gender'])
+
+        # Debug: Print age_gender combinations for each tone
+        print(f"{tone}: Age/Gender combinations: {tones_details[tone]['age_gender']}")
 
     return tones_details
 
@@ -124,4 +119,3 @@ def find_voices(tone, age, gender):
     ]
 
     return matching_voices
-
