@@ -3,6 +3,7 @@ from elevenlabs import save
 from elevenlabs.client import ElevenLabs
 import requests
 import json
+import time
 
 
 def get_elevenlabs_client():
@@ -23,6 +24,7 @@ def text_to_speech(client, session_data):
         voice=session_data['voice']['name'],
         model="eleven_multilingual_v2"
     )
+    time.sleep(10)
     filename = f'{session_data['company_name']}_{session_data['voice']['name']}_narration.mp3'
     dir_name = session_data['audio']['local_dir']
     save(audio, f'{dir_name}/{filename}')
