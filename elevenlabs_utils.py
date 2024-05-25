@@ -103,8 +103,10 @@ def find_voices(tone, age, gender):
     print("****************************************")
     print("Looking for: ", tone, age, gender)
     tones_data = get_voice_tone_data()
+    print(tones_data)
     # Check if the selected tone is in the data structure
     if tone not in tones_data:
+        print("Couldn't find tone: ", tone)
         return []  # Return an empty list if the tone is not found
 
     # Retrieve the list of all voices under the selected tone
