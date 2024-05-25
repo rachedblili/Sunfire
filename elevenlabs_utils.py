@@ -100,10 +100,9 @@ def find_voices(tone, age, gender):
     Returns:
         list: A list of dictionaries, each representing a voice that matches the criteria.
     """
-    print("****************************************")
+    tone = tone.capitalize()
     print("Looking for: ", tone, age, gender)
     tones_data = get_voice_tone_data()
-    print(tones_data)
     # Check if the selected tone is in the data structure
     if tone not in tones_data:
         print("Couldn't find tone: ", tone)
