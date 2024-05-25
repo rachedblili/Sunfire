@@ -70,9 +70,15 @@ def modify_image(image_path, desired_width, desired_height, pad_color, output_pa
     new_height = int(original_height * scaling_factor)
 
     image = image.resize((new_width, new_height), Image.LANCZOS)
+    # Try to fill transparency
+    if image.mode in ('RGBA', 'LA') or (image.mode == 'P' and 'transparency' in image.info):
+        background = Image.new(image.mode[:-1], image.size, pad_color)
+        background.paste(image, image.split()[-1])  # Paste using alpha channel as mask
+        image = background
 
     # Create a new image with the desired dimensions
     new_img = Image.new("RGB", (desired_width, desired_height), hex_to_rgb(pad_color))
+
 
     # Calculate the position to paste the scaled image
     paste_x = (desired_width - new_width) // 2
