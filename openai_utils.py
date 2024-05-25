@@ -38,6 +38,10 @@ def describe_and_recommend(client, images, url_maker):
                     "content": "EXPLICIT REQUIREMENT: Legal output key names: color, dimensions, height, width, content"
                 },
                 {
+                    "role": "system",
+                    "content": "EXPLICIT REQUIREMENT: COLOR MUST BE IN HEX FORMAT (eg #FF5733)"
+                },
+                {
                     "role": "user",
                     "content": "Examine the given image and describe the dominant colour, the dimensions, and content."
                 },
