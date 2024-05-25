@@ -64,6 +64,7 @@ def modify_image(image_path, desired_width, desired_height, pad_color, output_pa
 
     # Calculate the scaling factor
     scaling_factor = min(desired_width / original_width, desired_height / original_height)
+    scaling_factor = min(scaling_factor, 1.5)  # Cap the scaling factor at 1.5
 
     # Calculate the new size after scaling
     new_width = int(original_width * scaling_factor)
