@@ -1,9 +1,9 @@
 import os
-from elevenlabs import save
+from elevenlabs import save, VoiceSettings
 from elevenlabs.client import ElevenLabs
 import requests
 import json
-import time
+from io import BytesIO
 
 
 def get_elevenlabs_client():
@@ -19,16 +19,37 @@ def get_voice_data():
 
 
 def text_to_speech(client, session_data):
-    audio = client.generate(
-        text=session_data['narration_script'],
-        voice=session_data['voice']['name'],
-        model="eleven_multilingual_v2"
-    )
-    time.sleep(10)
     filename = f'{session_data['company_name']}_{session_data['voice']['name']}_narration.mp3'
     dir_name = session_data['audio']['local_dir']
-    save(audio, f'{dir_name}/{filename}')
+
+    # Perform the text-to-speech conversion
+    response = client.text_to_speech.convert(
+        voice_id=session_data['voice']['voice_id'],
+        optimize_streaming_latency="0",
+        output_format="mp3_22050_32",
+        text=session_data['narration_script'],
+        model_id="eleven_multilingual_v2",
+        voice_settings=VoiceSettings(
+            stability=0.0,
+            similarity_boost=1.0,
+            style=0.0,
+            use_speaker_boost=True,
+        ),
+    )
+
+    # Create a BytesIO object to hold the audio data in memory
+    audio_stream = BytesIO()
+
+    # Write each chunk of audio data to the stream
+    for chunk in response:
+        if chunk:
+            audio_stream.write(chunk)
+
+    # Reset stream position to the beginning
+    audio_stream.seek(0)
+    save(audio_stream, f'{dir_name}/{filename}')
     return {'filename': filename}
+
 
 
 def dump_voice_stats():
