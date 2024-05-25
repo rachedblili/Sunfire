@@ -83,10 +83,8 @@ def generic_query(client, messages: list, response_type: str = 'txt'):
         model='gpt-4o',
         messages=messages,
         max_tokens=800)
-    if response_type == 'json':
-        return json.loads(response.choices[0].message.content)
-    elif response_type == 'txt':
-        return response
+    return json.loads(response.choices[0].message.content)
+
 
 
 def create_narration(client, session_data):
