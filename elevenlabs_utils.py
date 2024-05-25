@@ -1,5 +1,6 @@
 import os
 from elevenlabs import VoiceSettings
+from elevenlabs import save
 from elevenlabs.client import ElevenLabs
 from typing import IO
 from io import BytesIO
@@ -7,7 +8,7 @@ import requests
 import json
 
 
-def get_client():
+def get_elevenlabs_client():
     client = ElevenLabs(api_key=os.getenv("ELEVENLABS_API_KEY"))
     return client
 
@@ -19,37 +20,16 @@ def get_voice_data():
     return d['voices']
 
 
-def text_to_speech_stream(client, text: str, voice: str) -> IO[bytes]:
-    # Perform the text-to-speech conversion
-    response = client.text_to_speech.convert(
-        # voice_id="pNInz6obpgDQGcFmaJgB", # Adam pre-made voice
-        # voice_id="XrExE9yKIg1WjnnlVkGX", # Friendly American Female
-        voice_id=voice,
-        optimize_streaming_latency="0",
-        output_format="mp3_22050_32",
-        text=text,
-        model_id="eleven_multilingual_v2",
-        voice_settings=VoiceSettings(
-            stability=0.0,
-            similarity_boost=1.0,
-            style=0.0,
-            use_speaker_boost=True,
-        ),
+def text_to_speech(client, session_data):
+    audio = client.generate(
+        text=session_data['narration_script'],
+        voice=session_data['voice']['name'],
+        model="eleven_multilingual_v2"
     )
-
-    # Create a BytesIO object to hold the audio data in memory
-    audio_stream = BytesIO()
-
-    # Write each chunk of audio data to the stream
-    for chunk in response:
-        if chunk:
-            audio_stream.write(chunk)
-
-    # Reset stream position to the beginning
-    audio_stream.seek(0)
-    # Return the stream for further use
-    return audio_stream
-
+    filename = f'{session_data['company_name']}_{voice}_narration.mp3'
+    dir_name = session_data['audio']['local_dir']
+    save(audio,f'{dir_name}/{filename}')
+    return({'filename': filename})
 
 def dump_voice_stats():
     url = "https://api.elevenlabs.io/v1/voices"
@@ -80,8 +60,11 @@ def get_voice_tone_data():
         "Energetic": ["video games", "animation", "characters"]
     }
 
-    # Initialize use_cases dictionary based on tones_to_use_cases values
-    use_cases = {use_case: [] for tone in tones_to_use_cases.values() for use_case in tone}
+    # Initialize detailed dictionary to store tones with a consolidated list of voices and age/gender combinations
+    tones_details = {tone: {'voices': [], 'age_gender': []} for tone in tones_to_use_cases}
+
+    # Set to collect unique age/gender combinations for each tone
+    age_gender_combinations = {tone: set() for tone in tones_to_use_cases}
 
     for voice in voice_data:
         voice_info = {
@@ -93,20 +76,18 @@ def get_voice_tone_data():
             "age": normalize_attribute(voice['labels'].get('age', ''))
         }
 
+        # Determine which tone(s) the voice belongs to based on its use case
         use_case = voice['labels'].get('use case')
-        if use_case and use_case in use_cases:
-            use_cases[use_case].append(voice_info)
+        for tone, cases in tones_to_use_cases.items():
+            if use_case in cases:
+                tones_details[tone]['voices'].append(voice_info)
+                age_gender_combinations[tone].add(f"{voice_info['age']} {voice_info['gender']}")
 
-    # Replace use case names in tones_to_use_cases with references to use_cases entries
-    tones_to_use_cases_refs = {tone: [] for tone in tones_to_use_cases}
+    # Assign the unique age/gender combinations to each tone
+    for tone in tones_details:
+        tones_details[tone]['age_gender'] = sorted(age_gender_combinations[tone])
 
-    for tone, use_case_list in tones_to_use_cases.items():
-        for use_case in use_case_list:
-            tones_to_use_cases_refs[tone].extend(use_cases[use_case])
-    # Remove empty branches
-    tones_to_use_cases_refs = {tone: refs for tone, refs in tones_to_use_cases_refs.items() if refs}
-
-    return tones_to_use_cases_refs
+    return tones_details
 
 
 def normalize_attribute(attribute):
@@ -115,31 +96,32 @@ def normalize_attribute(attribute):
     return normalized.capitalize()
 
 
-def get_age_gender_combinations(voices):
-    combinations = set()
-    for voice in voices:
-        combination = f"{voice['age']} {voice['gender']}"
-        combinations.add(combination)
-    return sorted(combinations)
+def find_voices(tone, age, gender):
+    """
+    Retrieve all voices matching the given tone, age, and gender.
 
+    Args:
+        tone (str): The selected tone category.
+        age (str): The age group to filter by.
+        gender (str): The gender to filter by.
 
-def filter_voices_by_age_gender(voices, age_gender):
-    age, gender = age_gender.split()
-    return [voice for voice in voices if voice['age'] == age and voice['gender'] == gender]
+    Returns:
+        list: A list of dictionaries, each representing a voice that matches the criteria.
+    """
 
-# def search_voices():
-#     # Criteria for filtering
-#     criteria = {
-#         "accent": "american",
-#         "description": "friendly",
-#         "gender": "female"
-#     }
-#
-#     # List comprehension to filter voices
-#     filtered_voices = [voice for voice in voices
-#                        if all(voice.get('labels', {}).get(key) == value for key, value in criteria.items())]
-#
-#     # Print filtered voices
-#     for voice in filtered_voices:
-#         print(f"Voice ID : {voice['voice_id']}, Name: {voice['name']}, URL: {voice['preview_url']}")
-#     #print(json.dumps(filtered_voices, indent=2))
+    tones_data = get_voice_tone_data()
+    # Check if the selected tone is in the data structure
+    if tone not in tones_data:
+        return []  # Return an empty list if the tone is not found
+
+    # Retrieve the list of all voices under the selected tone
+    voices = tones_data[tone]['voices']
+
+    # Filter voices based on the selected age and gender
+    matching_voices = [
+        voice for voice in voices
+        if voice['age'] == age and voice['gender'] == gender
+    ]
+
+    return matching_voices
+

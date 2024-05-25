@@ -1,16 +1,17 @@
 from flask import Flask, request, jsonify, Response
 import os
 from dotenv import load_dotenv
-from s3_utils import get_s3_client, upload_images_from_disk_to_s3
-from openai_utils import get_openai_client, describe_and_recommend
+from s3_utils import get_s3_client, upload_images_from_disk_to_s3, upload_audio_from_disk_to_s3
+from openai_utils import get_openai_client, describe_and_recommend, create_narration
 import requests
 from PIL import Image
 from image_utils import modify_image, compatible_image_format, convert_image_to_png, get_platform_specs
 from messaging_utils import message_manager, logger
-from elevenlabs_utils import get_client, get_voice_tone_data
+from elevenlabs_utils import get_elevenlabs_client, get_voice_tone_data, find_voices, text_to_speech
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 app.config['VIDEOS_FOLDER'] = 'videos/'
+app.config['AUDIO_FOLDER'] = 'audio/'
 
 # Set up environment
 load_dotenv()
@@ -53,6 +54,12 @@ def modify_images(session_data, images):
 
 @app.route('/api/generate-video', methods=['POST'])
 def generate_video():
+    #######################################################################
+    #                          INITIALIZATION                             #
+    #######################################################################
+    # region Initialization
+
+
     # Initialize S3 client
     s3 = get_s3_client()
 
@@ -63,7 +70,7 @@ def generate_video():
     session_data = {
         'company_name': request.form.get('company-name'),
         'company_url': request.form.get('company-url'),
-        'press_release': request.form.get('press-release'),
+        'topic': request.form.get('press-release'),
         'tone_age_gender': request.form.get('tone_age_gender'),
         'mood': request.form.get('mood'),
         'platform': request.form.get('platform')
@@ -75,6 +82,12 @@ def generate_video():
     # Get the uploaded images from the request
     image_files = request.files.getlist('images')
     print("Image Files:", image_files)
+    # endregion
+
+    #######################################################################
+    #                         IMAGE PROCESSING                            #
+    #######################################################################
+    # region Image Processing
 
     for image_file in image_files:
         image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_file.filename)
@@ -112,6 +125,7 @@ def generate_video():
     logger('log', 'Modifying Images...')
     modified_images = modify_images(session_data, images)
 
+    logger('log', 'Uploading Images to the cloud...')
     # Upload images to S3
     modified_images = upload_images_from_disk_to_s3(s3, modified_images)
 
@@ -119,8 +133,6 @@ def generate_video():
     for item in modified_images:
         s3_keys.append({'bucket': item['bucket'], 'key': item['s3_key']})
 
-    # print("FINAL S3 Keys:", s3_keys)
-    logger('log', 'Generating the video...')
     # Define video parameters
     video_data = {
         'duration': 30,
@@ -131,14 +143,59 @@ def generate_video():
     session_data['images'] = modified_images
     session_data['s3_objects'] = s3_keys
     session_data['write_bucket'] = DESTINATION_BUCKET_NAME
+    # endregion
+
+    #######################################################################
+    #                       NARRATIVE SECTION                             #
+    #######################################################################
+    # region Narrative Section
+
+    # Generate the narrative for the video
+    logger('log', 'Generating the narration script...')
+    narration_script = create_narration(openai, session_data)
+    session_data['narration_script'] = narration_script
+
+    logger('log', 'Choosing a voice...')
+    tone, age_gender = session_data['tone_age_gender'].split(':')
+    age, gender = age_gender.split()
+    voice = find_voices(tone, age, gender)[0]
+    logger('log', f'Your narrator is: {voice['name']}')
+    session_data['voice'] = voice
+    elevenlabs = get_elevenlabs_client()
+    session_data['audio'] = {
+        'clips': [],
+        'bucket': SOURCE_BUCKET_NAME,
+        'local_dir': app.config['AUDIO_FOLDER']
+    }
+    logger('log', f'Generating audio narration...')
+    new_audio_clip = text_to_speech(elevenlabs, session_data)
+    session_data['audio']['clips'].append(new_audio_clip)
+
+    logger('log', 'Uploading Images to the cloud...')
+    session_data['audio'] = upload_audio_from_disk_to_s3(s3, session_data['audio'])
+    # endregion
+
+    return jsonify({'message': 'Video generation initiated'}), 200
+
+    #######################################################################
+    #                           MUSIC SECTION                             #
+    #######################################################################
+    # region Music Section
+    # endregion
+
+    #######################################################################
+    #                        HAND-OFF TO LAMBDA                           #
+    #######################################################################
+    # region Hand-off to Lambda
     # Call the API Gateway to process the video
+    logger('log', 'Generating the video...')
     api_response = call_api_gateway(session_data)
     if api_response:
         return jsonify({'message': 'Video generation initiated'}), 200
     else:
         # Return an error response if the video generation failed
         return jsonify({'error': 'Video generation failed'}), 500
-
+    # endregion
 
 @app.route('/api/video-callback', methods=['POST'])
 def video_callback():

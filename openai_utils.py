@@ -89,9 +89,11 @@ def generic_query(client, messages: list, response_type: str = 'txt'):
         return response
 
 
-def create_narration(client, data):
-    duration = data['duration']
-    images = data['images']
+def create_narration(client, session_data):
+    duration = session_data['duration']
+    max_words = int((140/60) * (duration - 1)) # Allow for silence at the ends of the video.
+    target_words = int(0.9 * max_words) # Aim for about 95% of the words you'd expect
+    images = session_data['images']
     messages = [{
         "role": "system",
         "content": "You are the assistant. Your job is to be a script writer for short videos. You only respond "
@@ -99,24 +101,24 @@ def create_narration(client, data):
                    "have no formatting characters or extraneous artifacts. "
     }, {
         "role": "user",
-        "content": """
+        "content": f"""
                 Please generate a narrative for me.
                 
                 [General Instructions] 
-                The video is 30 seconds long. 
+                The video is {duration} seconds long. 
                 The narration should start 1 second into the video and finish one second before the end. The speaking 
                 rate should be assumed to be 140 words per minute. You should generate a continuous narrative that is 
                 simply cognisant of the image on the screen. You do not need to necessarily describe the image, 
                 but you should organize your narration to be relevant with what is on the screen, and perhaps point it 
                 out if appropriate.
 
-                [HARD REQUIREMENTS] The narrative should fit inside the allotted 28 seconds. That means your 
-                narrative must be about 65 words long. DO NOT EXCEED 68 words!"""
+                [HARD REQUIREMENTS] The narrative should fit inside the allotted {duration - 2} seconds. That means your 
+                narrative must be about {target_words} words long. DO NOT EXCEED {max_words} words!"""
     }, {
         "role": "user",
         "content": f"""
                 [Overall Topic of the Video]
-                {data['topic']}"""
+                {session_data['topic']}"""
     }]
 
     # Construct video section
