@@ -108,11 +108,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
     fetch('/api/get_tones_data')
         .then(response => {
-            //console.log('Fetch response:', response);
             return response.json();
         })
         .then(data => {
-            //console.log('Fetched tones data:', data);
             tonesData = data;
             const toneSelect = document.getElementById('tone-select');
             toneSelect.innerHTML = '<option value="" disabled selected>Select One</option>' +
@@ -125,11 +123,8 @@ document.addEventListener("DOMContentLoaded", function() {
         });
 
     document.getElementById('tone-select').addEventListener('change', function() {
-        const selectedTone = this.value
-        //console.log('Selected tone:', selectedTone);
-        //console.log('Available tones data:', tonesData);
-        const ageGenderOptions = getAgeGenderCombinations(tonesData[selectedTone]);
-        //console.log('Age-Gender Options:', ageGenderOptions);
+        const selectedTone = this.value;
+        const ageGenderOptions = tonesData[selectedTone]['age_gender']; // Directly use 'age_gender' from the new data structure
         const ageGenderSelect = document.getElementById('age-gender-select');
         ageGenderSelect.innerHTML = '<option value="" disabled selected>Select One</option>' +
             ageGenderOptions.map(option =>
@@ -147,21 +142,6 @@ document.addEventListener("DOMContentLoaded", function() {
         formInput.value = `${toneSelect}:${ageGenderSelect}`;
         document.querySelector('form').appendChild(formInput);
     });
-
-    function getAgeGenderCombinations(voices) {
-        if (!voices) {
-            console.error('Voices data is undefined or null');
-            return [];
-        }
-        const combinations = new Set();
-        voices.forEach(voice => {
-            if (voice.age && voice.gender) { // Check for non-empty age and gender
-                const combination = `${voice.age} ${voice.gender}`;
-                combinations.add(combination);
-            }
-        });
-        return Array.from(combinations).sort();
-    }
 });
 
 // Add event listener for file input
