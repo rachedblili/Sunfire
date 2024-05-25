@@ -59,7 +59,6 @@ def generate_video():
     #######################################################################
     # region Initialization
 
-
     # Initialize S3 client
     s3 = get_s3_client()
 
@@ -153,6 +152,7 @@ def generate_video():
     # Generate the narrative for the video
     logger('log', 'Generating the narration script...')
     narration_script = create_narration(openai, session_data)
+    print("Script: ", narration_script)
     session_data['narration_script'] = narration_script
 
     logger('log', 'Choosing a voice...')
@@ -196,6 +196,7 @@ def generate_video():
         # Return an error response if the video generation failed
         return jsonify({'error': 'Video generation failed'}), 500
     # endregion
+
 
 @app.route('/api/video-callback', methods=['POST'])
 def video_callback():
