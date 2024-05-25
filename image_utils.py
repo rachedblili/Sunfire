@@ -82,7 +82,7 @@ def modify_image(image_path, desired_width, desired_height, pad_color, output_pa
     new_img.paste(image, (paste_x, paste_y))
 
     # Save the modified image
-    image.save(output_path)
+    new_img.save(output_path)
 
 
 def convert_image_to_png(image):
