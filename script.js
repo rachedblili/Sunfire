@@ -17,6 +17,51 @@ function clearContainers() {
         }
 }
 
+var eventSource; // Global event source
+
+function setupEventSource() {
+    if (eventSource) {
+        eventSource.close(); // Close existing connection if it exists
+    }
+    eventSource = new EventSource("/api/messages");
+
+    eventSource.onmessage = function(event) {
+        console.log('Received message:', event.data);
+        var messageParts = event.data.split(" : ");
+        if (messageParts.length === 2) {
+            var facility = messageParts[0];
+            var message = messageParts[1];
+
+            if (facility === "log") {
+                if (logContainer) {
+                    var messageElement = document.createElement('p');
+                    messageElement.textContent = message;
+                    logContainer.appendChild(messageElement);
+                } else {
+                    console.error("log-container not found");
+                }
+            } else if (facility === "video") {
+                if (videoContainer && generatedVideo) {
+                    generatedVideo.src = message;
+                    videoContainer.style.display = 'block';
+                    generatedVideo.load();
+                    generatedVideo.play().then(() => {
+                        console.log('Video started playing');
+                    }).catch((error) => {
+                        console.error('Error playing video:', error);
+                    });
+                } else {
+                    console.error("video-container or generated-video not found");
+                }
+            }
+        }
+    };
+
+    eventSource.onerror = function() {
+        console.log('EventSource failed.');
+    };
+}
+
 document.addEventListener("DOMContentLoaded", function() {
     //console.log('DOMContentLoaded event fired');
     //console.log('videoContainer:', videoContainer);
@@ -24,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function() {
     //console.log('generatedVideo:', generatedVideo);
 
     clearContainers();
-    var eventSource = new EventSource("/api/messages");
+    setupEventSource();
 
     const platformSelect = document.getElementById('platform-select');
     const videoContainer = document.getElementById('video-container');
@@ -116,44 +161,6 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         return Array.from(combinations).sort();
     }
-
-    eventSource.onmessage = function(event) {
-        console.log('Received message:', event.data);
-        var messageParts = event.data.split(" : ");
-        if (messageParts.length === 2) {
-            var facility = messageParts[0];
-            var message = messageParts[1];
-
-            if (facility === "log") {
-                //console.log('Handling log message:', message);
-                if (logContainer) {
-                    var messageElement = document.createElement('p');
-                    messageElement.textContent = message;
-                    logContainer.appendChild(messageElement);
-                } else {
-                    console.error("log-container not found");
-                }
-            } else if (facility === "video") {
-                //console.log('Handling video message:', message);
-                if (videoContainer && generatedVideo) {
-                    generatedVideo.src = message;
-                    videoContainer.style.display = 'block';
-                    generatedVideo.load();
-                    generatedVideo.play().then(() => {
-                        console.log('Video started playing');
-                    }).catch((error) => {
-                        console.error('Error playing video:', error);
-                    });
-                } else {
-                    console.error("video-container or generated-video not found");
-                }
-            }
-        }
-    };
-
-    eventSource.onerror = function() {
-        console.log('EventSource failed.');
-    };
 });
 
 // Add event listener for file input
@@ -192,7 +199,6 @@ function previewImages() {
   }
 }
 
-// Move image left or right
 // Move image left or right
 imageShelf.addEventListener('click', (e) => {
   if (e.target.classList.contains('move-left')) {
@@ -246,6 +252,7 @@ function updateButtonStates() {
 form.addEventListener('submit', function (e) {
   e.preventDefault();
   clearContainers();
+  setupEventSource(); // Re-setup EventSource connection
   const formData = new FormData(form);
 
   // First, remove the existing file entries from formData if they exist
