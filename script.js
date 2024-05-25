@@ -37,6 +37,7 @@ function setupEventSource() {
                     var messageElement = document.createElement('p');
                     messageElement.textContent = message;
                     logContainer.appendChild(messageElement);
+                    logContainer.scrollTop = logContainer.scrollHeight;
                 } else {
                     console.error("log-container not found");
                 }
