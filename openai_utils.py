@@ -70,44 +70,6 @@ def describe_and_recommend(client, images, url_maker):
         image['width'] = descr['dimensions']['width']
         image['description'] = descr['content']
         logger('log', f'Received image:{image['description']}')
-        strategy_response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                    {
-                        "role": "system",
-                        "content": "You are the assistant. Respond in pure JSON with no formatting characters or "
-                                   "extraneous artifacts. Legal output key names: color, x, y, height, width, scale, "
-                                   "pad. HARD REQUIREMENT: ensure the proportions of the original image are preserved "
-                                   "using symmetrical scaling. Use padding to achieve the desired dimensions. Return "
-                                   "the operations (scale, pad) in the correct order. Output should have Standard HD "
-                                   "resolution."
-                                   "**DO NOT DISTORT THE IMAGE. SCALE BOTH DIMENSIONS SYMMETRICALLY.**"
-                    },
-                    {
-                        "role": "user",
-                        "content": "I have an image with  width 800px and height 530px and the dominant color is "
-                                   "#32DF34. I need to fit this image into a video with a 16:9 aspect ratio in "
-                                   "Standard HD resolution. Please provide a scaling (while maintaining aspect "
-                                   "ratio), and padding recommendation that balances image quality and screen "
-                                   "coverage without losing important content."
-                    },
-                    {
-                        "role": "assistant",
-                        "content": '[{"scale": {"width": 1600, "height": 1060}}, {"pad": {"width": 1920, "height": '
-                                   '1080, "color": "#32DF34"}}]'
-                    },
-                    {
-                        "role": "user",
-                        "content": f"I have an image with width {image['width']} and height {image['height']} and the "
-                                   f"dominant color is {image['color']}. I need to fit this image into a video with a "
-                                   f"16:9 aspect ratio in Standard HD resolution. Please provide a scaling (while "
-                                   f"maintaining aspect ratio), and padding recommendation that balances image "
-                                   f"quality and screen coverage without losing important content."
-                    }
-            ],
-            max_tokens=400
-        )
-        image['strategy'] = json.loads(strategy_response.choices[0].message.content)
 
     return images
 

@@ -5,7 +5,7 @@ from s3_utils import get_s3_client, upload_images_from_disk_to_s3
 from openai_utils import get_openai_client, describe_and_recommend
 import requests
 from PIL import Image
-from image_utils import modify_image, compatible_image_format, convert_image_to_png
+from image_utils import modify_image, compatible_image_format, convert_image_to_png, get_platform_specs
 from messaging_utils import message_manager, logger
 from elevenlabs_utils import get_client, get_voice_tone_data
 app = Flask(__name__)
@@ -35,14 +35,18 @@ def call_api_gateway(session_data):
         return None
 
 
-def modify_images(images):
+def modify_images(session_data, images):
     modified_images = images
     for image in modified_images:
         original_name = image['filename']
         local_dir = image['local_dir']
         new_name = "modified"+original_name
-        full_spec = image['strategy']
-        modify_image(local_dir+original_name, full_spec, local_dir+new_name)
+        pad_color = image['color']
+        modify_image(local_dir+original_name,
+                     session_data['target_width'],
+                     session_data['target_height'],
+                     pad_color,
+                     local_dir+new_name)
         image['filename'] = new_name
     return modified_images
 
@@ -61,8 +65,12 @@ def generate_video():
         'company_url': request.form.get('company-url'),
         'press_release': request.form.get('press-release'),
         'tone_age_gender': request.form.get('tone_age_gender'),
-        'mood': request.form.get('mood')
+        'mood': request.form.get('mood'),
+        'platform': request.form.get('platform')
     }
+    (session_data['target_width'],
+     session_data['target_height'],
+     aspect_ratio) = (get_platform_specs(session_data['platform']))
 
     # Get the uploaded images from the request
     image_files = request.files.getlist('images')
@@ -103,7 +111,7 @@ def generate_video():
 
     # Modify the images according to the AI suggestions
     logger('log', 'Modifying Images...')
-    modified_images = modify_images(images)
+    modified_images = modify_images(session_data, images)
 
     # Upload images to S3
     modified_images = upload_images_from_disk_to_s3(s3, modified_images)
@@ -118,7 +126,7 @@ def generate_video():
     video_data = {
         'duration': 30,
         'fps': 24,
-        'aspect_ratio': '16:9',
+        'aspect_ratio': aspect_ratio,
     }
     session_data['video'] = video_data
     session_data['images'] = modified_images
