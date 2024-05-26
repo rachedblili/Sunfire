@@ -173,7 +173,7 @@ def generate_video():
     new_audio_clip = generate_audio_narration(elevenlabs, session_data)
     session_data['audio']['clips'].append(new_audio_clip)
 
-    logger('log', 'Uploading Images to the cloud...')
+    logger('log', 'Uploading Audio to the cloud...')
     session_data['audio'] = upload_audio_from_disk_to_s3(s3, session_data['audio'])
     # endregion
 
