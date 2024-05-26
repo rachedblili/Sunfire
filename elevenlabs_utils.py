@@ -70,7 +70,8 @@ def generate_audio_narration(client, session_data):
     new_audio.export(dir_name+filename, format="mp3")
     clip['type'] = 'narration'
     clip['filename'] = filename
-    return(clip)
+    return clip
+
 
 def dump_voice_stats():
     url = "https://api.elevenlabs.io/v1/voices"

@@ -8,3 +8,4 @@ Requests==2.32.2
 urllib3~=2.2.1
 elevenlabs~=1.2.2
 python-dotenv~=1.0.1
+pydub~=0.25.1
