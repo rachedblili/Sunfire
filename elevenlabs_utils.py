@@ -5,7 +5,7 @@ import requests
 import json
 from io import BytesIO
 import random
-from pydub import AudioSegment
+from audio_utils import fit_clip_length
 
 
 def get_elevenlabs_client():
@@ -56,20 +56,8 @@ def text_to_speech(client, session_data):
 def generate_audio_narration(client, session_data):
     # Generate the actual audio first
     clip = text_to_speech(client, session_data)
-    audio = AudioSegment.from_file(clip['filename'])
-
-    current_duration = len(audio) / 1000.0  # In seconds
-    speed_factor = session_data['video']['duration'] / current_duration
-
-    # Adjust tempo
-    new_audio = audio.speedup(playback_speed=speed_factor)
-
-    # Save the result
-    dir_name = session_data['audio']['local_dir']
-    filename = f"adjusted_{clip['filename']}"
-    new_audio.export(dir_name+filename, format="mp3")
+    clip = fit_clip_length(clip, session_data['local_dir'], session_data['video']['duration'])
     clip['type'] = 'narration'
-    clip['filename'] = filename
     return clip
 
 

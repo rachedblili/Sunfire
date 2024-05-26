@@ -149,11 +149,19 @@ def generate_video():
     #######################################################################
     # region Narrative Section
 
+    # Prepare the data structure that will house audio data
+    session_data['audio'] = {
+        'clips': [],
+        'bucket': SOURCE_BUCKET_NAME,
+        'narration_script': "",
+        'local_dir': app.config['AUDIO_FOLDER']
+    }
+
     # Generate the narrative for the video
     logger('log', 'Generating the narration script...')
     narration_script = create_narration(openai, session_data)
     print("Script: ", narration_script)
-    session_data['narration_script'] = narration_script
+    session_data['audio']['narration_script'] = narration_script
 
     logger('log', 'Choosing a voice...')
     tone, age_gender = session_data['tone_age_gender'].split(':')
@@ -164,11 +172,7 @@ def generate_video():
 
     # Time to start generating audio
     elevenlabs = get_elevenlabs_client()
-    session_data['audio'] = {
-        'clips': [],
-        'bucket': SOURCE_BUCKET_NAME,
-        'local_dir': app.config['AUDIO_FOLDER']
-    }
+
     logger('log', f'Generating audio narration...')
     new_audio_clip = generate_audio_narration(elevenlabs, session_data)
     session_data['audio']['clips'].append(new_audio_clip)
