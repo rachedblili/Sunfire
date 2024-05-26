@@ -7,7 +7,7 @@ import requests
 from PIL import Image
 from image_utils import modify_image, compatible_image_format, convert_image_to_png, get_platform_specs
 from messaging_utils import message_manager, logger
-from elevenlabs_utils import get_elevenlabs_client, get_voice_tone_data, find_voices, text_to_speech
+from elevenlabs_utils import get_elevenlabs_client, get_voice_tone_data, find_voice, generate_audio_narration
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 app.config['VIDEOS_FOLDER'] = 'videos/'
@@ -158,9 +158,11 @@ def generate_video():
     logger('log', 'Choosing a voice...')
     tone, age_gender = session_data['tone_age_gender'].split(':')
     age, gender = age_gender.split()
-    voice = find_voices(tone, age, gender)[0]
+    voice = find_voice(tone, age, gender)
     logger('log', f'Your narrator is: {voice['name']}')
     session_data['voice'] = voice
+
+    # Time to start generating audio
     elevenlabs = get_elevenlabs_client()
     session_data['audio'] = {
         'clips': [],
@@ -168,7 +170,7 @@ def generate_video():
         'local_dir': app.config['AUDIO_FOLDER']
     }
     logger('log', f'Generating audio narration...')
-    new_audio_clip = text_to_speech(elevenlabs, session_data)
+    new_audio_clip = generate_audio_narration(elevenlabs, session_data)
     session_data['audio']['clips'].append(new_audio_clip)
 
     logger('log', 'Uploading Images to the cloud...')

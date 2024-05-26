@@ -4,6 +4,8 @@ from elevenlabs.client import ElevenLabs
 import requests
 import json
 from io import BytesIO
+import random
+from pydub import AudioSegment
 
 
 def get_elevenlabs_client():
@@ -27,7 +29,7 @@ def text_to_speech(client, session_data):
         voice_id=session_data['voice']['voice_id'],
         optimize_streaming_latency="0",
         output_format="mp3_22050_32",
-        text=session_data['narration_script'],
+        text=f'<break time="1s" />{session_data["narration_script"]}<break time="1.5s" />',
         model_id="eleven_multilingual_v2",
         voice_settings=VoiceSettings(
             stability=0.0,
@@ -51,6 +53,24 @@ def text_to_speech(client, session_data):
     return {'filename': filename}
 
 
+def generate_audio_narration(client, session_data):
+    # Generate the actual audio first
+    clip = text_to_speech(client, session_data)
+    audio = AudioSegment.from_file(clip['filename'])
+
+    current_duration = len(audio) / 1000.0  # In seconds
+    speed_factor = session_data['video']['duration'] / current_duration
+
+    # Adjust tempo
+    new_audio = audio.speedup(playback_speed=speed_factor)
+
+    # Save the result
+    dir_name = session_data['audio']['local_dir']
+    filename = f"adjusted_{clip['filename']}"
+    new_audio.export(dir_name+filename, format="mp3")
+    clip['type'] = 'narration'
+    clip['filename'] = filename
+    return(clip)
 
 def dump_voice_stats():
     url = "https://api.elevenlabs.io/v1/voices"
@@ -111,7 +131,7 @@ def normalize_attribute(attribute):
     return normalized.capitalize()
 
 
-def find_voices(tone, age, gender):
+def find_voice(tone, age, gender):
     """
     Retrieve all voices matching the given tone, age, and gender.
 
@@ -140,4 +160,4 @@ def find_voices(tone, age, gender):
         if voice['age'] == age and voice['gender'] == gender
     ]
     print("Number of matches:", str(len(matching_voices)))
-    return matching_voices
+    return random.choice(matching_voices)
