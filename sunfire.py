@@ -62,10 +62,6 @@ def modify_images(session_data, images):
 
 def generate_video(session_data, image_files):
 
-    # GET RID OF THIS CODE LATER
-    original_stdout = sys.stdout
-    sys.stdout = open('/tmp/sunfire.log','w')
-
     # Initialize S3 client
     s3 = get_s3_client()
 
