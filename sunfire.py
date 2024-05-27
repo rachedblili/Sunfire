@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, Response
 import os
 from dotenv import load_dotenv
 
-from audio_utils import trim_and_fade
+from audio_utils import trim_and_fade, combine_audio_clips
 from s3_utils import get_s3_client, upload_images_from_disk_to_s3, upload_audio_from_disk_to_s3
 from openai_utils import get_openai_client, describe_and_recommend, create_narration, generate_music_prompt
 import requests
