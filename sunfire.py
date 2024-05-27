@@ -86,6 +86,8 @@ def generate_video(form_data, form_files):
 
     # Get the uploaded images from the request
     image_files = form_files.getlist('images')
+    current_app.logger.debug(image_files)
+
     (session_data['target_width'],
      session_data['target_height'],
      aspect_ratio) = (get_platform_specs(session_data['platform']))
