@@ -59,7 +59,7 @@ def make_music(session_data, prompt):
         if data[0]["status"] == 'streaming':
             print(f"{data[0]['id']} ==> {data[0]['audio_url']}")
             print(f"{data[1]['id']} ==> {data[1]['audio_url']}")
-            return data[0]['audio_url']
+            break
         # sleep 5s
         time.sleep(5)
     ids = f"{data[0]['id']},{data[1]['id']}"
