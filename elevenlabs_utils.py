@@ -56,7 +56,7 @@ def text_to_speech(client, session_data):
 def generate_audio_narration(client, session_data):
     # Generate the actual audio first
     clip = text_to_speech(client, session_data)
-    clip = fit_clip_length(clip, session_data['local_dir'], session_data['video']['duration'])
+    clip = fit_clip_length(clip, session_data['audio']['local_dir'], session_data['video']['duration'])
     clip['type'] = 'narration'
     return clip
 

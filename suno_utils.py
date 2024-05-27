@@ -46,7 +46,7 @@ def generate_whole_song(clip_id):
 
 def make_music(session_data, prompt):
     filename = f'{session_data['company_name']}_{session_data['voice']['name']}_music.mp3'
-    dir_name = session_data['local_dir']
+    dir_name = session_data['audio']['local_dir']
     data = generate_audio_by_prompt({
             "prompt": prompt,
             "make_instrumental": True,
