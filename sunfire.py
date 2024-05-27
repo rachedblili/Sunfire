@@ -61,182 +61,182 @@ def modify_images(session_data, images):
 
 
 def generate_video(form_data, form_files):
-    from flask import current_app
-    current_app.logger.debug("Executing Job in the background")
-    #######################################################################
-    #                          INITIALIZATION                             #
-    #######################################################################
-    # region Initialization
+    with app.app_context():
+        current_app.logger.debug("Executing Job in the background")
+        #######################################################################
+        #                          INITIALIZATION                             #
+        #######################################################################
+        # region Initialization
 
-    # Initialize S3 client
-    s3 = get_s3_client()
+        # Initialize S3 client
+        s3 = get_s3_client()
 
-    # Initialize OpenAI client
-    openai = get_openai_client()
+        # Initialize OpenAI client
+        openai = get_openai_client()
 
-    logger('log', 'Data Received.  Examining data...')
-    session_data = {
-        'company_name': form_data.get('company-name'),
-        'company_url': form_data.get('company-url'),
-        'topic': form_data.get('press-release'),
-        'tone_age_gender': form_data.get('tone_age_gender'),
-        'mood': form_data.get('mood'),
-        'platform': form_data.get('platform')
-    }
+        logger('log', 'Data Received.  Examining data...')
+        session_data = {
+            'company_name': form_data.get('company-name'),
+            'company_url': form_data.get('company-url'),
+            'topic': form_data.get('press-release'),
+            'tone_age_gender': form_data.get('tone_age_gender'),
+            'mood': form_data.get('mood'),
+            'platform': form_data.get('platform')
+        }
 
-    # Get the uploaded images from the request
-    image_files = form_files.getlist('images')
-    current_app.logger.debug(image_files)
+        # Get the uploaded images from the request
+        image_files = form_files.getlist('images')
+        current_app.logger.debug(image_files)
 
-    (session_data['target_width'],
-     session_data['target_height'],
-     aspect_ratio) = (get_platform_specs(session_data['platform']))
-    # endregion
+        (session_data['target_width'],
+         session_data['target_height'],
+         aspect_ratio) = (get_platform_specs(session_data['platform']))
+        # endregion
 
-    #######################################################################
-    #                         IMAGE PROCESSING                            #
-    #######################################################################
-    # region Image Processing
-    current_app.logger.debug("Starting Image Processing...")
+        #######################################################################
+        #                         IMAGE PROCESSING                            #
+        #######################################################################
+        # region Image Processing
+        current_app.logger.debug("Starting Image Processing...")
 
-    for image_file in image_files:
-        image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_file.filename)
-        current_app.logger.debug("Image Path: %s", image_path)
-        image_file.save(image_path)
-        if not compatible_image_format(image_path):
-            with Image.open(image_path) as img:
-                img = convert_image_to_png(img)
-                new_filename = os.path.splitext(image_file.filename)[0] + '.png'
-                file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], new_filename)
-                img.save(file_path, format='PNG')
-                image_file.filename = new_filename
-    current_app.logger.debug("Still Alive...")
+        for image_file in image_files:
+            image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_file.filename)
+            current_app.logger.debug("Image Path: %s", image_path)
+            image_file.save(image_path)
+            if not compatible_image_format(image_path):
+                with Image.open(image_path) as img:
+                    img = convert_image_to_png(img)
+                    new_filename = os.path.splitext(image_file.filename)[0] + '.png'
+                    file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], new_filename)
+                    img.save(file_path, format='PNG')
+                    image_file.filename = new_filename
+        current_app.logger.debug("Still Alive...")
 
-    # Keep track of image attributes
-    images = []
-    for image_file in image_files:
-        images.append(
-            {'filename': image_file.filename,
-             'local_dir': current_app.config['UPLOAD_FOLDER'],
-             'bucket': SOURCE_BUCKET_NAME})
+        # Keep track of image attributes
+        images = []
+        for image_file in image_files:
+            images.append(
+                {'filename': image_file.filename,
+                 'local_dir': current_app.config['UPLOAD_FOLDER'],
+                 'bucket': SOURCE_BUCKET_NAME})
 
-    # Upload images to S3
-    images = upload_images_from_disk_to_s3(s3, images)
-    current_app.logger.debug("S3 Keys:", [item["s3_key"] for item in images])
+        # Upload images to S3
+        images = upload_images_from_disk_to_s3(s3, images)
+        current_app.logger.debug("S3 Keys:", [item["s3_key"] for item in images])
 
-    # Analyze our images
-    logger('log', 'Launching Image Analysis...')
-    images = describe_and_recommend(openai, images, s3.generate_presigned_url)
+        # Analyze our images
+        logger('log', 'Launching Image Analysis...')
+        images = describe_and_recommend(openai, images, s3.generate_presigned_url)
 
-    for image in images:
-        current_app.logger.debug(f"Image: {image['filename']}")
-        current_app.logger.debug(f"S3: {image['s3_key']}")
-        current_app.logger.debug(f"Description: {image['description']}")
+        for image in images:
+            current_app.logger.debug(f"Image: {image['filename']}")
+            current_app.logger.debug(f"S3: {image['s3_key']}")
+            current_app.logger.debug(f"Description: {image['description']}")
 
-    # Modify the images according to the AI suggestions
-    logger('log', 'Modifying Images...')
-    modified_images = modify_images(session_data, images)
+        # Modify the images according to the AI suggestions
+        logger('log', 'Modifying Images...')
+        modified_images = modify_images(session_data, images)
 
-    logger('log', 'Uploading Images to the cloud...')
-    # Upload images to S3
-    modified_images = upload_images_from_disk_to_s3(s3, modified_images)
+        logger('log', 'Uploading Images to the cloud...')
+        # Upload images to S3
+        modified_images = upload_images_from_disk_to_s3(s3, modified_images)
 
-    s3_keys = []
-    for item in modified_images:
-        s3_keys.append({'bucket': item['bucket'], 'key': item['s3_key']})
+        s3_keys = []
+        for item in modified_images:
+            s3_keys.append({'bucket': item['bucket'], 'key': item['s3_key']})
 
-    # Define video parameters
-    video_data = {
-        'duration': 30,
-        'fps': 24,
-        'aspect_ratio': aspect_ratio,
-    }
-    session_data['video'] = video_data
-    session_data['images'] = modified_images
-    session_data['s3_objects'] = s3_keys
-    session_data['write_bucket'] = DESTINATION_BUCKET_NAME
-    # endregion
+        # Define video parameters
+        video_data = {
+            'duration': 30,
+            'fps': 24,
+            'aspect_ratio': aspect_ratio,
+        }
+        session_data['video'] = video_data
+        session_data['images'] = modified_images
+        session_data['s3_objects'] = s3_keys
+        session_data['write_bucket'] = DESTINATION_BUCKET_NAME
+        # endregion
 
-    #######################################################################
-    #                       NARRATIVE SECTION                             #
-    #######################################################################
-    # region Narrative Section
+        #######################################################################
+        #                       NARRATIVE SECTION                             #
+        #######################################################################
+        # region Narrative Section
 
-    # Prepare the data structure that will house audio data
-    session_data['audio'] = {
-        'clips': [],
-        'bucket': SOURCE_BUCKET_NAME,
-        'narration_script': "",
-        'local_dir': current_app.config['AUDIO_FOLDER']
-    }
+        # Prepare the data structure that will house audio data
+        session_data['audio'] = {
+            'clips': [],
+            'bucket': SOURCE_BUCKET_NAME,
+            'narration_script': "",
+            'local_dir': current_app.config['AUDIO_FOLDER']
+        }
 
-    # Generate the narrative for the video
-    logger('log', 'Generating the narration script...')
-    narration_script = create_narration(openai, session_data)
-    current_app.logger.debug("Script: ", narration_script)
-    session_data['audio']['narration_script'] = narration_script
+        # Generate the narrative for the video
+        logger('log', 'Generating the narration script...')
+        narration_script = create_narration(openai, session_data)
+        current_app.logger.debug("Script: ", narration_script)
+        session_data['audio']['narration_script'] = narration_script
 
-    logger('log', 'Choosing a voice...')
-    tone, age_gender = session_data['tone_age_gender'].split(':')
-    age, gender = age_gender.split()
-    voice = find_voice(tone, age, gender)
-    logger('log', f'Your narrator is: {voice['name']}')
-    session_data['voice'] = voice
+        logger('log', 'Choosing a voice...')
+        tone, age_gender = session_data['tone_age_gender'].split(':')
+        age, gender = age_gender.split()
+        voice = find_voice(tone, age, gender)
+        logger('log', f'Your narrator is: {voice['name']}')
+        session_data['voice'] = voice
 
-    # Time to start generating audio
-    elevenlabs = get_elevenlabs_client()
+        # Time to start generating audio
+        elevenlabs = get_elevenlabs_client()
 
-    logger('log', f'Generating audio narration...')
-    new_audio_clip = generate_audio_narration(elevenlabs, session_data)
-    session_data['audio']['clips'].append(new_audio_clip)
+        logger('log', f'Generating audio narration...')
+        new_audio_clip = generate_audio_narration(elevenlabs, session_data)
+        session_data['audio']['clips'].append(new_audio_clip)
 
-    # endregion
+        # endregion
 
-    #######################################################################
-    #                           MUSIC SECTION                             #
-    #######################################################################
-    # region Music Section
+        #######################################################################
+        #                           MUSIC SECTION                             #
+        #######################################################################
+        # region Music Section
 
-    logger('log', f'Designing Music...')
+        logger('log', f'Designing Music...')
 
-    music_prompt = generate_music_prompt(openai, session_data)
-    logger('log', music_prompt)
+        music_prompt = generate_music_prompt(openai, session_data)
+        logger('log', music_prompt)
 
-    logger('log', f'Generating Music...')
-    clip = make_music(session_data, music_prompt)
+        logger('log', f'Generating Music...')
+        clip = make_music(session_data, music_prompt)
 
-    # Who knows how long the song is.  We need to trim it down and fade the last couple of seconds to silence.
-    logger('log', f'Making Adjustments...')
-    clip = trim_and_fade(session_data, clip)
-    session_data['audio']['clips'].append(clip)
+        # Who knows how long the song is.  We need to trim it down and fade the last couple of seconds to silence.
+        logger('log', f'Making Adjustments...')
+        clip = trim_and_fade(session_data, clip)
+        session_data['audio']['clips'].append(clip)
 
-    current_app.logger.debug("Combining audio clips...")
-    current_app.logger.debug(session_data['audio'])
-    # Combine the audio clips
-    logger('log', f'Mixing Audio...')
-    combined_clips = combine_audio_clips(session_data)
-    session_data['audio']['clips'].append(combined_clips)
-    # endregion
+        current_app.logger.debug("Combining audio clips...")
+        current_app.logger.debug(session_data['audio'])
+        # Combine the audio clips
+        logger('log', f'Mixing Audio...')
+        combined_clips = combine_audio_clips(session_data)
+        session_data['audio']['clips'].append(combined_clips)
+        # endregion
 
-    return jsonify({'message': 'Video generation initiated'}), 200
-
-    logger('log', 'Uploading Audio to the cloud...')
-    session_data['audio'] = upload_audio_from_disk_to_s3(s3, session_data['audio'])
-
-    #######################################################################
-    #                        HAND-OFF TO LAMBDA                           #
-    #######################################################################
-    # region Hand-off to Lambda
-
-    # Call the API Gateway to process the video
-    logger('log', 'Generating the video...')
-    api_response = call_api_gateway(session_data)
-    if api_response:
         return jsonify({'message': 'Video generation initiated'}), 200
-    else:
-        # Return an error response if the video generation failed
-        return jsonify({'error': 'Video generation failed'}), 500
-    # endregion
+
+        logger('log', 'Uploading Audio to the cloud...')
+        session_data['audio'] = upload_audio_from_disk_to_s3(s3, session_data['audio'])
+
+        #######################################################################
+        #                        HAND-OFF TO LAMBDA                           #
+        #######################################################################
+        # region Hand-off to Lambda
+
+        # Call the API Gateway to process the video
+        logger('log', 'Generating the video...')
+        api_response = call_api_gateway(session_data)
+        if api_response:
+            return jsonify({'message': 'Video generation initiated'}), 200
+        else:
+            # Return an error response if the video generation failed
+            return jsonify({'error': 'Video generation failed'}), 500
+        # endregion
 
 
 #################################################################################################################
