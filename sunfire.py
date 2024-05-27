@@ -202,7 +202,8 @@ def generate_video():
     session_data['audio']['clips'].append(clip)
 
     # endregion
-
+    print("Combining audio clips...")
+    print(session_data['audio'])
     # Combine the audio clips
     logger('log', f'Mixing Audio...')
     combined_clips = combine_audio_clips(session_data)

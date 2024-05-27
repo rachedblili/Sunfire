@@ -20,8 +20,7 @@ def fit_clip_length(clip, local_dir, desired_duration):
 
 def trim_clip(clip, local_dir):
     clip_length = 30 * 1000  # in ms
-    print("TRIM CLIP")
-    print("local_dir:", local_dir, "clip:", clip)
+
     audio = AudioSegment.from_file(local_dir+clip['filename'])
 
     # Trim the audio to the target length if it's long enough
@@ -66,8 +65,10 @@ def combine_audio_clips(session_data):
     # Identify and load the narration and music clips
     for clip in audio_data['clips']:
         if clip['type'] == 'narration':
+            print("Found Clip 1")
             narration_clip = AudioSegment.from_file(clip['file_path'])
         elif clip['type'] == 'music':
+            print("Found Clip 2")
             music_clip = AudioSegment.from_file(clip['file_path'])
 
     # Check and adjust loudness
