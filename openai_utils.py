@@ -148,7 +148,7 @@ def create_narration(client, session_data):
 def generate_music_prompt(client, session_data):
     tone, age_gender = session_data['tone_age_gender'].split(':')
     mood = session_data['mood']
-    topic = session_data['narration_script']
+    topic = session_data['audio']['narration_script']
     messages = [{
         "role": "system",
         "content": "You are the assistant. Your job is to be create excellent prompts for other LLMs. Your response "
@@ -171,5 +171,7 @@ def generate_music_prompt(client, session_data):
     }]
 
     prompt = generic_query(client, messages)
+    logger('log', f'Music Prompt:{prompt}')
+
     return prompt
         
