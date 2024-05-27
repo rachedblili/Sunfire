@@ -251,7 +251,11 @@ def generate_video_route():
     app.logger.debug('Data Received.  Examining data...')
     form_data = {key: value for key, value in request.form.items()}
     form_files = {key: value for key, value in request.files.items()}
-    future = executor.submit(generate_video, form_data, form_files)
+    # Use copy_current_request_context to ensure access to request-bound resources
+    @copy_current_request_context
+    def task():
+        return generate_video(form_data, form_files)
+    future = executor.submit(task)
     app.logger.debug('Task submitted: %s', future)
     return jsonify({'status': 'Task started'}), 202
 
