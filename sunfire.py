@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, Response
 from flask_executor import Executor
 
 import os
+import sys
 from dotenv import load_dotenv
 
 from audio_utils import trim_and_fade, combine_audio_clips
@@ -60,6 +61,10 @@ def modify_images(session_data, images):
 
 
 def generate_video(session_data, image_files):
+
+    # GET RID OF THIS CODE LATER
+    original_stdout = sys.stdout
+    sys.stdout = open('/tmp/sunfire.log','w')
 
     # Initialize S3 client
     s3 = get_s3_client()
