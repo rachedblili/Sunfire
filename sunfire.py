@@ -1,8 +1,5 @@
-from flask import Flask, request, jsonify, Response, copy_current_request_context
-from flask_executor import Executor
-
+from flask import Flask, request, jsonify, Response
 import os
-import sys
 from dotenv import load_dotenv
 
 from audio_utils import trim_and_fade, combine_audio_clips
@@ -16,7 +13,6 @@ from elevenlabs_utils import get_elevenlabs_client, get_voice_tone_data, find_vo
 from suno_utils import make_music
 
 app = Flask(__name__)
-executor = Executor(app)
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 app.config['VIDEOS_FOLDER'] = 'videos/'
 app.config['AUDIO_FOLDER'] = 'audio/'
@@ -34,10 +30,10 @@ def call_api_gateway(session_data):
     # host = request.headers.get('Host', request.host)
     callback_url = "http://54.166.183.35/api/video-callback"
     session_data['callback_url'] = callback_url
-    app.logger.debug("CALLBACK: ", callback_url)
+    print("CALLBACK: ", callback_url)
     payload = session_data
     response = requests.post(API_GATEWAY_URL, json=payload)
-    app.logger.debug(response)
+    print(response)
     if response.status_code == 200:
         return response
     else:
@@ -60,11 +56,8 @@ def modify_images(session_data, images):
     return modified_images
 
 
-def generate_video(form_data, form_files):
-    from flask import current_app
-    import threading
-    threading.current_thread().detatch()
-    current_app.logger.debug("Executing Job in the background")
+@app.route('/api/generate-video', methods=['POST'])
+def generate_video():
     #######################################################################
     #                          INITIALIZATION                             #
     #######################################################################
@@ -75,65 +68,61 @@ def generate_video(form_data, form_files):
 
     # Initialize OpenAI client
     openai = get_openai_client()
-
+    print('Data Received.  Examining data...')
     logger('log', 'Data Received.  Examining data...')
     session_data = {
-        'company_name': form_data.get('company-name'),
-        'company_url': form_data.get('company-url'),
-        'topic': form_data.get('press-release'),
-        'tone_age_gender': form_data.get('tone_age_gender'),
-        'mood': form_data.get('mood'),
-        'platform': form_data.get('platform')
+        'company_name': request.form.get('company-name'),
+        'company_url': request.form.get('company-url'),
+        'topic': request.form.get('press-release'),
+        'tone_age_gender': request.form.get('tone_age_gender'),
+        'mood': request.form.get('mood'),
+        'platform': request.form.get('platform')
     }
-
-    # Get the uploaded images from the request
-    image_files = form_files.getlist('images')
-    current_app.logger.debug(image_files)
-
     (session_data['target_width'],
      session_data['target_height'],
      aspect_ratio) = (get_platform_specs(session_data['platform']))
+
+    # Get the uploaded images from the request
+    image_files = request.files.getlist('images')
+    print("Image Files:", image_files)
     # endregion
 
     #######################################################################
     #                         IMAGE PROCESSING                            #
     #######################################################################
     # region Image Processing
-    current_app.logger.debug("Starting Image Processing...")
 
     for image_file in image_files:
-        image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_file.filename)
-        current_app.logger.debug("Image Path: %s", image_path)
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_file.filename)
         image_file.save(image_path)
         if not compatible_image_format(image_path):
             with Image.open(image_path) as img:
                 img = convert_image_to_png(img)
                 new_filename = os.path.splitext(image_file.filename)[0] + '.png'
-                file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], new_filename)
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
                 img.save(file_path, format='PNG')
                 image_file.filename = new_filename
-    current_app.logger.debug("Still Alive...")
 
     # Keep track of image attributes
     images = []
     for image_file in image_files:
         images.append(
             {'filename': image_file.filename,
-             'local_dir': current_app.config['UPLOAD_FOLDER'],
+             'local_dir': app.config['UPLOAD_FOLDER'],
              'bucket': SOURCE_BUCKET_NAME})
 
     # Upload images to S3
     images = upload_images_from_disk_to_s3(s3, images)
-    current_app.logger.debug("S3 Keys:", [item["s3_key"] for item in images])
+    print("S3 Keys:", [item["s3_key"] for item in images])
 
     # Analyze our images
     logger('log', 'Launching Image Analysis...')
     images = describe_and_recommend(openai, images, s3.generate_presigned_url)
 
     for image in images:
-        current_app.logger.debug(f"Image: {image['filename']}")
-        current_app.logger.debug(f"S3: {image['s3_key']}")
-        current_app.logger.debug(f"Description: {image['description']}")
+        print(f"Image: {image['filename']}")
+        print(f"S3: {image['s3_key']}")
+        print(f"Description: {image['description']}")
 
     # Modify the images according to the AI suggestions
     logger('log', 'Modifying Images...')
@@ -169,13 +158,13 @@ def generate_video(form_data, form_files):
         'clips': [],
         'bucket': SOURCE_BUCKET_NAME,
         'narration_script': "",
-        'local_dir': current_app.config['AUDIO_FOLDER']
+        'local_dir': app.config['AUDIO_FOLDER']
     }
 
     # Generate the narrative for the video
     logger('log', 'Generating the narration script...')
     narration_script = create_narration(openai, session_data)
-    current_app.logger.debug("Script: ", narration_script)
+    print("Script: ", narration_script)
     session_data['audio']['narration_script'] = narration_script
 
     logger('log', 'Choosing a voice...')
@@ -212,13 +201,13 @@ def generate_video(form_data, form_files):
     clip = trim_and_fade(session_data, clip)
     session_data['audio']['clips'].append(clip)
 
-    current_app.logger.debug("Combining audio clips...")
-    current_app.logger.debug(session_data['audio'])
+    # endregion
+
     # Combine the audio clips
     logger('log', f'Mixing Audio...')
     combined_clips = combine_audio_clips(session_data)
     session_data['audio']['clips'].append(combined_clips)
-    # endregion
+
 
     return jsonify({'message': 'Video generation initiated'}), 200
 
@@ -229,6 +218,7 @@ def generate_video(form_data, form_files):
     #                        HAND-OFF TO LAMBDA                           #
     #######################################################################
     # region Hand-off to Lambda
+
 
     # Call the API Gateway to process the video
     logger('log', 'Generating the video...')
@@ -241,39 +231,19 @@ def generate_video(form_data, form_files):
     # endregion
 
 
-#################################################################################################################
-#################################################################################################################
-#################################################################################################################
-
-@app.route('/api/generate-video', methods=['POST'])
-def generate_video_route():
-
-    app.logger.debug('Data Received.  Examining data...')
-    form_data = {key: value for key, value in request.form.items()}
-    form_files = {key: value for key, value in request.files.items()}
-
-    # Use copy_current_request_context to ensure access to request-bound resources
-    @copy_current_request_context
-    def task():
-        return generate_video(form_data, form_files)
-    future = executor.submit(task)
-    app.logger.debug('Task submitted: %s', future)
-    return jsonify({'status': 'Task started'}), 202
-
-
 @app.route('/api/video-callback', methods=['POST'])
 def video_callback():
-    app.logger.debug("Got a call back!")
+    print("Got a call back!")
     # Retrieve the video URL from the callback data
     # video_url = request.get_json().get('video_url')
-    app.logger.debug(f"Headers: {request.headers}")
-    app.logger.debug(f"Body: {request.data}")
+    print(f"Headers: {request.headers}")
+    print(f"Body: {request.data}")
 
     if not request.is_json:
         return jsonify({"error": "Invalid content type"}), 400
 
     data = request.get_json()
-    app.logger.debug(f"JSON data: {data}")
+    print(f"JSON data: {data}")
     session_data = data.get('session_data')
     video_url = session_data.get('video_url')
 
