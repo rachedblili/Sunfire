@@ -64,6 +64,7 @@ def combine_audio_clips(session_data):
 
     # Identify and load the narration and music clips
     for clip in audio_data['clips']:
+        print("CLIP:", clip)
         if clip['type'] == 'narration':
             print("Found Clip 1")
             narration_clip = AudioSegment.from_file(clip['file_path'])
