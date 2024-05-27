@@ -89,10 +89,13 @@ def get_voice_tone_data():
         "Calm": ["meditation", "narration"],
         "Energetic": ["video games", "animation", "characters"]
     }
+    blacklist = ['Nicole']
 
     tones_details = {tone: {'voices': [], 'age_gender': set()} for tone in tones_to_use_cases}
 
     for voice in voice_data:
+        if voice['name'] in blacklist:
+            continue  # Some voices just suck
         voice_info = {
             "voice_id": voice['voice_id'],
             "name": voice['name'],
@@ -101,6 +104,7 @@ def get_voice_tone_data():
             "gender": normalize_attribute(voice['labels'].get('gender', '')),
             "age": normalize_attribute(voice['labels'].get('age', ''))
         }
+
         use_case = voice['labels'].get('use case')
         for tone, cases in tones_to_use_cases.items():
             if use_case in cases:
