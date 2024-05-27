@@ -171,7 +171,7 @@ def generate_music_prompt(client, session_data):
     }]
 
     prompt = generic_query(client, messages)
-    logger('log', f'Music Prompt:{prompt}')
+    print(f'Music Prompt:{prompt}')
 
     return prompt
         

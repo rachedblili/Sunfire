@@ -193,7 +193,7 @@ def generate_video():
 
     # Who knows how long the song is.  We need to trim it down and fade the last couple of seconds to silence.
     clip = trim_and_fade(session_data, clip)
-    session_data['audio']['clips'].append(new_audio_clip)
+    session_data['audio']['clips'].append(clip)
 
     # endregion
 

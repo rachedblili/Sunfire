@@ -51,7 +51,7 @@ def fade_out_audio(clip, local_dir):
 def trim_and_fade(session_data, clip):
     local_dir = session_data['audio']['local_dir']
     trimmed_clip = trim_clip(clip, local_dir)
-    faded_clip = fade_out_audio(clip, local_dir)
+    faded_clip = fade_out_audio(trimmed_clip, local_dir)
     return faded_clip
 
 
