@@ -62,6 +62,7 @@ def modify_images(session_data, images):
 
 def generate_video(session_data, image_files):
     from flask import current_app
+    current_app.logger.debug("Executing Job in the background")
 
     # Initialize S3 client
     s3 = get_s3_client()
@@ -77,6 +78,7 @@ def generate_video(session_data, image_files):
     #                         IMAGE PROCESSING                            #
     #######################################################################
     # region Image Processing
+    current_app.logger.debug("Starting Image Processing...")
 
     for image_file in image_files:
         image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_file.filename)
