@@ -29,7 +29,7 @@ def text_to_speech(client, session_data):
         voice_id=session_data['voice']['voice_id'],
         optimize_streaming_latency="0",
         output_format="mp3_22050_32",
-        text=f'<break time="1s" />{session_data["narration_script"]}<break time="1.5s" />',
+        text=f'<break time="1s" />{session_data["audio"]["narration_script"]}<break time="1.5s" />',
         model_id="eleven_multilingual_v2",
         voice_settings=VoiceSettings(
             stability=0.0,
