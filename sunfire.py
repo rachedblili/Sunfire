@@ -61,6 +61,7 @@ def modify_images(session_data, images):
 
 
 def generate_video(session_data, image_files):
+    from flask import current_app
 
     # Initialize S3 client
     s3 = get_s3_client()
@@ -78,13 +79,13 @@ def generate_video(session_data, image_files):
     # region Image Processing
 
     for image_file in image_files:
-        image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_file.filename)
+        image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_file.filename)
         image_file.save(image_path)
         if not compatible_image_format(image_path):
             with Image.open(image_path) as img:
                 img = convert_image_to_png(img)
                 new_filename = os.path.splitext(image_file.filename)[0] + '.png'
-                file_path = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
+                file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], new_filename)
                 img.save(file_path, format='PNG')
                 image_file.filename = new_filename
 
@@ -93,21 +94,21 @@ def generate_video(session_data, image_files):
     for image_file in image_files:
         images.append(
             {'filename': image_file.filename,
-             'local_dir': app.config['UPLOAD_FOLDER'],
+             'local_dir': current_app.config['UPLOAD_FOLDER'],
              'bucket': SOURCE_BUCKET_NAME})
 
     # Upload images to S3
     images = upload_images_from_disk_to_s3(s3, images)
-    app.logger.debug("S3 Keys:", [item["s3_key"] for item in images])
+    current_app.logger.debug("S3 Keys:", [item["s3_key"] for item in images])
 
     # Analyze our images
     logger('log', 'Launching Image Analysis...')
     images = describe_and_recommend(openai, images, s3.generate_presigned_url)
 
     for image in images:
-        app.logger.debug(f"Image: {image['filename']}")
-        app.logger.debug(f"S3: {image['s3_key']}")
-        app.logger.debug(f"Description: {image['description']}")
+        current_app.logger.debug(f"Image: {image['filename']}")
+        current_app.logger.debug(f"S3: {image['s3_key']}")
+        current_app.logger.debug(f"Description: {image['description']}")
 
     # Modify the images according to the AI suggestions
     logger('log', 'Modifying Images...')
@@ -143,13 +144,13 @@ def generate_video(session_data, image_files):
         'clips': [],
         'bucket': SOURCE_BUCKET_NAME,
         'narration_script': "",
-        'local_dir': app.config['AUDIO_FOLDER']
+        'local_dir': current_app.config['AUDIO_FOLDER']
     }
 
     # Generate the narrative for the video
     logger('log', 'Generating the narration script...')
     narration_script = create_narration(openai, session_data)
-    app.logger.debug("Script: ", narration_script)
+    current_app.logger.debug("Script: ", narration_script)
     session_data['audio']['narration_script'] = narration_script
 
     logger('log', 'Choosing a voice...')
@@ -187,8 +188,8 @@ def generate_video(session_data, image_files):
     session_data['audio']['clips'].append(clip)
 
     # endregion
-    app.logger.debug("Combining audio clips...")
-    app.logger.debug(session_data['audio'])
+    current_app.logger.debug("Combining audio clips...")
+    current_app.logger.debug(session_data['audio'])
     # Combine the audio clips
     logger('log', f'Mixing Audio...')
     combined_clips = combine_audio_clips(session_data)
@@ -235,8 +236,8 @@ def generate_video_route():
 
     # Get the uploaded images from the request
     image_files = request.files.getlist('images')
-    app.logger.debug("Image Files:", image_files)
-    executor.submit(generate_video, session_data, image_files)
+    future = executor.submit(generate_video, session_data, image_files)
+    app.logger.debug('Task submitted: %s', future)
     return jsonify({'status': 'Task started'}), 202
 
     # endregion
