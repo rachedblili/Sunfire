@@ -1,3 +1,4 @@
+from flask import current_app
 from pydub import AudioSegment
 
 
@@ -64,12 +65,12 @@ def combine_audio_clips(session_data):
 
     # Identify and load the narration and music clips
     for clip in audio_data['clips']:
-        print("CLIP:", clip)
+        current_app.logger.debug("CLIP:", clip)
         if clip['type'] == 'narration':
-            print("Found Clip 1")
+            current_app.logger.debug("Found Clip 1")
             narration_clip = AudioSegment.from_file(clip['file_path'])
         elif clip['type'] == 'music':
-            print("Found Clip 2")
+            current_app.logger.debug("Found Clip 2")
             music_clip = AudioSegment.from_file(clip['file_path'])
 
     # Check and adjust loudness

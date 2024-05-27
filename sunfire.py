@@ -34,10 +34,10 @@ def call_api_gateway(session_data):
     # host = request.headers.get('Host', request.host)
     callback_url = "http://54.166.183.35/api/video-callback"
     session_data['callback_url'] = callback_url
-    print("CALLBACK: ", callback_url)
+    app.logger.debug("CALLBACK: ", callback_url)
     payload = session_data
     response = requests.post(API_GATEWAY_URL, json=payload)
-    print(response)
+    app.logger.debug(response)
     if response.status_code == 200:
         return response
     else:
@@ -102,16 +102,16 @@ def generate_video(session_data, image_files):
 
     # Upload images to S3
     images = upload_images_from_disk_to_s3(s3, images)
-    print("S3 Keys:", [item["s3_key"] for item in images])
+    app.logger.debug("S3 Keys:", [item["s3_key"] for item in images])
 
     # Analyze our images
     logger('log', 'Launching Image Analysis...')
     images = describe_and_recommend(openai, images, s3.generate_presigned_url)
 
     for image in images:
-        print(f"Image: {image['filename']}")
-        print(f"S3: {image['s3_key']}")
-        print(f"Description: {image['description']}")
+        app.logger.debug(f"Image: {image['filename']}")
+        app.logger.debug(f"S3: {image['s3_key']}")
+        app.logger.debug(f"Description: {image['description']}")
 
     # Modify the images according to the AI suggestions
     logger('log', 'Modifying Images...')
@@ -153,7 +153,7 @@ def generate_video(session_data, image_files):
     # Generate the narrative for the video
     logger('log', 'Generating the narration script...')
     narration_script = create_narration(openai, session_data)
-    print("Script: ", narration_script)
+    app.logger.debug("Script: ", narration_script)
     session_data['audio']['narration_script'] = narration_script
 
     logger('log', 'Choosing a voice...')
@@ -191,8 +191,8 @@ def generate_video(session_data, image_files):
     session_data['audio']['clips'].append(clip)
 
     # endregion
-    print("Combining audio clips...")
-    print(session_data['audio'])
+    app.logger.debug("Combining audio clips...")
+    app.logger.debug(session_data['audio'])
     # Combine the audio clips
     logger('log', f'Mixing Audio...')
     combined_clips = combine_audio_clips(session_data)
@@ -226,7 +226,7 @@ def generate_video_route():
     #######################################################################
     # region Initialization
 
-    print('Data Received.  Examining data...')
+    app.logger.debug('Data Received.  Examining data...')
     logger('log', 'Data Received.  Examining data...')
     session_data = {
         'company_name': request.form.get('company-name'),
@@ -239,7 +239,7 @@ def generate_video_route():
 
     # Get the uploaded images from the request
     image_files = request.files.getlist('images')
-    print("Image Files:", image_files)
+    app.logger.debug("Image Files:", image_files)
     executor.submit(generate_video, session_data, image_files)
     return jsonify({'status': 'Task started'}), 202
 
@@ -248,17 +248,17 @@ def generate_video_route():
 
 @app.route('/api/video-callback', methods=['POST'])
 def video_callback():
-    print("Got a call back!")
+    app.logger.debug("Got a call back!")
     # Retrieve the video URL from the callback data
     # video_url = request.get_json().get('video_url')
-    print(f"Headers: {request.headers}")
-    print(f"Body: {request.data}")
+    app.logger.debug(f"Headers: {request.headers}")
+    app.logger.debug(f"Body: {request.data}")
 
     if not request.is_json:
         return jsonify({"error": "Invalid content type"}), 400
 
     data = request.get_json()
-    print(f"JSON data: {data}")
+    app.logger.debug(f"JSON data: {data}")
     session_data = data.get('session_data')
     video_url = session_data.get('video_url')
 

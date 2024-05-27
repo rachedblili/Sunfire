@@ -1,5 +1,5 @@
 # Get setup instructions here: https://github.com/gcui-art/suno-api
-
+from flask import current_app
 import time
 import requests
 
@@ -53,17 +53,17 @@ def make_music(session_data, prompt):
             "wait_audio": False
     })
     ids = f"{data[0]['id']},{data[1]['id']}"
-    print(f"ids: {ids}")
+    current_app.logger.debug(f"ids: {ids}")
     for _ in range(60):
         data = get_audio_information(ids)
         if data[0]["status"] == 'streaming':
-            print(f"{data[0]['id']} ==> {data[0]['audio_url']}")
-            print(f"{data[1]['id']} ==> {data[1]['audio_url']}")
+            current_app.logger.debug(f"{data[0]['id']} ==> {data[0]['audio_url']}")
+            current_app.logger.debug(f"{data[1]['id']} ==> {data[1]['audio_url']}")
             break
         # sleep 5s
         time.sleep(5)
     ids = f"{data[0]['id']},{data[1]['id']}"
-    print(f"ids: {ids}")
+    current_app.logger.debug(f"ids: {ids}")
     response = requests.get(data[0]['audio_url'])
     response.raise_for_status()
     with open(dir_name+filename, 'wb') as out_file:

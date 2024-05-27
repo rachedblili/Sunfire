@@ -1,4 +1,5 @@
 import os
+from flask import current_app
 from openai import OpenAI
 import json
 from messaging_utils import logger
@@ -11,15 +12,15 @@ def get_openai_client():
 
 def describe_and_recommend(client, images, url_maker):
     for image in images:
-        # print(f"Image: {image['filename']}")
-        # print(f"S3: {image['s3_key']}")
+        # current_app.logger.debug(f"Image: {image['filename']}")
+        # current_app.logger.debug(f"S3: {image['s3_key']}")
         # Create pre-signed URL to the S3 objects
         image_url = url_maker(
                 'get_object',
                 Params={'Bucket': image['bucket'], 'Key': image['s3_key']},
                 ExpiresIn=120  # URL expires in 2 minutes
             )
-        # print(f"URL: {image_url}")
+        # current_app.logger.debug(f"URL: {image_url}")
         describe_response = client.chat.completions.create(
             model='gpt-4o',
             messages=[
@@ -171,7 +172,7 @@ def generate_music_prompt(client, session_data):
     }]
 
     prompt = generic_query(client, messages)
-    print(f'Music Prompt:{prompt}')
+    current_app.logger.debug(f'Music Prompt:{prompt}')
 
     return prompt
         
