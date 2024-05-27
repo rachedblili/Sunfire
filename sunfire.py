@@ -101,6 +101,7 @@ def generate_video(form_data, form_files):
 
     for image_file in image_files:
         image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], image_file.filename)
+        current_app.logger.debug("Image Path: %s", image_path)
         image_file.save(image_path)
         if not compatible_image_format(image_path):
             with Image.open(image_path) as img:
