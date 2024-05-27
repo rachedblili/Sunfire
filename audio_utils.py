@@ -2,7 +2,7 @@ from pydub import AudioSegment
 
 
 def fit_clip_length(clip, local_dir, desired_duration):
-    audio = AudioSegment.from_file(local_dir+['filename'])
+    audio = AudioSegment.from_file(local_dir+clip['filename'])
 
     current_duration = len(audio) / 1000.0  # In seconds
     speed_factor = desired_duration / current_duration
