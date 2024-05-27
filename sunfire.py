@@ -188,16 +188,23 @@ def generate_video():
     #######################################################################
     # region Music Section
 
+    logger('log', f'Designing Music...')
+
     music_prompt = generate_music_prompt(openai, session_data)
+    logger('log', music_prompt)
+
+    logger('log', f'Generating Music...')
     clip = make_music(session_data, music_prompt)
 
     # Who knows how long the song is.  We need to trim it down and fade the last couple of seconds to silence.
+    logger('log', f'Making Adjustments...')
     clip = trim_and_fade(session_data, clip)
     session_data['audio']['clips'].append(clip)
 
     # endregion
 
     # Combine the audio clips
+    logger('log', f'Mixing Audio...')
     combined_clips = combine_audio_clips(session_data)
     session_data['audio']['clips'].append(combined_clips)
 
