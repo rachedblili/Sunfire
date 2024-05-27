@@ -60,9 +60,13 @@ def modify_images(session_data, images):
     return modified_images
 
 
-def generate_video(session_data, image_files):
+def generate_video(form_data, form_files):
     from flask import current_app
     current_app.logger.debug("Executing Job in the background")
+    #######################################################################
+    #                          INITIALIZATION                             #
+    #######################################################################
+    # region Initialization
 
     # Initialize S3 client
     s3 = get_s3_client()
@@ -70,9 +74,22 @@ def generate_video(session_data, image_files):
     # Initialize OpenAI client
     openai = get_openai_client()
 
+    logger('log', 'Data Received.  Examining data...')
+    session_data = {
+        'company_name': form_data.get('company-name'),
+        'company_url': form_data.get('company-url'),
+        'topic': form_data.get('press-release'),
+        'tone_age_gender': form_data.get('tone_age_gender'),
+        'mood': form_data.get('mood'),
+        'platform': form_data.get('platform')
+    }
+
+    # Get the uploaded images from the request
+    image_files = form_files.getlist('images')
     (session_data['target_width'],
      session_data['target_height'],
      aspect_ratio) = (get_platform_specs(session_data['platform']))
+    # endregion
 
     #######################################################################
     #                         IMAGE PROCESSING                            #
@@ -90,6 +107,7 @@ def generate_video(session_data, image_files):
                 file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], new_filename)
                 img.save(file_path, format='PNG')
                 image_file.filename = new_filename
+    current_app.logger.debug("Still Alive...")
 
     # Keep track of image attributes
     images = []
@@ -189,13 +207,13 @@ def generate_video(session_data, image_files):
     clip = trim_and_fade(session_data, clip)
     session_data['audio']['clips'].append(clip)
 
-    # endregion
     current_app.logger.debug("Combining audio clips...")
     current_app.logger.debug(session_data['audio'])
     # Combine the audio clips
     logger('log', f'Mixing Audio...')
     combined_clips = combine_audio_clips(session_data)
     session_data['audio']['clips'].append(combined_clips)
+    # endregion
 
     return jsonify({'message': 'Video generation initiated'}), 200
 
@@ -218,31 +236,19 @@ def generate_video(session_data, image_files):
     # endregion
 
 
+#################################################################################################################
+#################################################################################################################
+#################################################################################################################
+
 @app.route('/api/generate-video', methods=['POST'])
 def generate_video_route():
-    #######################################################################
-    #                          INITIALIZATION                             #
-    #######################################################################
-    # region Initialization
 
     app.logger.debug('Data Received.  Examining data...')
-    logger('log', 'Data Received.  Examining data...')
-    session_data = {
-        'company_name': request.form.get('company-name'),
-        'company_url': request.form.get('company-url'),
-        'topic': request.form.get('press-release'),
-        'tone_age_gender': request.form.get('tone_age_gender'),
-        'mood': request.form.get('mood'),
-        'platform': request.form.get('platform')
-    }
-
-    # Get the uploaded images from the request
-    image_files = request.files.getlist('images')
-    future = executor.submit(generate_video, session_data, image_files)
+    form_data = request.form
+    form_files = request.files
+    future = executor.submit(generate_video, form_data, form_files)
     app.logger.debug('Task submitted: %s', future)
     return jsonify({'status': 'Task started'}), 202
-
-    # endregion
 
 
 @app.route('/api/video-callback', methods=['POST'])
