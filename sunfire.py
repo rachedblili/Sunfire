@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify, Response, copy_current_request_context
 from flask_executor import Executor
 
 import os
@@ -251,6 +251,7 @@ def generate_video_route():
     app.logger.debug('Data Received.  Examining data...')
     form_data = {key: value for key, value in request.form.items()}
     form_files = {key: value for key, value in request.files.items()}
+
     # Use copy_current_request_context to ensure access to request-bound resources
     @copy_current_request_context
     def task():
