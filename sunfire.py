@@ -1,4 +1,6 @@
 from flask import Flask, request, jsonify, Response
+from flask_executor import Executor
+
 import os
 from dotenv import load_dotenv
 
@@ -13,6 +15,7 @@ from elevenlabs_utils import get_elevenlabs_client, get_voice_tone_data, find_vo
 from suno_utils import make_music
 
 app = Flask(__name__)
+executor = Executor(app)
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 app.config['VIDEOS_FOLDER'] = 'videos/'
 app.config['AUDIO_FOLDER'] = 'audio/'
@@ -56,36 +59,17 @@ def modify_images(session_data, images):
     return modified_images
 
 
-@app.route('/api/generate-video', methods=['POST'])
-def generate_video():
-    #######################################################################
-    #                          INITIALIZATION                             #
-    #######################################################################
-    # region Initialization
+def generate_video(session_data, image_files):
 
     # Initialize S3 client
     s3 = get_s3_client()
 
     # Initialize OpenAI client
     openai = get_openai_client()
-    print('Data Received.  Examining data...')
-    logger('log', 'Data Received.  Examining data...')
-    session_data = {
-        'company_name': request.form.get('company-name'),
-        'company_url': request.form.get('company-url'),
-        'topic': request.form.get('press-release'),
-        'tone_age_gender': request.form.get('tone_age_gender'),
-        'mood': request.form.get('mood'),
-        'platform': request.form.get('platform')
-    }
+
     (session_data['target_width'],
      session_data['target_height'],
      aspect_ratio) = (get_platform_specs(session_data['platform']))
-
-    # Get the uploaded images from the request
-    image_files = request.files.getlist('images')
-    print("Image Files:", image_files)
-    # endregion
 
     #######################################################################
     #                         IMAGE PROCESSING                            #
@@ -209,7 +193,6 @@ def generate_video():
     combined_clips = combine_audio_clips(session_data)
     session_data['audio']['clips'].append(combined_clips)
 
-
     return jsonify({'message': 'Video generation initiated'}), 200
 
     logger('log', 'Uploading Audio to the cloud...')
@@ -220,7 +203,6 @@ def generate_video():
     #######################################################################
     # region Hand-off to Lambda
 
-
     # Call the API Gateway to process the video
     logger('log', 'Generating the video...')
     api_response = call_api_gateway(session_data)
@@ -229,6 +211,33 @@ def generate_video():
     else:
         # Return an error response if the video generation failed
         return jsonify({'error': 'Video generation failed'}), 500
+    # endregion
+
+
+@app.route('/api/generate-video', methods=['POST'])
+def generate_video_route():
+    #######################################################################
+    #                          INITIALIZATION                             #
+    #######################################################################
+    # region Initialization
+
+    print('Data Received.  Examining data...')
+    logger('log', 'Data Received.  Examining data...')
+    session_data = {
+        'company_name': request.form.get('company-name'),
+        'company_url': request.form.get('company-url'),
+        'topic': request.form.get('press-release'),
+        'tone_age_gender': request.form.get('tone_age_gender'),
+        'mood': request.form.get('mood'),
+        'platform': request.form.get('platform')
+    }
+
+    # Get the uploaded images from the request
+    image_files = request.files.getlist('images')
+    print("Image Files:", image_files)
+    executor.submit(generate_video, session_data, image_files)
+    return jsonify({'status': 'Task started'}), 202
+
     # endregion
 
 
