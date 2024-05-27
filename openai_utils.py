@@ -143,3 +143,33 @@ def create_narration(client, session_data):
     )
     narrative = generic_query(client, messages)
     return narrative
+
+
+def generate_music_prompt(client, session_data):
+    tone, age_gender = session_data['tone_age_gender'].split(':')
+    mood = session_data['mood']
+    topic = session_data['narration_script']
+    messages = [{
+        "role": "system",
+        "content": "You are the assistant. Your job is to be create excellent prompts for other LLMs. Your response "
+                   "contain ONLY the requested prompt. Your response will be parsed by a script and should "
+                   "have no formatting characters or extraneous artifacts.  It MUST NOT EXCEED 30 words. "
+                   "If the specified mood is 'ai', use other context clues to choose the music mood."
+    }, {
+        "role": "user",
+        "content": f"""
+                Please generate a prompt that I can use with a music generation LLM to generate a short musical
+                piece that will serve as the background music for a promotional video.  The prompt should primarily
+                specify genre, vibe and tempo.  Examine the following data and create then return the appropriate
+                prompt.
+                [DATA]
+                Requested mood: {mood} (if 'ai' then use your own judgement)
+                Tone: {tone}
+                Topic: {topic}
+                
+                Please keep the prompt to under 30 words and only include tightly worded instructions to the LLM."""
+    }]
+
+    prompt = generic_query(client, messages)
+    return prompt
+        

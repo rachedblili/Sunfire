@@ -1,13 +1,17 @@
 from flask import Flask, request, jsonify, Response
 import os
 from dotenv import load_dotenv
+
+from audio_utils import trim_and_fade
 from s3_utils import get_s3_client, upload_images_from_disk_to_s3, upload_audio_from_disk_to_s3
-from openai_utils import get_openai_client, describe_and_recommend, create_narration
+from openai_utils import get_openai_client, describe_and_recommend, create_narration, generate_music_prompt
 import requests
 from PIL import Image
 from image_utils import modify_image, compatible_image_format, convert_image_to_png, get_platform_specs
 from messaging_utils import message_manager, logger
 from elevenlabs_utils import get_elevenlabs_client, get_voice_tone_data, find_voice, generate_audio_narration
+from suno_utils import make_music
+
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 app.config['VIDEOS_FOLDER'] = 'videos/'
@@ -177,22 +181,38 @@ def generate_video():
     new_audio_clip = generate_audio_narration(elevenlabs, session_data)
     session_data['audio']['clips'].append(new_audio_clip)
 
-    logger('log', 'Uploading Audio to the cloud...')
-    session_data['audio'] = upload_audio_from_disk_to_s3(s3, session_data['audio'])
     # endregion
-
-    return jsonify({'message': 'Video generation initiated'}), 200
 
     #######################################################################
     #                           MUSIC SECTION                             #
     #######################################################################
     # region Music Section
+
+    music_prompt = generate_music_prompt(openai, session_data)
+    clip = make_music(session_data, music_prompt)
+
+    # Who knows how long the song is.  We need to trim it down and fade the last couple of seconds to silence.
+    clip = trim_and_fade(session_data, clip)
+    session_data['audio']['clips'].append(new_audio_clip)
+
     # endregion
+
+    # Combine the audio clips
+    combined_clips = combine_audio_clips(session_data)
+    session_data['audio']['clips'].append(combined_clips)
+
+
+    return jsonify({'message': 'Video generation initiated'}), 200
+
+    logger('log', 'Uploading Audio to the cloud...')
+    session_data['audio'] = upload_audio_from_disk_to_s3(s3, session_data['audio'])
 
     #######################################################################
     #                        HAND-OFF TO LAMBDA                           #
     #######################################################################
     # region Hand-off to Lambda
+
+
     # Call the API Gateway to process the video
     logger('log', 'Generating the video...')
     api_response = call_api_gateway(session_data)

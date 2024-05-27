@@ -4,7 +4,7 @@ import time
 import requests
 
 # replace your vercel domain
-base_url = 'http://54.166.183.35:3000'
+base_url = 'http://127.0.0.1:3000'
 
 
 def custom_generate_audio(payload):
@@ -44,7 +44,9 @@ def generate_whole_song(clip_id):
     return response.json()
 
 
-def make_music(prompt):
+def make_music(session_data, prompt):
+    filename = f'{session_data['company_name']}_{session_data['voice']['name']}_music.mp3'
+    dir_name = session_data['local_dir']
     data = generate_audio_by_prompt({
             "prompt": prompt,
             "make_instrumental": True,
@@ -62,4 +64,10 @@ def make_music(prompt):
         time.sleep(5)
     ids = f"{data[0]['id']},{data[1]['id']}"
     print(f"ids: {ids}")
-    return ""
+    response = requests.get(data[0]['audio_url'])
+    response.raise_for_status()
+    with open(dir_name+filename, 'wb') as out_file:
+        out_file.write(response.content)
+
+    clip = {"filename": filename, "type": "music"}
+    return clip
