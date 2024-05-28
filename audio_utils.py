@@ -57,12 +57,12 @@ def trim_and_fade(session_data, clip):
     return faded_clip
 
 
-def combine_audio_clips(session_data):
+def combine_audio_clips(session_data: dict):
     audio_data = session_data['audio']
     save_dir = session_data['audio']['local_dir']
     narration_clip = None
     music_clip = None
-
+    print("Number of audio clips to combine: ", str(len(audio_data['clips'])))
     # Identify and load the narration and music clips
     for clip in audio_data['clips']:
         if clip['type'] == 'narration':
@@ -72,6 +72,7 @@ def combine_audio_clips(session_data):
 
     # Check and adjust loudness
     if narration_clip and music_clip:
+        print("Checking Loudness")
         # Measure the loudness of each clip
         narration_dbfs = narration_clip.dBFS
         music_dbfs = music_clip.dBFS
@@ -95,4 +96,5 @@ def combine_audio_clips(session_data):
 
     else:
         # If one of the clips is missing, handle the error appropriately
+        print("Weird: Couldn't find both clips.")
         raise FileNotFoundError("One or both audio clips could not be found.")
