@@ -30,7 +30,7 @@ def text_to_speech(client, session_data):
         voice_id=session_data['voice']['voice_id'],
         optimize_streaming_latency="0",
         output_format="mp3_22050_32",
-        text=f'<break time="1s" />{session_data["audio"]["narration_script"]}<break time="1.5s" />',
+        text=f' ... {session_data["audio"]["narration_script"]} ... ',
         model_id="eleven_multilingual_v2",
         voice_settings=VoiceSettings(
             stability=0.0,
@@ -96,6 +96,7 @@ def get_voice_tone_data():
 
     for voice in voice_data:
         if voice['name'] in blacklist:
+            print(f"Ignoring blacklisted narrator: {voice['name']}")
             continue  # Some voices just suck
         voice_info = {
             "voice_id": voice['voice_id'],
@@ -143,7 +144,7 @@ def find_voice(tone, age, gender):
     # Check if the selected tone is in the data structure
     if tone not in tones_data:
         print("Couldn't find tone: ", tone)
-        return []  # Return an empty list if the tone is not found
+        return ""  # Return an empty list if the tone is not found
 
     # Retrieve the list of all voices under the selected tone
     voices = tones_data[tone]['voices']
