@@ -64,11 +64,13 @@ def combine_audio_clips(session_data: dict):
     music_clip = None
     print("Number of audio clips to combine: ", str(len(audio_data['clips'])))
     # Identify and load the narration and music clips
-    for clip in audio_data['clips']:
-        if clip['type'] == 'narration':
-            narration_clip = AudioSegment.from_file(clip['file_path'])
-        elif clip['type'] == 'music':
-            music_clip = AudioSegment.from_file(clip['file_path'])
+    # for clip in audio_data['clips']:
+    #     if clip['type'] == 'narration':
+    #         narration_clip = AudioSegment.from_file(clip['file_path'])
+    #     elif clip['type'] == 'music':
+    #         music_clip = AudioSegment.from_file(clip['file_path'])
+    narration_clip = AudioSegment.from_file(audio_data['clips'][0]['file_path'])
+    music_clip = AudioSegment.from_file(audio_data['clips'][1]['file_path'])
 
     # Check and adjust loudness
     if narration_clip and music_clip:

@@ -183,6 +183,8 @@ def generate_video(session_data, images):
         logger('log', f'Mixing Audio...')
         combined_clips = combine_audio_clips(session_data)
         session_data['audio']['clips'].append(combined_clips)
+        logger('log', f'Audio Mixing Complete')
+
 
         return jsonify({'message': 'Video generation initiated'}), 200
 
