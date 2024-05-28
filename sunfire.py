@@ -63,7 +63,7 @@ def modify_images(session_data, images):
 def generate_video(session_data, images):
     from flask import current_app
     with app.app_context():
-        current_app.logger.debug('Executing the background')
+        print('Executing the background')
         print('TESTING')
 
         #######################################################################
@@ -84,7 +84,7 @@ def generate_video(session_data, images):
         #######################################################################
         # region Image Processing
 
-        current_app.logger.debug('Processing Images...')
+        print('Processing Images...')
 
 
         # Upload images to S3

@@ -75,11 +75,11 @@ def dump_voice_stats():
         use_cases = {voice['labels'].get('use case') for voice in voices if voice['labels']['gender'] == gender and voice['labels']['accent'] in ['american', 'british', 'american-southern']}
 
         # Print the lists
-        current_app.logger.debug(f"========= {gender} =========")
-        current_app.logger.debug("Accents:", list(accents))
-        current_app.logger.debug("Descriptions:", list(descriptions))
-        current_app.logger.debug("Ages:", list(ages))
-        current_app.logger.debug("Use Cases:", list(use_cases))
+        print(f"========= {gender} =========")
+        print("Accents:", list(accents))
+        print("Descriptions:", list(descriptions))
+        print("Ages:", list(ages))
+        print("Use Cases:", list(use_cases))
 
 
 def get_voice_tone_data():
@@ -138,11 +138,11 @@ def find_voice(tone, age, gender):
         list: A list of dictionaries, each representing a voice that matches the criteria.
     """
     tone = tone.capitalize()
-    current_app.logger.debug("Looking for: ", tone, age, gender)
+    print("Looking for: ", tone, age, gender)
     tones_data = get_voice_tone_data()
     # Check if the selected tone is in the data structure
     if tone not in tones_data:
-        current_app.logger.debug("Couldn't find tone: ", tone)
+        print("Couldn't find tone: ", tone)
         return []  # Return an empty list if the tone is not found
 
     # Retrieve the list of all voices under the selected tone
@@ -153,5 +153,5 @@ def find_voice(tone, age, gender):
         voice for voice in voices
         if voice['age'] == age and voice['gender'] == gender
     ]
-    current_app.logger.debug("Number of matches:", str(len(matching_voices)))
+    print("Number of matches:", str(len(matching_voices)))
     return random.choice(matching_voices)
