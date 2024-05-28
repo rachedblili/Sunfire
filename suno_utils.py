@@ -1,5 +1,5 @@
 # Get setup instructions here: https://github.com/gcui-art/suno-api
-from flask import current_app
+from messaging_utils import logger
 import time
 import requests
 
@@ -62,10 +62,12 @@ def make_music(session_data, prompt):
             break
         # sleep 5s
         time.sleep(5)
-    ids = f"{data[0]['id']},{data[1]['id']}"
-    print(f"ids: {ids}")
+    # ids = f"{data[0]['id']},{data[1]['id']}"
+    # print(f"ids: {ids}")
+    logger("log", "Downloading Music...")
     response = requests.get(data[0]['audio_url'])
     response.raise_for_status()
+    print("Saving Music to Disk...")
     with open(dir_name+filename, 'wb') as out_file:
         out_file.write(response.content)
 
