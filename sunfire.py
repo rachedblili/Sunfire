@@ -63,148 +63,152 @@ def modify_images(session_data, images):
 def generate_video(session_data, images):
     from flask import current_app
     with app.app_context():
-        print('Executing the background')
-        print('TESTING')
+        try:
+            print('Executing the background')
+            print('TESTING')
 
-        #######################################################################
-        #                          INITIALIZATION                             #
-        #######################################################################
-        # region Initialization
+            #######################################################################
+            #                          INITIALIZATION                             #
+            #######################################################################
+            # region Initialization
 
-        # Initialize S3 client
-        s3 = get_s3_client()
+            # Initialize S3 client
+            s3 = get_s3_client()
 
-        # Initialize OpenAI client
-        openai = get_openai_client()
+            # Initialize OpenAI client
+            openai = get_openai_client()
 
-        # endregion
+            # endregion
 
-        #######################################################################
-        #                         IMAGE PROCESSING                            #
-        #######################################################################
-        # region Image Processing
+            #######################################################################
+            #                         IMAGE PROCESSING                            #
+            #######################################################################
+            # region Image Processing
 
-        print('Processing Images...')
-
-
-        # Upload images to S3
-        images = upload_images_from_disk_to_s3(s3, images)
-        print("S3 Keys:", [item["s3_key"] for item in images])
-
-        # Analyze our images
-        logger('log', 'Launching Image Analysis...')
-        images = describe_and_recommend(openai, images, s3.generate_presigned_url)
-
-        for image in images:
-            print(f"Image: {image['filename']}")
-            print(f"S3: {image['s3_key']}")
-            print(f"Description: {image['description']}")
-
-        # Modify the images according to the AI suggestions
-        logger('log', 'Modifying Images...')
-        modified_images = modify_images(session_data, images)
-
-        logger('log', 'Uploading Images to the cloud...')
-        # Upload images to S3
-        modified_images = upload_images_from_disk_to_s3(s3, modified_images)
-
-        s3_keys = []
-        for item in modified_images:
-            s3_keys.append({'bucket': item['bucket'], 'key': item['s3_key']})
-
-        # Define video parameters
-        video_data = {
-            'duration': 30,
-            'fps': 24,
-            'aspect_ratio': session_data['video']['aspect_ratio'],
-        }
-        session_data['video'] = video_data
-        session_data['images'] = modified_images
-        session_data['s3_objects'] = s3_keys
-        session_data['write_bucket'] = DESTINATION_BUCKET_NAME
-        # endregion
-
-        #######################################################################
-        #                       NARRATIVE SECTION                             #
-        #######################################################################
-        # region Narrative Section
-
-        # Prepare the data structure that will house audio data
-        session_data['audio'] = {
-            'clips': [],
-            'bucket': SOURCE_BUCKET_NAME,
-            'narration_script': "",
-            'local_dir': app.config['AUDIO_FOLDER']
-        }
-
-        # Generate the narrative for the video
-        logger('log', 'Generating the narration script...')
-        narration_script = create_narration(openai, session_data)
-        print("Script: ", narration_script)
-        session_data['audio']['narration_script'] = narration_script
-
-        logger('log', 'Choosing a voice...')
-        tone, age_gender = session_data['tone_age_gender'].split(':')
-        age, gender = age_gender.split()
-        voice = find_voice(tone, age, gender)
-        logger('log', f'Your narrator is: {voice['name']}')
-        session_data['voice'] = voice
-
-        # Time to start generating audio
-        elevenlabs = get_elevenlabs_client()
-
-        logger('log', f'Generating audio narration...')
-        new_audio_clip = generate_audio_narration(elevenlabs, session_data)
-        session_data['audio']['clips'].append(new_audio_clip)
-
-        # endregion
-
-        #######################################################################
-        #                           MUSIC SECTION                             #
-        #######################################################################
-        # region Music Section
-
-        logger('log', f'Designing Music...')
-
-        music_prompt = generate_music_prompt(openai, session_data)
-        logger('log', music_prompt)
-
-        logger('log', f'Generating Music...')
-        clip = make_music(session_data, music_prompt)
-
-        # Who knows how long the song is.  We need to trim it down and fade the last couple of seconds to silence.
-        logger('log', f'Making Adjustments...')
-        clip = trim_and_fade(session_data, clip)
-        session_data['audio']['clips'].append(clip)
-
-        # endregion
-
-        # Combine the audio clips
-        logger('log', f'Mixing Audio...')
-        combined_clips = combine_audio_clips(session_data)
-        session_data['audio']['clips'].append(combined_clips)
-        logger('log', f'Audio Mixing Complete')
+            print('Processing Images...')
 
 
-        return jsonify({'message': 'Video generation initiated'}), 200
+            # Upload images to S3
+            images = upload_images_from_disk_to_s3(s3, images)
+            print("S3 Keys:", [item["s3_key"] for item in images])
 
-        logger('log', 'Uploading Audio to the cloud...')
-        session_data['audio'] = upload_audio_from_disk_to_s3(s3, session_data['audio'])
+            # Analyze our images
+            logger('log', 'Launching Image Analysis...')
+            images = describe_and_recommend(openai, images, s3.generate_presigned_url)
 
-        #######################################################################
-        #                        HAND-OFF TO LAMBDA                           #
-        #######################################################################
-        # region Hand-off to Lambda
+            for image in images:
+                print(f"Image: {image['filename']}")
+                print(f"S3: {image['s3_key']}")
+                print(f"Description: {image['description']}")
 
-        # Call the API Gateway to process the video
-        logger('log', 'Generating the video...')
-        api_response = call_api_gateway(session_data)
-        if api_response:
+            # Modify the images according to the AI suggestions
+            logger('log', 'Modifying Images...')
+            modified_images = modify_images(session_data, images)
+
+            logger('log', 'Uploading Images to the cloud...')
+            # Upload images to S3
+            modified_images = upload_images_from_disk_to_s3(s3, modified_images)
+
+            s3_keys = []
+            for item in modified_images:
+                s3_keys.append({'bucket': item['bucket'], 'key': item['s3_key']})
+
+            # Define video parameters
+            video_data = {
+                'duration': 30,
+                'fps': 24,
+                'aspect_ratio': session_data['video']['aspect_ratio'],
+            }
+            session_data['video'] = video_data
+            session_data['images'] = modified_images
+            session_data['s3_objects'] = s3_keys
+            session_data['write_bucket'] = DESTINATION_BUCKET_NAME
+            # endregion
+
+            #######################################################################
+            #                       NARRATIVE SECTION                             #
+            #######################################################################
+            # region Narrative Section
+
+            # Prepare the data structure that will house audio data
+            session_data['audio'] = {
+                'clips': [],
+                'bucket': SOURCE_BUCKET_NAME,
+                'narration_script': "",
+                'local_dir': app.config['AUDIO_FOLDER']
+            }
+
+            # Generate the narrative for the video
+            logger('log', 'Generating the narration script...')
+            narration_script = create_narration(openai, session_data)
+            print("Script: ", narration_script)
+            session_data['audio']['narration_script'] = narration_script
+
+            logger('log', 'Choosing a voice...')
+            tone, age_gender = session_data['tone_age_gender'].split(':')
+            age, gender = age_gender.split()
+            voice = find_voice(tone, age, gender)
+            logger('log', f'Your narrator is: {voice['name']}')
+            session_data['voice'] = voice
+
+            # Time to start generating audio
+            elevenlabs = get_elevenlabs_client()
+
+            logger('log', f'Generating audio narration...')
+            new_audio_clip = generate_audio_narration(elevenlabs, session_data)
+            session_data['audio']['clips'].append(new_audio_clip)
+
+            # endregion
+
+            #######################################################################
+            #                           MUSIC SECTION                             #
+            #######################################################################
+            # region Music Section
+
+            logger('log', f'Designing Music...')
+
+            music_prompt = generate_music_prompt(openai, session_data)
+            logger('log', music_prompt)
+
+            logger('log', f'Generating Music...')
+            clip = make_music(session_data, music_prompt)
+
+            # Who knows how long the song is.  We need to trim it down and fade the last couple of seconds to silence.
+            logger('log', f'Making Adjustments...')
+            clip = trim_and_fade(session_data, clip)
+            session_data['audio']['clips'].append(clip)
+
+            # endregion
+
+            # Combine the audio clips
+            logger('log', f'Mixing Audio...')
+            combined_clips = combine_audio_clips(session_data)
+            session_data['audio']['clips'].append(combined_clips)
+            logger('log', f'Audio Mixing Complete')
+
+
             return jsonify({'message': 'Video generation initiated'}), 200
-        else:
-            # Return an error response if the video generation failed
-            return jsonify({'error': 'Video generation failed'}), 500
-        # endregion
+
+            logger('log', 'Uploading Audio to the cloud...')
+            session_data['audio'] = upload_audio_from_disk_to_s3(s3, session_data['audio'])
+
+            #######################################################################
+            #                        HAND-OFF TO LAMBDA                           #
+            #######################################################################
+            # region Hand-off to Lambda
+
+            # Call the API Gateway to process the video
+            logger('log', 'Generating the video...')
+            api_response = call_api_gateway(session_data)
+            if api_response:
+                return jsonify({'message': 'Video generation initiated'}), 200
+            else:
+                # Return an error response if the video generation failed
+                return jsonify({'error': 'Video generation failed'}), 500
+        except Exception as e:
+            print(f"Error in generate_video: {str(e)}")
+            print(traceback.format_exc())
+            # endregion
 
 #############################################################################################################
 #############################################################################################################
