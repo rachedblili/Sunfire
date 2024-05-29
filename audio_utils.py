@@ -71,7 +71,7 @@ def modify_volume(clip, factor, local_dir):
     new_file = f'volume_change_{clip['filename']}'
     # Construct the ffmpeg com0and
     cmd = ["ffmpeg", "-y",
-           "-i", clip['filename'],
+           "-i", local_dir + clip['filename'],
            "-filter:a",
            f"volume={factor}",
            local_dir+new_file]
