@@ -130,13 +130,49 @@ def process_images_and_generate_video(session_data):
             if result.returncode != 0:
                 print("FFmpeg failed with return code:", result.returncode)
                 return None
-            # Upload the generated video to S3
 
             # Great!  We made it this far!  It's time to combine audio and video!
 
-            output_key = f"generated/{filename}.mp4"
+            # This is where we will put the final result
+            combined_filename = f"combined_{filename}"
+            combine_output_path = os.path.join(tmp_dir, combined_filename)
+            output_key = f"generated/{combined_filename}"
+
+            # Let's grab the audio file
+            bucket = audio_data['clips']['combined']['bucket']
+            key = audio_data['clips']['combined']['s3_key']
+            local_path = os.path.join(tmp_dir, os.path.basename(key))
             try:
-                s3.upload_file(output_file, output_bucket, output_key)
+                # Download image from S3
+                s3.download_file(bucket, key, local_path)
+            except ClientError as e:
+                print(f"Error downloading file {key} from bucket {bucket}: {e}")
+                return None
+
+            # Build our command
+            cmd = ["ffmpeg", "-y",
+                   "-i", output_file,
+                   "-i", local_path,
+                   "-c:v", "copy",
+                   "-c:a", "aac",
+                   "-strict", "experimental",
+                   combine_output_path]
+            # Print the ffmpeg command for debugging
+            print("FFmpeg command:", ' '.join(cmd))
+            # Execute ffmpeg command
+            result = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            # Log stdout and stderr from ffmpeg
+            print("FFmpeg stdout:", result.stdout)
+            print("FFmpeg stderr:", result.stderr)
+
+            if result.returncode != 0:
+                print("FFmpeg failed with return code:", result.returncode)
+                return None
+
+            # Upload the generated video to S3
+
+            try:
+                s3.upload_file(combine_output_path, output_bucket, output_key)
             except ClientError as e:
                 print(f"Error uploading file to S3 bucket {output_bucket}: {e}")
                 return None
