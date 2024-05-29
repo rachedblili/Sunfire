@@ -14,7 +14,10 @@ def fit_clip_length(clip, local_dir, desired_duration):
     input_file = clip['filename']
     output_file = f"adjusted_{input_file}"
     # Construct the ffmpeg command
-    cmd = ["ffmpeg", "-i", input_file, "-filter:a", f"atempo={speed_factor}", local_dir + output_file]
+    cmd = ["ffmpeg", "-y", "-i",
+           local_dir + input_file,
+           "-filter:a", f"atempo={speed_factor}",
+           local_dir + output_file]
 
     # Execute the command
     subprocess.run(cmd, check=True)
