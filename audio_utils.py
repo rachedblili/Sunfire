@@ -1,23 +1,28 @@
 from pydub import AudioSegment
+import subprocess
+import os
+import math
 
 
+# Use this to change the length without changing the content
 def fit_clip_length(clip, local_dir, desired_duration):
     audio = AudioSegment.from_file(local_dir+clip['filename'])
 
     current_duration = len(audio) / 1000.0  # In seconds
-    speed_factor = desired_duration / current_duration
+    speed_factor = current_duration / desired_duration
 
-    # Adjust tempo
-    new_audio = audio.speedup(playback_speed=speed_factor)
+    input_file = clip['filename']
+    output_file = f"adjusted_{input_file}"
+    # Construct the ffmpeg command
+    cmd = ["ffmpeg", "-i", input_file, "-filter:a", f"atempo={speed_factor}", local_dir + output_file]
 
-    # Save the result
-    dir_name = local_dir
-    filename = f"adjusted_{clip['filename']}"
-    new_audio.export(dir_name+filename, format="mp3")
-    clip['filename'] = filename
+    # Execute the command
+    subprocess.run(cmd, check=True)
+    clip['filename'] = output_file
     return clip
 
 
+# This is intended to be used with the music.  It just cuts the end off.
 def trim_clip(clip, local_dir):
     clip_length = 30 * 1000  # in ms
     print("TRIM CLIP")
@@ -37,6 +42,7 @@ def trim_clip(clip, local_dir):
         raise ValueError("Audio is shorter than the target length.")
 
 
+# Intended for use with the music
 def fade_out_audio(clip, local_dir):
     fade_duration = 2000
     audio = AudioSegment.from_file(local_dir+clip['filename'])
@@ -50,6 +56,7 @@ def fade_out_audio(clip, local_dir):
     return clip
 
 
+# Intended for use with the music
 def trim_and_fade(session_data, clip):
     local_dir = session_data['audio']['local_dir']
     trimmed_clip = trim_clip(clip, local_dir)
@@ -57,41 +64,61 @@ def trim_and_fade(session_data, clip):
     return faded_clip
 
 
+def modify_volume(clip, factor, local_dir):
+    new_file = f'volume_change_{clip['filename']}'
+    # Construct the ffmpeg com0and
+    cmd = ["ffmpeg", "-y",
+           "-i", clip['filename'],
+           "-filter:a",
+           f"volume={factor}",
+           local_dir+new_file]
+    # Execute the command
+    subprocess.run(cmd, check=True)
+    if os.path.isfile(local_dir+new_file):
+        clip['filename'] = new_file
+    else:
+        print("Volume Adjustment FAILED")
+    return(clip)
+
+
 def combine_audio_clips(session_data: dict):
     audio_data = session_data['audio']
     save_dir = session_data['audio']['local_dir']
-    narration_clip = None
-    music_clip = None
-    print("Number of audio clips to combine: ", str(len(audio_data['clips'])))
-    # Identify and load the narration and music clips
-    # for clip in audio_data['clips']:
-    #     if clip['type'] == 'narration':
-    #         narration_clip = AudioSegment.from_file(clip['file_path'])
-    #     elif clip['type'] == 'music':
-    #         music_clip = AudioSegment.from_file(clip['file_path'])
-    narration_clip = AudioSegment.from_file(audio_data['clips'][0]['file_path'])
-    music_clip = AudioSegment.from_file(audio_data['clips'][1]['file_path'])
+    narration_clip = AudioSegment.from_file(save_dir+audio_data['clips']['voice']['filename'])
+    music_clip = AudioSegment.from_file(save_dir+audio_data['clips']['music']['filename'])
 
     # Check and adjust loudness
     if narration_clip and music_clip:
         print("Checking Loudness")
         # Measure the loudness of each clip
-        narration_dbfs = narration_clip.dBFS
-        music_dbfs = music_clip.dBFS
+        narration_rms = narration_clip.rms
+        music_rms = music_clip.rms
 
-        # Calculate the adjustment factor for the music clip to be 75% as loud as the narration clip
-        desired_music_dbfs = narration_dbfs - 2
+        print("Narration RMS:", narration_rms)
+        print("Music RMS:", music_rms)
 
+        # Calculate the desired RMS for the music based on the desired_ratio
+        desired_music_rms = narration_rms * 0.3  # 0.3 = 30% as loud as the voice
+
+        # Calculate the required change in volume in dB
+        change_in_volume_db = 20 * math.log10(desired_music_rms / music_rms) if music_rms != 0 else 0
         # Adjust the music clip's volume
-        change_in_dbfs = desired_music_dbfs - music_dbfs
-        music_clip = music_clip + change_in_dbfs
+        adjusted_music_clip = music_clip + change_in_volume_db
+        volume_factor = (adjusted_music_clip.rms / music_rms)
+        print("Changing Music Volume by factor: ", str(volume_factor))
+        volume_adjusted_clip = modify_volume(audio_data['clips']['music'], volume_factor, save_dir)
+        # Construct the ffmpeg command
 
-        # Combine the clips
-        combined_clip = narration_clip.overlay(music_clip)
-
-        # Save the resulting file
-        file_name = f"{session_data['company_name']}_combined_audio.mp3"
-        combined_clip.export(f"{save_dir}/{file_name}", format="mp3")
+        output_filename = f"{session_data['company-name']}_combined_audio.mp3"
+        cmd = ["ffmpeg", "-y", "-i", save_dir+audio_data['clips']['voice']['filename'],
+               "-i", save_dir + volume_adjusted_clip['filename'],
+               "-filter_complex", "amerge=inputs=2", save_dir + output_filename]
+        # Execute the command
+        subprocess.run(cmd, check=True)
+        if os.path.isfile(save_dir + output_filename):
+            file_name = output_filename
+        else:
+            print("Volume Adjustment FAILED")
 
         # Return information about the new file
         return {"filename": file_name, "type": "combined"}

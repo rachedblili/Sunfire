@@ -132,7 +132,7 @@ def generate_video(session_data, images):
 
             # Prepare the data structure that will house audio data
             session_data['audio'] = {
-                'clips': [],
+                'clips': {'voice': None, 'music': None, 'combined': None},
                 'bucket': SOURCE_BUCKET_NAME,
                 'narration_script': "",
                 'local_dir': app.config['AUDIO_FOLDER']
@@ -156,7 +156,7 @@ def generate_video(session_data, images):
 
             logger('log', f'Generating audio narration...')
             new_audio_clip = generate_audio_narration(elevenlabs, session_data)
-            session_data['audio']['clips'].append(new_audio_clip)
+            session_data['audio']['clips']['voice'] = (new_audio_clip)
 
             # endregion
 
@@ -176,14 +176,14 @@ def generate_video(session_data, images):
             # Who knows how long the song is.  We need to trim it down and fade the last couple of seconds to silence.
             logger('log', f'Making Adjustments...')
             clip = trim_and_fade(session_data, clip)
-            session_data['audio']['clips'].append(clip)
+            session_data['audio']['clips']['music'] = clip
 
             # endregion
 
             # Combine the audio clips
             logger('log', f'Mixing Audio...')
             combined_clips = combine_audio_clips(session_data)
-            session_data['audio']['clips'].append(combined_clips)
+            session_data['audio']['clips']['combined'] = combined_clips
             logger('log', f'Audio Mixing Complete')
 
 
