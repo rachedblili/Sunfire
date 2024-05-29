@@ -1,3 +1,5 @@
+import traceback
+
 from flask import Flask, request, jsonify, Response, copy_current_request_context
 from flask_executor import Executor
 
@@ -78,6 +80,9 @@ def generate_video(session_data, images):
             # Initialize OpenAI client
             openai = get_openai_client()
 
+            # Initialize Voice Generation client
+            elevenlabs = get_elevenlabs_client()
+
             # endregion
 
             #######################################################################
@@ -86,7 +91,6 @@ def generate_video(session_data, images):
             # region Image Processing
 
             print('Processing Images...')
-
 
             # Upload images to S3
             images = upload_images_from_disk_to_s3(s3, images)
@@ -152,11 +156,10 @@ def generate_video(session_data, images):
             session_data['voice'] = voice
 
             # Time to start generating audio
-            elevenlabs = get_elevenlabs_client()
 
             logger('log', f'Generating audio narration...')
             new_audio_clip = generate_audio_narration(elevenlabs, session_data)
-            session_data['audio']['clips']['voice'] = (new_audio_clip)
+            session_data['audio']['clips']['voice'] = new_audio_clip
 
             # endregion
 
