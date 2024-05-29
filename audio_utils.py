@@ -112,7 +112,7 @@ def combine_audio_clips(session_data: dict):
         volume_adjusted_clip = modify_volume(audio_data['clips']['music'], volume_factor, save_dir)
         # Construct the ffmpeg command
 
-        output_filename = f"{session_data['company-name']}_combined_audio.mp3"
+        output_filename = f"{session_data['company_name']}_combined_audio.mp3"
         cmd = ["ffmpeg", "-y", "-i", save_dir+audio_data['clips']['voice']['filename'],
                "-i", save_dir + volume_adjusted_clip['filename'],
                "-filter_complex", "amerge=inputs=2", save_dir + output_filename]
