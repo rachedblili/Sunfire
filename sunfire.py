@@ -186,9 +186,6 @@ def generate_video(session_data, images):
             session_data['audio']['clips']['combined'] = combined_clips
             logger('log', f'Audio Mixing Complete')
 
-
-            return jsonify({'message': 'Video generation initiated'}), 200
-
             logger('log', 'Uploading Audio to the cloud...')
             session_data['audio'] = upload_audio_from_disk_to_s3(s3, session_data['audio'])
 
