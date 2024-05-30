@@ -69,14 +69,17 @@ textarea {
 }
 
 .image-container {
-  flex: 1 1 30%;
+  flex: 0 0 18%;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-between; /* Add this to push contents to top and bottom */
   border: 1px solid #ccc;
   border-radius: 4px;
   padding: 10px;
+  height: 150px; /* Ensure it takes full available height */
 }
+
 
 .image-preview {
   max-width: 100px;
