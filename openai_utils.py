@@ -40,11 +40,18 @@ def describe_and_recommend(client, images, url_maker):
                 },
                 {
                     "role": "system",
+                    "content": "INSTRUCTIONS ON COLOR: \n"
+                               "  1) For Images with Transparency: Choose a color that would make for a suitable "
+                               "background color.  Text in logos should stand out.\n"
+                               "  2) For regular Images:  report the colour that would look best for padding the image."
+                },
+                {
+                    "role": "system",
                     "content": "EXPLICIT REQUIREMENT: COLOR MUST BE IN HEX FORMAT (eg #FF5733)"
                 },
                 {
                     "role": "user",
-                    "content": "Examine the given image and describe the dominant colour, the dimensions, and content."
+                    "content": "Examine the given image and describe the color, the dimensions, and content."
                 },
                 {
                     "role": "assistant",
@@ -53,7 +60,7 @@ def describe_and_recommend(client, images, url_maker):
                 },
                 {
                     "role": "user",
-                    "content": "Examine the given image and describe the dominant colour, the dimensions, and content."
+                    "content": "Examine the given image and describe the colour, the dimensions, and content."
                 },
                 {
                     "role": "user",
