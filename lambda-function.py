@@ -134,12 +134,12 @@ def process_images_and_generate_video(session_data):
             # Great!  We made it this far!  It's time to combine audio and video!
 
             # This is where we will put the final result
-            combined_filename = f"combined_{filename}"
+            combined_filename = f"combined_{filename}.mp4"
             combine_output_path = os.path.join(tmp_dir, combined_filename)
             output_key = f"generated/{combined_filename}"
 
             # Let's grab the audio file
-            bucket = audio_data['clips']['combined']['bucket']
+            bucket = audio_data['bucket']
             key = audio_data['clips']['combined']['s3_key']
             local_path = os.path.join(tmp_dir, os.path.basename(key))
             try:
