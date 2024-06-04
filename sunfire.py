@@ -4,6 +4,7 @@ from flask import Flask, request, jsonify, Response, copy_current_request_contex
 from flask_executor import Executor
 
 import os
+import uuid
 from dotenv import load_dotenv
 
 from audio_utils import trim_and_fade, combine_audio_clips
@@ -29,6 +30,10 @@ load_dotenv()
 SOURCE_BUCKET_NAME = 'sunfire-source-bucket'
 DESTINATION_BUCKET_NAME = 'sunfire-destination-bucket'
 API_GATEWAY_URL = 'https://0h8a50ruye.execute-api.us-east-1.amazonaws.com/sunfire-generate-video-from-images'
+
+
+def generate_unique_prefix():
+    return str(uuid.uuid4())
 
 
 def call_api_gateway(session_data):
@@ -92,10 +97,6 @@ def generate_video(session_data, images):
 
             print('Processing Images...')
 
-            # Upload images to S3
-            images = upload_images_from_disk_to_s3(s3, images)
-            print("S3 Keys:", [item["s3_key"] for item in images])
-
             # Analyze our images
             logger('log', 'Launching Image Analysis...')
             images = describe_and_recommend(openai, images, s3.generate_presigned_url)
@@ -111,7 +112,7 @@ def generate_video(session_data, images):
 
             logger('log', 'Uploading Images to the cloud...')
             # Upload images to S3
-            modified_images = upload_images_from_disk_to_s3(s3, modified_images)
+            modified_images = upload_images_from_disk_to_s3(s3, modified_images, session_data['unique_prefix'])
 
             s3_keys = []
             for item in modified_images:
@@ -139,7 +140,7 @@ def generate_video(session_data, images):
                 'clips': {'voice': None, 'music': None, 'combined': None},
                 'bucket': SOURCE_BUCKET_NAME,
                 'narration_script': "",
-                'local_dir': app.config['AUDIO_FOLDER']
+                'local_dir': session_data['audio']['local_dir']
             }
 
             # Generate the narrative for the video
@@ -219,31 +220,43 @@ def generate_video(session_data, images):
 def generate_video_route():
     print('Data Received.  Examining data...')
     logger('log', 'Data Received.  Examining data...')
+    unique_prefix = generate_unique_prefix()
     session_data = {
+        'unique_prefix': unique_prefix,
         'company_name': request.form.get('company-name'),
         'company_url': request.form.get('company-url'),
         'topic': request.form.get('press-release'),
         'tone_age_gender': request.form.get('tone_age_gender'),
         'mood': request.form.get('mood'),
         'platform': request.form.get('platform'),
+        'audio': {},
         'video': {}
     }
     (session_data['target_width'],
      session_data['target_height'],
      session_data['video']['aspect_ratio']) = (get_platform_specs(session_data['platform']))
 
+    # Create session-dependant directories
+    upload_folder = os.path.join(app.config['UPLOAD_FOLDER'], session_data['unique_prefix'])
+    os.makedirs(upload_folder, exist_ok=True)
+    videos_folder = os.path.join(app.config['VIDEOS_FOLDER'], session_data['unique_prefix'])
+    os.makedirs(videos_folder, exist_ok=True)
+    audio_folder = os.path.join(app.config['AUDIO_FOLDER'], session_data['unique_prefix'])
+    os.makedirs(audio_folder, exist_ok=True)
+    session_data['audio']['local_dir'] = audio_folder
+
     # Get the uploaded images from the request
     image_files = request.files.getlist('images')
     print("Image Files:", image_files)
     for image_file in image_files:
-        image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_file.filename)
+        image_path = os.path.join(upload_folder, image_file.filename)
         image_file.save(image_path)
         print("LOOP")
         if not compatible_image_format(image_path):
             with Image.open(image_path) as img:
                 img = convert_image_to_png(img)
                 new_filename = os.path.splitext(image_file.filename)[0] + '.png'
-                file_path = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
+                file_path = os.path.join(upload_folder, new_filename)
                 img.save(file_path, format='PNG')
                 image_file.filename = new_filename
 
@@ -252,7 +265,7 @@ def generate_video_route():
     for image_file in image_files:
         images.append(
             {'filename': image_file.filename,
-             'local_dir': app.config['UPLOAD_FOLDER'],
+             'local_dir': upload_folder,
              'bucket': SOURCE_BUCKET_NAME})
 
     @copy_current_request_context
