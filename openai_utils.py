@@ -10,7 +10,7 @@ def get_openai_client():
     return OpenAI(api_key=os.environ.get('OPENAI_KEY'))
 
 
-def describe_and_recommend(client, images, url_maker):
+def describe_and_recommend(session_id, client, images, url_maker):
     for image in images:
 
         # Create pre-signed URL to the S3 objects
@@ -79,7 +79,7 @@ def describe_and_recommend(client, images, url_maker):
         image['height'] = descr['dimensions']['height']
         image['width'] = descr['dimensions']['width']
         image['description'] = descr['content']
-        logger('log', f'Received image:{image['description']}')
+        logger(session_id, 'log', f'Received image:{image['description']}')
 
     return images
 

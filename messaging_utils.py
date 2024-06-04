@@ -9,12 +9,12 @@ def message_manager():
     global message_queue
     while True:
         if not message_queue.empty():
-            facility, message = message_queue.get()
-            yield f"data: {facility} : {message}\n\n"
+            session_id, facility, message = message_queue.get()
+            yield f"data: {session_id} : {facility} : {message}\n\n"
         time.sleep(1)
 
 
-def logger(facility, message):
+def logger(session_id, facility, message):
     """Append a new message to the queue."""
     global message_queue
-    message_queue.put((facility, message))
+    message_queue.put((session_id, facility, message))

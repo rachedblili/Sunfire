@@ -98,18 +98,18 @@ def generate_video(session_data, images):
             images = upload_images_from_disk_to_s3(s3, images, session_data['unique_prefix'])
 
             # Analyze our images
-            logger('log', 'Launching Image Analysis...')
-            images = describe_and_recommend(openai, images, s3.generate_presigned_url)
+            logger(session_data['unique_prefix'], 'log', 'Launching Image Analysis...')
+            images = describe_and_recommend(session_data['unique_prefix'], openai, images, s3.generate_presigned_url)
 
             for image in images:
                 print(f"Image: {image['filename']}")
                 print(f"Description: {image['description']}")
 
             # Modify the images according to the AI suggestions
-            logger('log', 'Modifying Images...')
+            logger(session_data['unique_prefix'], 'log', 'Modifying Images...')
             modified_images = modify_images(session_data, images)
 
-            logger('log', 'Uploading Images to the cloud...')
+            logger(session_data['unique_prefix'], 'log', 'Uploading Images to the cloud...')
             # Upload images to S3
             modified_images = upload_images_from_disk_to_s3(s3, modified_images, session_data['unique_prefix'])
 
@@ -143,21 +143,21 @@ def generate_video(session_data, images):
             }
 
             # Generate the narrative for the video
-            logger('log', 'Generating the narration script...')
+            logger(session_data['unique_prefix'], 'log', 'Generating the narration script...')
             narration_script = create_narration(openai, session_data)
             print("Script: ", narration_script)
             session_data['audio']['narration_script'] = narration_script
 
-            logger('log', 'Choosing a voice...')
+            logger(session_data['unique_prefix'], 'log', 'Choosing a voice...')
             tone, age_gender = session_data['tone_age_gender'].split(':')
             age, gender = age_gender.split()
             voice = find_voice(tone, age, gender)
-            logger('log', f'Your narrator is: {voice['name']}')
+            logger(session_data['unique_prefix'], 'log', f'Your narrator is: {voice['name']}')
             session_data['voice'] = voice
 
             # Time to start generating audio
 
-            logger('log', f'Generating audio narration...')
+            logger(session_data['unique_prefix'], 'log', f'Generating audio narration...')
             new_audio_clip = generate_audio_narration(elevenlabs, session_data)
             session_data['audio']['clips']['voice'] = new_audio_clip
 
@@ -168,29 +168,30 @@ def generate_video(session_data, images):
             #######################################################################
             # region Music Section
 
-            logger('log', f'Designing Music...')
+            logger(session_data['unique_prefix'], 'log', f'Designing Music...')
 
             music_prompt = generate_music_prompt(openai, session_data)
-            logger('log', music_prompt)
+            logger(session_data['unique_prefix'], 'log', music_prompt)
 
-            logger('log', f'Generating Music...')
+            logger(session_data['unique_prefix'], 'log', f'Generating Music...')
             clip = make_music(session_data, music_prompt)
 
             # Who knows how long the song is.  We need to trim it down and fade the last couple of seconds to silence.
-            logger('log', f'Making Adjustments...')
+            logger(session_data['unique_prefix'], 'log', f'Making Adjustments...')
             clip = trim_and_fade(session_data, clip)
             session_data['audio']['clips']['music'] = clip
 
             # endregion
 
             # Combine the audio clips
-            logger('log', f'Mixing Audio...')
+            logger(session_data['unique_prefix'], 'log', f'Mixing Audio...')
             combined_clips = combine_audio_clips(session_data)
             session_data['audio']['clips']['combined'] = combined_clips
-            logger('log', f'Audio Mixing Complete')
+            logger(session_data['unique_prefix'], 'log', f'Audio Mixing Complete')
 
-            logger('log', 'Uploading Audio to the cloud...')
-            session_data['audio'] = upload_audio_from_disk_to_s3(s3, session_data['audio'], session_data['unique_prefix'])
+            logger(session_data['unique_prefix'], 'log', 'Uploading Audio to the cloud...')
+            session_data['audio'] = upload_audio_from_disk_to_s3(s3, session_data['audio'],
+                                                                 session_data['unique_prefix'])
 
             #######################################################################
             #                        HAND-OFF TO LAMBDA                           #
@@ -198,7 +199,7 @@ def generate_video(session_data, images):
             # region Hand-off to Lambda
 
             # Call the API Gateway to process the video
-            logger('log', 'Generating the video...')
+            logger(session_data['unique_prefix'], 'log', 'Generating the video...')
             api_response = call_api_gateway(session_data)
             if api_response:
                 return jsonify({'message': 'Video generation initiated'}), 200
@@ -218,8 +219,8 @@ def generate_video(session_data, images):
 @app.route('/api/generate-video', methods=['POST'])
 def generate_video_route():
     print('Data Received.  Examining data...')
-    logger('log', 'Data Received.  Examining data...')
     unique_prefix = generate_unique_prefix()
+    logger(unique_prefix, 'log', 'Data Received.  Examining data...')
     session_data = {
         'unique_prefix': unique_prefix,
         'company_name': request.form.get('company-name'),
@@ -272,7 +273,7 @@ def generate_video_route():
 
     future = executor.submit(task)
     app.logger.debug('Task submitted: %s', future)
-    return jsonify({'status': 'Task started'}), 202
+    return jsonify({'status': 'Task started', 'session_id': session_data['unique_prefix']}), 202
 
 
 @app.route('/api/video-callback', methods=['POST'])
@@ -292,7 +293,7 @@ def video_callback():
 
     if video_url:
         # Emit the video URL to all connected clients
-        logger('video', video_url)
+        logger(session_data['unique_prefix'], 'video', video_url)
     # Process the data here
     return jsonify({"message": "Callback received", "data": data}), 200
 

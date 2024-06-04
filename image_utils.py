@@ -80,7 +80,6 @@ def modify_image(image_path, desired_width, desired_height, pad_color, output_pa
     # Create a new image with the desired dimensions
     new_img = Image.new("RGB", (desired_width, desired_height), hex_to_rgb(pad_color))
 
-
     # Calculate the position to paste the scaled image
     paste_x = (desired_width - new_width) // 2
     paste_y = (desired_height - new_height) // 2
@@ -100,7 +99,6 @@ def convert_image_to_png(image):
     Returns:
         PIL.Image.Image: The converted image in PNG format.
     """
-    logger('log', f'{image.filename} will be converted to a compatible format')
     # Convert the image to PNG format by changing the mode if necessary
     if image.mode != 'RGB':
         image = image.convert('RGB')
@@ -118,6 +116,7 @@ def convert_image_to_png(image):
 def compatible_image_format(image_path):
     allowed_formats = ['png', 'jpeg', 'webp']
     return imghdr.what(image_path) in allowed_formats
+
 
 def get_platform_specs(platform):
     """
@@ -139,4 +138,3 @@ def get_platform_specs(platform):
     }
 
     return specs.get(platform, (1920, 1080, '16:9'))
-

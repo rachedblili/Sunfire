@@ -19,40 +19,42 @@ function clearContainers() {
 
 var eventSource; // Global event source
 
-function setupEventSource() {
+function setupEventSource(sessionId) {
     if (eventSource) {
         eventSource.close(); // Close existing connection if it exists
     }
-    eventSource = new EventSource("/api/messages");
+    eventSource = new EventSource("/api/messages?session_id=${sessionId}");
 
     eventSource.onmessage = function(event) {
         console.log('Received message:', event.data);
         var messageParts = event.data.split(" : ");
-        if (messageParts.length === 2) {
-            var facility = messageParts[0];
-            var message = messageParts[1];
-
-            if (facility === "log") {
-                if (logContainer) {
-                    var messageElement = document.createElement('p');
-                    messageElement.textContent = message;
-                    logContainer.appendChild(messageElement);
-                    logContainer.scrollTop = logContainer.scrollHeight;
-                } else {
-                    console.error("log-container not found");
-                }
-            } else if (facility === "video") {
-                if (videoContainer && generatedVideo) {
-                    generatedVideo.src = message;
-                    videoContainer.style.display = 'block';
-                    generatedVideo.load();
-                    generatedVideo.play().then(() => {
-                        console.log('Video started playing');
-                    }).catch((error) => {
-                        console.error('Error playing video:', error);
-                    });
-                } else {
-                    console.error("video-container or generated-video not found");
+        if (messageParts.length === 3) {
+            var receivedSessionId = messageParts[0];
+            var facility = messageParts[1];
+            var message = messageParts[2];
+            if (receivedSessionId === sessionId) { // Check if the message is for the correct session
+                if (facility === "log") {
+                    if (logContainer) {
+                        var messageElement = document.createElement('p');
+                        messageElement.textContent = message;
+                        logContainer.appendChild(messageElement);
+                        logContainer.scrollTop = logContainer.scrollHeight;
+                    } else {
+                        console.error("log-container not found");
+                    }
+                } else if (facility === "video") {
+                    if (videoContainer && generatedVideo) {
+                        generatedVideo.src = message;
+                        videoContainer.style.display = 'block';
+                        generatedVideo.load();
+                        generatedVideo.play().then(() => {
+                            console.log('Video started playing');
+                        }).catch((error) => {
+                            console.error('Error playing video:', error);
+                        });
+                    } else {
+                        console.error("video-container or generated-video not found");
+                    }
                 }
             }
         }
@@ -70,7 +72,6 @@ document.addEventListener("DOMContentLoaded", function() {
     //console.log('generatedVideo:', generatedVideo);
 
     clearContainers();
-    setupEventSource();
 
     const platformSelect = document.getElementById('platform-select');
     const videoContainer = document.getElementById('video-container');
@@ -236,7 +237,6 @@ function updateButtonStates() {
 form.addEventListener('submit', function (e) {
   e.preventDefault();
   clearContainers();
-  setupEventSource(); // Re-setup EventSource connection
   const formData = new FormData(form);
 
   // First, remove the existing file entries from formData if they exist
@@ -266,6 +266,10 @@ form.addEventListener('submit', function (e) {
         } else {
             throw new Error('Failed to initiate video generation process.');
         }
+    })
+    .then(data => {
+        const sessionId = data.session_id; // Capture the session_id
+        setupEventSource(sessionId); // Pass the session_id to the setupEventSource function
     })
     .catch(error => {
         console.error('Error:', error);
