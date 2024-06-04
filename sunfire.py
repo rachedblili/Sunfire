@@ -236,11 +236,11 @@ def generate_video_route():
      session_data['video']['aspect_ratio']) = (get_platform_specs(session_data['platform']))
 
     # Create session-dependant directories
-    upload_folder = os.path.join(app.config['UPLOAD_FOLDER'], session_data['unique_prefix'])
+    upload_folder = os.path.join(app.config['UPLOAD_FOLDER'], session_data['unique_prefix']) + '/'
     os.makedirs(upload_folder, exist_ok=True)
-    videos_folder = os.path.join(app.config['VIDEOS_FOLDER'], session_data['unique_prefix'])
+    videos_folder = os.path.join(app.config['VIDEOS_FOLDER'], session_data['unique_prefix']) + '/'
     os.makedirs(videos_folder, exist_ok=True)
-    audio_folder = os.path.join(app.config['AUDIO_FOLDER'], session_data['unique_prefix'])
+    audio_folder = os.path.join(app.config['AUDIO_FOLDER'], session_data['unique_prefix']) + '/'
     os.makedirs(audio_folder, exist_ok=True)
     session_data['audio']['local_dir'] = audio_folder
 
