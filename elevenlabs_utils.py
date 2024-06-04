@@ -90,7 +90,7 @@ def get_voice_tone_data():
         "Calm": ["meditation", "narration"],
         "Energetic": ["video games", "animation", "characters"]
     }
-    blacklist = ['Nicole']
+    blacklist = ['Nicole', 'Joseph']
 
     tones_details = {tone: {'voices': [], 'age_gender': set()} for tone in tones_to_use_cases}
 
@@ -109,7 +109,7 @@ def get_voice_tone_data():
 
         use_case = voice['labels'].get('use case')
         for tone, cases in tones_to_use_cases.items():
-            if use_case in cases and voice_info['accent'] in ['American', 'British']:
+            if use_case in cases and voice_info['accent'] in ['American']:
                 tones_details[tone]['voices'].append(voice_info)
                 tones_details[tone]['age_gender'].add(f"{voice_info['age']} {voice_info['gender']}")
 
