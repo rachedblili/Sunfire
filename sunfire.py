@@ -190,7 +190,7 @@ def generate_video(session_data, images):
             logger('log', f'Audio Mixing Complete')
 
             logger('log', 'Uploading Audio to the cloud...')
-            session_data['audio'] = upload_audio_from_disk_to_s3(s3, session_data['audio'],)
+            session_data['audio'] = upload_audio_from_disk_to_s3(s3, session_data['audio'], session_data['unique_prefix'])
 
             #######################################################################
             #                        HAND-OFF TO LAMBDA                           #
