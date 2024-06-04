@@ -1,4 +1,5 @@
 import time
+import sys
 from queue import Queue
 # Initialize the message queue
 message_queue = Queue()
@@ -11,6 +12,7 @@ def message_manager():
         if not message_queue.empty():
             session_id, facility, message = message_queue.get()
             yield f"data: {session_id} : {facility} : {message}\n\n"
+            sys.stdout.flush()
         time.sleep(1)
 
 
