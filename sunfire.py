@@ -94,6 +94,9 @@ def generate_video(session_data, images):
 
             print('Processing Images...')
 
+            # Upload images to S3
+            images = upload_images_from_disk_to_s3(s3, images, session_data['unique_prefix'])
+
             # Analyze our images
             logger('log', 'Launching Image Analysis...')
             images = describe_and_recommend(openai, images, s3.generate_presigned_url)
