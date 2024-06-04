@@ -12,15 +12,13 @@ def get_openai_client():
 
 def describe_and_recommend(client, images, url_maker):
     for image in images:
-        # print(f"Image: {image['filename']}")
-        # print(f"S3: {image['s3_key']}")
+
         # Create pre-signed URL to the S3 objects
         image_url = url_maker(
                 'get_object',
                 Params={'Bucket': image['bucket'], 'Key': image['s3_key']},
                 ExpiresIn=120  # URL expires in 2 minutes
             )
-        # print(f"URL: {image_url}")
         describe_response = client.chat.completions.create(
             model='gpt-4o',
             messages=[

@@ -53,7 +53,6 @@ def make_music(session_data, prompt):
             "wait_audio": False
     })
     ids = f"{data[0]['id']},{data[1]['id']}"
-    print(f"ids: {ids}")
     for _ in range(60):
         data = get_audio_information(ids)
         if data[0]["status"] == 'streaming':

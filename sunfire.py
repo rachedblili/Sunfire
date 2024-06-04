@@ -41,10 +41,8 @@ def call_api_gateway(session_data):
     # host = request.headers.get('Host', request.host)
     callback_url = "http://54.166.183.35/api/video-callback"
     session_data['callback_url'] = callback_url
-    print("CALLBACK: ", callback_url)
     payload = session_data
     response = requests.post(API_GATEWAY_URL, json=payload)
-    print(response)
     if response.status_code == 200:
         return response
     else:
@@ -72,7 +70,6 @@ def generate_video(session_data, images):
     with app.app_context():
         try:
             print('Executing the background')
-            print('TESTING')
 
             #######################################################################
             #                          INITIALIZATION                             #
@@ -103,7 +100,6 @@ def generate_video(session_data, images):
 
             for image in images:
                 print(f"Image: {image['filename']}")
-                print(f"S3: {image['s3_key']}")
                 print(f"Description: {image['description']}")
 
             # Modify the images according to the AI suggestions
@@ -251,7 +247,6 @@ def generate_video_route():
     for image_file in image_files:
         image_path = os.path.join(upload_folder, image_file.filename)
         image_file.save(image_path)
-        print("LOOP")
         if not compatible_image_format(image_path):
             with Image.open(image_path) as img:
                 img = convert_image_to_png(img)
@@ -282,7 +277,6 @@ def video_callback():
     print("Got a call back!")
     # Retrieve the video URL from the callback data
     # video_url = request.get_json().get('video_url')
-    print(f"Headers: {request.headers}")
     print(f"Body: {request.data}")
 
     if not request.is_json:

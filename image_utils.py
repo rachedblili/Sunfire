@@ -61,7 +61,6 @@ def modify_image(image_path, desired_width, desired_height, pad_color, output_pa
     # Correct for image orientation based on EXIF data
     image = rotate_image_according_to_exif(image)
     original_width, original_height = image.size
-    print("MODIFYING: ",image_path, desired_width, desired_height, pad_color, output_path)
 
     # Calculate the scaling factor
     scaling_factor = min(desired_width / original_width, desired_height / original_height)

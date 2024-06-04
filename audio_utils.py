@@ -10,7 +10,6 @@ def fit_clip_length(clip, local_dir, desired_duration):
 
     current_duration = len(audio) / 1000.0  # In seconds
     speed_factor = current_duration / desired_duration
-    print("Naration speed factor: ", str(speed_factor))
     input_file = clip['filename']
     output_file = f"adjusted_{input_file}"
     # Construct the ffmpeg command
@@ -28,8 +27,6 @@ def fit_clip_length(clip, local_dir, desired_duration):
 # This is intended to be used with the music.  It just cuts the end off.
 def trim_clip(clip, local_dir):
     clip_length = 30 * 1000  # in ms
-    print("TRIM CLIP")
-    print("local_dir:", local_dir, "clip:", clip)
     audio = AudioSegment.from_file(local_dir+clip['filename'])
 
     # Trim the audio to the target length if it's long enough
@@ -81,7 +78,7 @@ def modify_volume(clip, factor, local_dir):
         clip['filename'] = new_file
     else:
         print("Volume Adjustment FAILED")
-    return(clip)
+    return clip
 
 
 def combine_audio_clips(session_data: dict):
