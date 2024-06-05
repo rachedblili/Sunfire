@@ -6,6 +6,9 @@ const generateBtn = document.getElementById('generate-btn');
 const videoContainer = document.getElementById('video-container');
 const logContainer = document.getElementById('log-container');
 const generatedVideo = document.getElementById('generated-video');
+const videoPopup = document.getElementById('video-popup');
+const closePopup = document.getElementById('close-popup');
+const testPopupBtn = document.getElementById('test-popup-btn');
 
 function clearContainers() {
         if (logContainer) {
@@ -16,7 +19,15 @@ function clearContainers() {
             generatedVideo.src = '';
         }
 }
+// Function to show the popup
+function showPopup() {
+    videoPopup.style.display = 'flex';
+}
 
+// Function to hide the popup
+function hidePopup() {
+    videoPopup.style.display = 'none';
+}
 var eventSource; // Global event source
 
 function setupEventSource(sessionId) {
@@ -70,26 +81,11 @@ document.addEventListener("DOMContentLoaded", function() {
     //console.log('videoContainer:', videoContainer);
     //console.log('logContainer:', logContainer);
     //console.log('generatedVideo:', generatedVideo);
-    const videoPopup = document.getElementById('video-popup');
-    const closePopup = document.getElementById('close-popup');
-    const testPopupBtn = document.getElementById('test-popup-btn');
-    const generatedVideo = document.getElementById('generated-video');
+
+
     const platformSelect = document.getElementById('platform-select');
 
     clearContainers();
-
-    //const platformSelect = document.getElementById('platform-select');
-    //const videoContainer = document.getElementById('video-container');
-    //const generatedVideo = document.getElementById('generated-video');
-      // Function to show the popup
-    function showPopup() {
-        videoPopup.style.display = 'flex';
-    }
-
-    // Function to hide the popup
-    function hidePopup() {
-        videoPopup.style.display = 'none';
-    }
 
     // Event listener to close the popup
     closePopup.addEventListener('click', hidePopup);
@@ -120,11 +116,14 @@ document.addEventListener("DOMContentLoaded", function() {
        }
 
        const containerWidth = 80; // Default width percentage
-       const containerHeight = containerWidth * (aspectRatio.height / aspectRatio.width);
+       const containerHeight = aspectRatio.width > aspectRatio.height
+            ? containerWidth * (aspectRatio.height / aspectRatio.width)
+            : containerWidth * 1.5; // Constrain height for vertical aspect ratios
 
        popupContent.style.width = `${containerWidth}%`;
        popupContent.style.height = `${containerHeight}vw`; // Use vw to scale height relative to viewport width
        popupContent.style.maxWidth = '700px';
+       popupContent.style.maxHeight = '90vh'; // Ensure it doesn't exceed viewport height
        popupContent.style.aspectRatio = `${aspectRatio.width} / ${aspectRatio.height}`;
     }
 
@@ -132,12 +131,6 @@ document.addEventListener("DOMContentLoaded", function() {
     platformSelect.addEventListener('change', (event) => {
         setAspectRatio(event.target.value);
     });
-
-    // Example function to trigger the popup, replace with your actual logic
-    function displayGeneratedVideo(videoUrl) {
-        generatedVideo.src = videoUrl;
-        showPopup();
-    }
 
     let tonesData;
 
