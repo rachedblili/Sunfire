@@ -42,20 +42,20 @@ function setupEventSource(sessionId) {
                     } else {
                         console.error("log-container not found");
                     }
-                } else if (facility === "video") {
-                    if (videoContainer && generatedVideo) {
-                        generatedVideo.src = message;
-                        videoContainer.style.display = 'block';
-                        generatedVideo.load();
-                        generatedVideo.play().then(() => {
-                            console.log('Video started playing');
-                        }).catch((error) => {
-                            console.error('Error playing video:', error);
-                        });
-                    } else {
-                        console.error("video-container or generated-video not found");
+                    } else if (facility === "video") {
+                        if (generatedVideo) {
+                            generatedVideo.src = message;
+                            showPopup();
+                            generatedVideo.load();
+                            generatedVideo.play().then(() => {
+                                console.log('Video started playing');
+                            }).catch((error) => {
+                                console.error('Error playing video:', error);
+                            });
+                        } else {
+                            console.error("generated-video not found");
+                        }
                     }
-                }
             }
         }
     };
@@ -70,18 +70,41 @@ document.addEventListener("DOMContentLoaded", function() {
     //console.log('videoContainer:', videoContainer);
     //console.log('logContainer:', logContainer);
     //console.log('generatedVideo:', generatedVideo);
+    const videoPopup = document.getElementById('video-popup');
+    const closePopup = document.getElementById('close-popup');
+    const testPopupBtn = document.getElementById('test-popup-btn');
+    const generatedVideo = document.getElementById('generated-video');
+    const platformSelect = document.getElementById('platform-select');
 
     clearContainers();
 
-    const platformSelect = document.getElementById('platform-select');
-    const videoContainer = document.getElementById('video-container');
-    const generatedVideo = document.getElementById('generated-video');
+    //const platformSelect = document.getElementById('platform-select');
+    //const videoContainer = document.getElementById('video-container');
+    //const generatedVideo = document.getElementById('generated-video');
+      // Function to show the popup
+    function showPopup() {
+        videoPopup.style.display = 'flex';
+    }
 
-    platformSelect.addEventListener('change', function() {
-        const selectedPlatform = platformSelect.value;
+    // Function to hide the popup
+    function hidePopup() {
+        videoPopup.style.display = 'none';
+    }
+
+    // Event listener to close the popup
+    closePopup.addEventListener('click', hidePopup);
+
+    // Event listener for the test button
+    testPopupBtn.addEventListener('click', () => {
+        showPopup();
+    });
+
+    // Function to set the aspect ratio of the popup based on the selected platform
+    function setAspectRatio(platform) {
+        const popupContent = document.querySelector('.popup-content');
 
         let aspectRatio;
-        switch (selectedPlatform) {
+        switch (platform) {
             case 'youtube':
             case 'facebook':
             case 'twitter':
@@ -94,16 +117,27 @@ document.addEventListener("DOMContentLoaded", function() {
                 break;
             default:
                 aspectRatio = { width: 16, height: 9 };
-        }
+       }
 
-        const containerWidth = 300; // Adjust this as needed for your layout
-        const containerHeight = containerWidth * (aspectRatio.height / aspectRatio.width);
+       const containerWidth = 80; // Default width percentage
+       const containerHeight = containerWidth * (aspectRatio.height / aspectRatio.width);
 
-        videoContainer.style.width = `${containerWidth}px`;
-        videoContainer.style.height = `${containerHeight}px`;
-        videoContainer.style.backgroundColor = '#f0f0f0'; // Slightly contrasted background
-        videoContainer.style.display = 'block';
+       popupContent.style.width = `${containerWidth}%`;
+       popupContent.style.height = `${containerHeight}vw`; // Use vw to scale height relative to viewport width
+       popupContent.style.maxWidth = '700px';
+       popupContent.style.aspectRatio = `${aspectRatio.width} / ${aspectRatio.height}`;
+    }
+
+    // Event listener for platform selection change
+    platformSelect.addEventListener('change', (event) => {
+        setAspectRatio(event.target.value);
     });
+
+    // Example function to trigger the popup, replace with your actual logic
+    function displayGeneratedVideo(videoUrl) {
+        generatedVideo.src = videoUrl;
+        showPopup();
+    }
 
     let tonesData;
 
@@ -245,7 +279,7 @@ form.addEventListener('submit', function (e) {
   // Get image sources in the correct order and append them to formData
   const imageFiles = Array.from(imageContainers)
     .filter(container => container.querySelector('.image-preview').src !== '')
-    .map(container => container.querySelector('.image-preview').file); 
+    .map(container => container.querySelector('.image-preview').file);
 
   // Append each image file to formData
   imageFiles.forEach(file => {
@@ -257,7 +291,7 @@ form.addEventListener('submit', function (e) {
   // Send data to Flask backend
   fetch('/api/generate-video', {
     method: 'POST',
-    body: formData 
+    body: formData
   })
 	.then(response => {
 	    //console.log('Response:',response)
