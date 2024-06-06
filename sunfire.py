@@ -63,8 +63,8 @@ def modify_images(session_data, images):
     return modified_images
 
 
-def initialize_clients():
-    session_data = {'clients': {}}
+def initialize_clients(session_data):
+    session_data['clients'] = {}
 
     try:
         s3 = get_s3_client()
@@ -210,7 +210,7 @@ def generate_video(session_data, images):
         try:
             print('Executing the background')
 
-            session_data = initialize_clients()
+            session_data = initialize_clients(session_data)
 
             print('Processing Images...')
             session_data = process_images(session_data, images)
