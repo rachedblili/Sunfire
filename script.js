@@ -111,6 +111,8 @@ document.addEventListener("DOMContentLoaded", function() {
             case 'tiktok':
                 aspectRatio = { width: 9, height: 16 };
                 break;
+            case 'square':
+                aspectRatio = { width: 1, height: 1}
             default:
                 aspectRatio = { width: 16, height: 9 };
        }
