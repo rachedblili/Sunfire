@@ -85,10 +85,10 @@ def dump_voice_stats():
 def get_voice_tone_data():
     voice_data = get_voice_data()
     tones_to_use_cases = {
-        "Friendly": ["narration", "animation", "children's stories"],
-        "Professional": ["news", "audiobook", "interactive", "ground reporter"],
-        "Calm": ["meditation", "narration"],
-        "Energetic": ["video games", "animation", "characters"]
+        "Friendly": ["animation", "children's stories"],
+        "Professional": ["news", "audiobook", "interactive", "ground reporter", "narration"],
+        "Calm": ["meditation"],
+        "Energetic": ["video games", "animation", "characters", "narration"]
     }
     blacklist = ['Nicole', 'Joseph', 'Clyde']
 
