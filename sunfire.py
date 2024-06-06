@@ -96,20 +96,21 @@ def initialize_clients():
 def process_images(session_data, images):
     s3 = session_data['clients']['s3']
     openai = session_data['clients']['openai']
+    session_id = session_data['unique_prefix']
     try:
-        images = upload_images_from_disk_to_s3(s3, images, session_data['unique_prefix'])
-        logger(session_data['unique_prefix'], 'log', 'Launching Image Analysis...')
-        images = describe_and_recommend(session_data['unique_prefix'], openai, images, s3.generate_presigned_url)
+        images = upload_images_from_disk_to_s3(s3, images, session_id)
+        logger(session_id, 'log', 'Launching Image Analysis...')
+        images = describe_and_recommend(session_id, openai, images, s3.generate_presigned_url)
 
         for image in images:
             print(f"Image: {image['filename']}")
             print(f"Description: {image['description']}")
 
-        logger(session_data['unique_prefix'], 'log', 'Modifying Images...')
+        logger(session_id, 'log', 'Modifying Images...')
         modified_images = modify_images(session_data, images)
 
-        logger(session_data['unique_prefix'], 'log', 'Uploading Images to the cloud...')
-        modified_images = upload_images_from_disk_to_s3(s3, modified_images, session_data['unique_prefix'])
+        logger(session_id, 'log', 'Uploading Images to the cloud...')
+        modified_images = upload_images_from_disk_to_s3(s3, modified_images, session_id)
 
         s3_keys = [{'bucket': item['bucket'], 'key': item['s3_key']} for item in modified_images]
 
