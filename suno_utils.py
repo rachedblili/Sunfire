@@ -1,7 +1,7 @@
-# Get setup instructions here: https://github.com/gcui-art/suno-api
 from messaging_utils import logger
 import time
 import requests
+# Get setup instructions here: https://github.com/gcui-art/suno-api
 
 # replace your vercel domain
 base_url = 'http://127.0.0.1:3000'
