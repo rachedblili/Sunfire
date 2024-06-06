@@ -90,7 +90,7 @@ def get_voice_tone_data():
         "Calm": ["meditation", "narration"],
         "Energetic": ["video games", "animation", "characters"]
     }
-    blacklist = ['Nicole', 'Joseph']
+    blacklist = ['Nicole', 'Joseph', 'Clyde']
 
     tones_details = {tone: {'voices': [], 'age_gender': set()} for tone in tones_to_use_cases}
 
