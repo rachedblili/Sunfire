@@ -63,150 +63,166 @@ def modify_images(session_data, images):
     return modified_images
 
 
+def initialize_clients():
+    session_data = {'clients': {}}
+
+    try:
+        s3 = get_s3_client()
+        if not s3:
+            raise RuntimeError("S3 client initialization returned an invalid object")
+        session_data['clients']['s3'] = s3
+    except Exception as e:
+        raise RuntimeError(f"Failed to initialize S3 client: {e}")
+
+    try:
+        openai = get_openai_client()
+        if not openai:
+            raise RuntimeError("OpenAI client initialization returned an invalid object")
+        session_data['clients']['openai'] = openai
+    except Exception as e:
+        raise RuntimeError(f"Failed to initialize OpenAI client: {e}")
+
+    try:
+        elevenlabs = get_elevenlabs_client()
+        if not elevenlabs:
+            raise RuntimeError("Voice Generation client initialization returned an invalid object")
+        session_data['clients']['elevenlabs'] = elevenlabs
+    except Exception as e:
+        raise RuntimeError(f"Failed to initialize Voice Generation client: {e}")
+
+    return session_data
+
+
+def process_images(session_data, images):
+    s3 = session_data['clients']['s3']
+    openai = session_data['clients']['openai']
+    try:
+        images = upload_images_from_disk_to_s3(s3, images, session_data['unique_prefix'])
+        logger(session_data['unique_prefix'], 'log', 'Launching Image Analysis...')
+        images = describe_and_recommend(session_data['unique_prefix'], openai, images, s3.generate_presigned_url)
+
+        for image in images:
+            print(f"Image: {image['filename']}")
+            print(f"Description: {image['description']}")
+
+        logger(session_data['unique_prefix'], 'log', 'Modifying Images...')
+        modified_images = modify_images(session_data, images)
+
+        logger(session_data['unique_prefix'], 'log', 'Uploading Images to the cloud...')
+        modified_images = upload_images_from_disk_to_s3(s3, modified_images, session_data['unique_prefix'])
+
+        s3_keys = [{'bucket': item['bucket'], 'key': item['s3_key']} for item in modified_images]
+
+        video_data = {'duration': 30, 'fps': 24, 'aspect_ratio': session_data['video']['aspect_ratio']}
+        session_data['video'] = video_data
+        session_data['images'] = modified_images
+        session_data['s3_objects'] = s3_keys
+        session_data['write_bucket'] = DESTINATION_BUCKET_NAME
+
+        return session_data
+    except Exception as e:
+        raise RuntimeError(f"Error in image processing: {e}")
+
+
+def generate_narrative(session_data):
+    openai = session_data['clients']['openai']
+    elevenlabs = session_data['clients']['elevenlabs']
+    try:
+        session_data['audio'] = {
+            'clips': {'voice': None, 'music': None, 'combined': None},
+            'bucket': SOURCE_BUCKET_NAME,
+            'narration_script': "",
+            'local_dir': session_data['audio']['local_dir']
+        }
+
+        logger(session_data['unique_prefix'], 'log', 'Generating the narration script...')
+        narration_script = create_narration(openai, session_data)
+        print("Script: ", narration_script)
+        session_data['audio']['narration_script'] = narration_script
+
+        logger(session_data['unique_prefix'], 'log', 'Choosing a voice...')
+        tone, age_gender = session_data['tone_age_gender'].split(':')
+        age, gender = age_gender.split()
+        voice = find_voice(tone, age, gender)
+        logger(session_data['unique_prefix'], 'log', f"Your narrator is: {voice['name']}")
+        session_data['voice'] = voice
+
+        logger(session_data['unique_prefix'], 'log', 'Generating audio narration...')
+        new_audio_clip = generate_audio_narration(elevenlabs, session_data)
+        session_data['audio']['clips']['voice'] = new_audio_clip
+
+        return session_data
+    except Exception as e:
+        raise RuntimeError(f"Error in narrative section: {e}")
+
+
+def generate_music(session_data):
+    openai = session_data['clients']['openai']
+    try:
+        logger(session_data['unique_prefix'], 'log', 'Designing Music...')
+        music_prompt = generate_music_prompt(openai, session_data)
+        logger(session_data['unique_prefix'], 'log', music_prompt)
+
+        logger(session_data['unique_prefix'], 'log', 'Generating Music...')
+        clip = make_music(session_data, music_prompt)
+
+        logger(session_data['unique_prefix'], 'log', 'Making Adjustments...')
+        clip = trim_and_fade(session_data, clip)
+        session_data['audio']['clips']['music'] = clip
+
+        return session_data
+    except Exception as e:
+        raise RuntimeError(f"Error in music section: {e}")
+
+
+def combine_audio(session_data):
+    s3 = session_data['clients']['s3']
+    try:
+        logger(session_data['unique_prefix'], 'log', 'Mixing Audio...')
+        combined_clips = combine_audio_clips(session_data)
+        session_data['audio']['clips']['combined'] = combined_clips
+        logger(session_data['unique_prefix'], 'log', 'Audio Mixing Complete')
+
+        logger(session_data['unique_prefix'], 'log', 'Uploading Audio to the cloud...')
+        session_data['audio'] = upload_audio_from_disk_to_s3(s3, session_data['audio'], session_data['unique_prefix'])
+
+        return session_data
+    except Exception as e:
+        raise RuntimeError(f"Error combining or uploading audio: {e}")
+
+
+def handoff_to_lambda(session_data):
+    try:
+        logger(session_data['unique_prefix'], 'log', 'Generating the video...')
+        api_response = call_api_gateway(session_data)
+        if api_response:
+            return jsonify({'message': 'Video generation initiated'}), 200
+        else:
+            return jsonify({'error': 'Video generation failed'}), 500
+    except Exception as e:
+        raise RuntimeError(f"Error in hand-off to Lambda: {e}")
+
+
 def generate_video(session_data, images):
     from flask import current_app
     with app.app_context():
         try:
             print('Executing the background')
 
-            #######################################################################
-            #                          INITIALIZATION                             #
-            #######################################################################
-            # region Initialization
-
-            # Initialize S3 client
-            s3 = get_s3_client()
-
-            # Initialize OpenAI client
-            openai = get_openai_client()
-
-            # Initialize Voice Generation client
-            elevenlabs = get_elevenlabs_client()
-
-            # endregion
-
-            #######################################################################
-            #                         IMAGE PROCESSING                            #
-            #######################################################################
-            # region Image Processing
+            session_data = initialize_clients()
 
             print('Processing Images...')
+            session_data = process_images(session_data, images)
+            session_data = generate_narrative(session_data)
+            session_data = generate_music(session_data)
+            session_data = combine_audio(session_data)
 
-            # Upload images to S3
-            images = upload_images_from_disk_to_s3(s3, images, session_data['unique_prefix'])
+            return handoff_to_lambda(session_data)
 
-            # Analyze our images
-            logger(session_data['unique_prefix'], 'log', 'Launching Image Analysis...')
-            images = describe_and_recommend(session_data['unique_prefix'], openai, images, s3.generate_presigned_url)
-
-            for image in images:
-                print(f"Image: {image['filename']}")
-                print(f"Description: {image['description']}")
-
-            # Modify the images according to the AI suggestions
-            logger(session_data['unique_prefix'], 'log', 'Modifying Images...')
-            modified_images = modify_images(session_data, images)
-
-            logger(session_data['unique_prefix'], 'log', 'Uploading Images to the cloud...')
-            # Upload images to S3
-            modified_images = upload_images_from_disk_to_s3(s3, modified_images, session_data['unique_prefix'])
-
-            s3_keys = []
-            for item in modified_images:
-                s3_keys.append({'bucket': item['bucket'], 'key': item['s3_key']})
-
-            # Define video parameters
-            video_data = {
-                'duration': 30,
-                'fps': 24,
-                'aspect_ratio': session_data['video']['aspect_ratio'],
-            }
-            session_data['video'] = video_data
-            session_data['images'] = modified_images
-            session_data['s3_objects'] = s3_keys
-            session_data['write_bucket'] = DESTINATION_BUCKET_NAME
-            # endregion
-
-            #######################################################################
-            #                       NARRATIVE SECTION                             #
-            #######################################################################
-            # region Narrative Section
-
-            # Prepare the data structure that will house audio data
-            session_data['audio'] = {
-                'clips': {'voice': None, 'music': None, 'combined': None},
-                'bucket': SOURCE_BUCKET_NAME,
-                'narration_script': "",
-                'local_dir': session_data['audio']['local_dir']
-            }
-
-            # Generate the narrative for the video
-            logger(session_data['unique_prefix'], 'log', 'Generating the narration script...')
-            narration_script = create_narration(openai, session_data)
-            print("Script: ", narration_script)
-            session_data['audio']['narration_script'] = narration_script
-
-            logger(session_data['unique_prefix'], 'log', 'Choosing a voice...')
-            tone, age_gender = session_data['tone_age_gender'].split(':')
-            age, gender = age_gender.split()
-            voice = find_voice(tone, age, gender)
-            logger(session_data['unique_prefix'], 'log', f'Your narrator is: {voice['name']}')
-            session_data['voice'] = voice
-
-            # Time to start generating audio
-
-            logger(session_data['unique_prefix'], 'log', f'Generating audio narration...')
-            new_audio_clip = generate_audio_narration(elevenlabs, session_data)
-            session_data['audio']['clips']['voice'] = new_audio_clip
-
-            # endregion
-
-            #######################################################################
-            #                           MUSIC SECTION                             #
-            #######################################################################
-            # region Music Section
-
-            logger(session_data['unique_prefix'], 'log', f'Designing Music...')
-
-            music_prompt = generate_music_prompt(openai, session_data)
-            logger(session_data['unique_prefix'], 'log', music_prompt)
-
-            logger(session_data['unique_prefix'], 'log', f'Generating Music...')
-            clip = make_music(session_data, music_prompt)
-
-            # Who knows how long the song is.  We need to trim it down and fade the last couple of seconds to silence.
-            logger(session_data['unique_prefix'], 'log', f'Making Adjustments...')
-            clip = trim_and_fade(session_data, clip)
-            session_data['audio']['clips']['music'] = clip
-
-            # endregion
-
-            # Combine the audio clips
-            logger(session_data['unique_prefix'], 'log', f'Mixing Audio...')
-            combined_clips = combine_audio_clips(session_data)
-            session_data['audio']['clips']['combined'] = combined_clips
-            logger(session_data['unique_prefix'], 'log', f'Audio Mixing Complete')
-
-            logger(session_data['unique_prefix'], 'log', 'Uploading Audio to the cloud...')
-            session_data['audio'] = upload_audio_from_disk_to_s3(s3, session_data['audio'],
-                                                                 session_data['unique_prefix'])
-
-            #######################################################################
-            #                        HAND-OFF TO LAMBDA                           #
-            #######################################################################
-            # region Hand-off to Lambda
-
-            # Call the API Gateway to process the video
-            logger(session_data['unique_prefix'], 'log', 'Generating the video...')
-            api_response = call_api_gateway(session_data)
-            if api_response:
-                return jsonify({'message': 'Video generation initiated'}), 200
-            else:
-                # Return an error response if the video generation failed
-                return jsonify({'error': 'Video generation failed'}), 500
         except Exception as e:
             print(f"Error in generate_video: {str(e)}")
             print(traceback.format_exc())
+            logger(session_data['unique_prefix'], 'log', 'ERROR: video generation failed')
             # endregion
 
 #############################################################################################################
