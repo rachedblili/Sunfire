@@ -1,7 +1,6 @@
 import traceback
 from flask import Flask, request, jsonify, Response, copy_current_request_context
 from flask_executor import Executor
-from gevent import monkey
 import os
 import uuid
 from dotenv import load_dotenv
@@ -15,7 +14,6 @@ from messaging_utils import message_manager, logger
 from elevenlabs_utils import get_elevenlabs_client, get_voice_tone_data, find_voice, generate_audio_narration
 from suno_utils import make_music
 
-monkey.patch_all()
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads/'

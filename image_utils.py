@@ -72,9 +72,19 @@ def modify_image(image_path, desired_width, desired_height, pad_color, output_pa
 
     image = image.resize((new_width, new_height), Image.LANCZOS)
     # Try to fill transparency
-    if image.mode in ('RGBA', 'LA') or (image.mode == 'P' and 'transparency' in image.info):
-        background = Image.new(image.mode[:-1], image.size, pad_color)
+    if image.mode in ('RGBA', 'LA'):
+        print("Trying to fix transparency in:", image_path)
+        base_mode = image.mode[:-1]
+        background = Image.new(base_mode, image.size, pad_color)
         background.paste(image, image.split()[-1])  # Paste using alpha channel as mask
+        image = background
+    elif image.mode == 'P' and 'transparency' in image.info:
+        print("Trying to fix transparency in:", image_path)
+        image = image.convert("RGBA")
+        base_mode = "RGB"
+        background = Image.new(base_mode, image.size, pad_color)
+        alpha = image.split()[-1]  # Get the alpha channel
+        background.paste(image, (0, 0), alpha)  # Use alpha channel as mask
         image = background
 
     # Create a new image with the desired dimensions
