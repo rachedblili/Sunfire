@@ -63,7 +63,7 @@ def make_music(session_data, prompt):
         time.sleep(5)
     # ids = f"{data[0]['id']},{data[1]['id']}"
     # print(f"ids: {ids}")
-    logger(session_data, "log", "Downloading Music...")
+    logger(session_data['unique_prefix'], "log", "Downloading Music...")
     response = requests.get(data[0]['audio_url'])
     response.raise_for_status()
     print("Saving Music to Disk...")
