@@ -218,6 +218,8 @@ def generate_video(session_data, images):
             session_data = generate_music(session_data)
             session_data = combine_audio(session_data)
 
+            # Before handing off to Lambda, clear out the client objects
+            session_data['clients'] = {}
             return handoff_to_lambda(session_data)
 
         except Exception as e:
