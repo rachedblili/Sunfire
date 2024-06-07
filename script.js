@@ -78,136 +78,136 @@ function setupEventSource(sessionId) {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-  let imageContainers = [];
-  let dragStarted = false;
-  let initialContainerCount = 0; // To track the count of containers when drag starts
+    let imageContainers = [];
+    let dragStarted = false;
+    let initialContainerCount = 0; // To track the count of containers when drag starts
 
-  dropArea.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    dropArea.classList.add('dragging');
-    console.log('dragover event:', e);
-  });
-
-  dropArea.addEventListener('dragleave', () => {
-    dropArea.classList.remove('dragging');
-    console.log('dragleave event:');
-  });
-
-  dropArea.addEventListener('dragstart', (e) => {
-    dragStarted = true; // Set the flag indicating a drag has started
-    initialContainerCount = imageContainers.length; // Record the number of containers at drag start
-    console.log('dragstart event:', e);
-  });
-
-  dropArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropArea.classList.remove('dragging');
-    const files = e.dataTransfer.files;
-    console.log('drop event:', e);
-
-    if (dragStarted) { // Check if it's a reorder by ensuring no new files are added
-      setTimeout(() => {
-        if (imageContainers.length > initialContainerCount) {
-          console.log('Extra container detected, removing last added container.');
-          const extraContainer = imageContainers.pop();
-          extraContainer.remove();
-          updateImageContainerOrder();
-        }
-        dragStarted = false; // Reset the flag
-      }, 100); // Delay to ensure all DOM updates and JavaScript processing are complete
-    } else {
-      handleFiles(files);
-    }
-  });
-  dropArea.addEventListener('touchstart', startTouchDrag);
-  dropArea.addEventListener('touchmove', dragTouch);
-  dropArea.addEventListener('touchend', endTouchDrag);
-  dropArea.addEventListener('click', () => {
-    imageInput.click();
-  });
-  dropArea.addEventListener('touchend', () => {
-    imageInput.click();
-  });
-
-  imageInput.addEventListener('change', () => {
-    const files = imageInput.files;
-    handleFiles(files);
-  });
-
-  function handleFiles(files) {
-    if (files.length + imageContainers.length > 6) {
-      alert('You can only select up to 6 images.');
-      return;
-    }
-
-    [...files].forEach(file => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        createImageContainer(reader.result, file);
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-
-  function createImageContainer(src, file) {
-    const container = document.createElement('div');
-    container.classList.add('image-container');
-    container.draggable = true;
-
-    const img = document.createElement('img');
-    img.classList.add('image-preview');
-    img.src = src;
-    img.file = file;
-
-    const removeBtn = document.createElement('button');
-    removeBtn.classList.add('remove-image');
-    removeBtn.textContent = 'x';
-    removeBtn.addEventListener('click', () => {
-      imageShelf.removeChild(container);
-      imageContainers = imageContainers.filter(c => c !== container);
+    dropArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropArea.classList.add('dragging');
+        console.log('dragover event:', e);
     });
 
-    container.appendChild(img);
-    container.appendChild(removeBtn);
-    imageShelf.appendChild(container);
-    imageContainers.push(container);
-
-    container.addEventListener('dragstart', () => {
-      container.classList.add('dragging');
-      e.stopPropagation();
+    dropArea.addEventListener('dragleave', () => {
+        dropArea.classList.remove('dragging');
+        console.log('dragleave event:');
     });
 
-    container.addEventListener('dragend', () => {
-      container.classList.remove('dragging');
-      e.stopPropagation();
-      updateImageContainerOrder();
+    dropArea.addEventListener('dragstart', (e) => {
+        dragStarted = true; // Set the flag indicating a drag has started
+        initialContainerCount = imageContainers.length; // Record the number of containers at drag start
+        console.log('dragstart event:', e);
     });
 
-    container.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      const dragging = document.querySelector('.dragging');
-      e.stopPropagation();
-      if (dragging && dragging !== container) {
-        const rect = container.getBoundingClientRect();
-        const offset = e.clientX - rect.left;
-        if (offset > rect.width / 2) {
-          imageShelf.insertBefore(dragging, container.nextSibling);
+    dropArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropArea.classList.remove('dragging');
+        const files = e.dataTransfer.files;
+        console.log('drop event:', e);
+
+        if (dragStarted) { // Check if it's a reorder by ensuring no new files are added
+          setTimeout(() => {
+            if (imageContainers.length > initialContainerCount) {
+              console.log('Extra container detected, removing last added container.');
+              const extraContainer = imageContainers.pop();
+              extraContainer.remove();
+              updateImageContainerOrder();
+            }
+            dragStarted = false; // Reset the flag
+          }, 100); // Delay to ensure all DOM updates and JavaScript processing are complete
         } else {
-          imageShelf.insertBefore(dragging, container);
+          handleFiles(files);
         }
-      }
+    });
+    dropArea.addEventListener('touchstart', startTouchDrag);
+    dropArea.addEventListener('touchmove', dragTouch);
+    dropArea.addEventListener('touchend', endTouchDrag);
+    dropArea.addEventListener('click', () => {
+        imageInput.click();
+    });
+    dropArea.addEventListener('touchend', () => {
+        imageInput.click();
     });
 
-    // Add touch support
-    container.addEventListener('touchstart', startTouchDrag);
-    container.addEventListener('touchmove', dragTouch);
-    container.addEventListener('touchend', endTouchDrag);
-  }
+    imageInput.addEventListener('change', () => {
+        const files = imageInput.files;
+        handleFiles(files);
+    });
 
-  function updateImageContainerOrder() {
-    imageContainers = [...imageShelf.children];
-  }
-  function startTouchDrag(event) {
+    function handleFiles(files) {
+        if (files.length + imageContainers.length > 6) {
+          alert('You can only select up to 6 images.');
+          return;
+        }
+
+        [...files].forEach(file => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            createImageContainer(reader.result, file);
+          };
+          reader.readAsDataURL(file);
+        });
+    }
+
+    function createImageContainer(src, file) {
+        const container = document.createElement('div');
+        container.classList.add('image-container');
+        container.draggable = true;
+
+        const img = document.createElement('img');
+        img.classList.add('image-preview');
+        img.src = src;
+        img.file = file;
+
+        const removeBtn = document.createElement('button');
+        removeBtn.classList.add('remove-image');
+        removeBtn.textContent = 'x';
+        removeBtn.addEventListener('click', () => {
+          imageShelf.removeChild(container);
+          imageContainers = imageContainers.filter(c => c !== container);
+        });
+
+        container.appendChild(img);
+        container.appendChild(removeBtn);
+        imageShelf.appendChild(container);
+        imageContainers.push(container);
+
+        container.addEventListener('dragstart', () => {
+          container.classList.add('dragging');
+          e.stopPropagation();
+        });
+
+        container.addEventListener('dragend', () => {
+          container.classList.remove('dragging');
+          e.stopPropagation();
+          updateImageContainerOrder();
+        });
+
+        container.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          const dragging = document.querySelector('.dragging');
+          e.stopPropagation();
+          if (dragging && dragging !== container) {
+            const rect = container.getBoundingClientRect();
+            const offset = e.clientX - rect.left;
+            if (offset > rect.width / 2) {
+              imageShelf.insertBefore(dragging, container.nextSibling);
+            } else {
+              imageShelf.insertBefore(dragging, container);
+            }
+          }
+        });
+
+        // Add touch support
+        container.addEventListener('touchstart', startTouchDrag);
+        container.addEventListener('touchmove', dragTouch);
+        container.addEventListener('touchend', endTouchDrag);
+    }
+
+    function updateImageContainerOrder() {
+        imageContainers = [...imageShelf.children];
+    }
+    function startTouchDrag(event) {
         const target = event.target;
         if (target.classList.contains('image-container')) {
             target.addEventListener('touchmove', dragTouch);
@@ -328,7 +328,6 @@ document.addEventListener("DOMContentLoaded", function() {
         document.querySelector('form').appendChild(formInput);
     });
 });
-
 
 
 
