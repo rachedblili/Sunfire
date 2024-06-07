@@ -54,20 +54,27 @@ function setupEventSource(sessionId) {
                     } else {
                         console.error("log-container not found");
                     }
-                    } else if (facility === "video") {
-                        if (generatedVideo) {
-                            generatedVideo.src = message;
-                            showPopup();
-                            generatedVideo.load();
-                            generatedVideo.play().then(() => {
-                                console.log('Video started playing');
-                            }).catch((error) => {
-                                console.error('Error playing video:', error);
-                            });
-                        } else {
-                            console.error("generated-video not found");
-                        }
+                } else if (facility === "video") {
+                    if (generatedVideo) {
+                        generatedVideo.src = message;
+                        showPopup();
+                        let hyperlink = document.createElement('a');
+                        hyperlink.href = message;
+                        hyperlink.textContent = "Click Here to Download Video";
+                        let paragraph = document.createElement('p');
+                        paragraph.appendChild(hyperlink);
+                        logContainer.appendChild(paragraph)
+                        logContainer.scrollTop = logContainer.scrollHeight;
+                        generatedVideo.load();
+                        generatedVideo.play().then(() => {
+                            console.log('Video started playing');
+                        }).catch((error) => {
+                            console.error('Error playing video:', error);
+                        });
+                    } else {
+                        console.error("generated-video not found");
                     }
+                }
             }
         }
     };
