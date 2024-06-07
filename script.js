@@ -9,6 +9,7 @@ const generatedVideo = document.getElementById('generated-video');
 const videoPopup = document.getElementById('video-popup');
 const closePopup = document.getElementById('close-popup');
 const testPopupBtn = document.getElementById('test-popup-btn');
+const dropArea = document.getElementById('drop-area');
 
 function clearContainers() {
         if (logContainer) {
@@ -77,12 +78,158 @@ function setupEventSource(sessionId) {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-    //console.log('DOMContentLoaded event fired');
-    //console.log('videoContainer:', videoContainer);
-    //console.log('logContainer:', logContainer);
-    //console.log('generatedVideo:', generatedVideo);
+  let imageContainers = [];
+  let dragStarted = false;
+  let initialContainerCount = 0; // To track the count of containers when drag starts
 
+  dropArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropArea.classList.add('dragging');
+    console.log('dragover event:', e);
+  });
 
+  dropArea.addEventListener('dragleave', () => {
+    dropArea.classList.remove('dragging');
+    console.log('dragleave event:');
+  });
+
+  dropArea.addEventListener('dragstart', (e) => {
+    dragStarted = true; // Set the flag indicating a drag has started
+    initialContainerCount = imageContainers.length; // Record the number of containers at drag start
+    console.log('dragstart event:', e);
+  });
+
+  dropArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropArea.classList.remove('dragging');
+    const files = e.dataTransfer.files;
+    console.log('drop event:', e);
+
+    if (dragStarted) { // Check if it's a reorder by ensuring no new files are added
+      setTimeout(() => {
+        if (imageContainers.length > initialContainerCount) {
+          console.log('Extra container detected, removing last added container.');
+          const extraContainer = imageContainers.pop();
+          extraContainer.remove();
+          updateImageContainerOrder();
+        }
+        dragStarted = false; // Reset the flag
+      }, 100); // Delay to ensure all DOM updates and JavaScript processing are complete
+    } else {
+      handleFiles(files);
+    }
+  });
+  dropArea.addEventListener('touchstart', startTouchDrag);
+  dropArea.addEventListener('touchmove', dragTouch);
+  dropArea.addEventListener('touchend', endTouchDrag);
+  dropArea.addEventListener('click', () => {
+    imageInput.click();
+  });
+  dropArea.addEventListener('touchend', () => {
+    imageInput.click();
+  });
+
+  imageInput.addEventListener('change', () => {
+    const files = imageInput.files;
+    handleFiles(files);
+  });
+
+  function handleFiles(files) {
+    if (files.length + imageContainers.length > 6) {
+      alert('You can only select up to 6 images.');
+      return;
+    }
+
+    [...files].forEach(file => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        createImageContainer(reader.result, file);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function createImageContainer(src, file) {
+    const container = document.createElement('div');
+    container.classList.add('image-container');
+    container.draggable = true;
+
+    const img = document.createElement('img');
+    img.classList.add('image-preview');
+    img.src = src;
+    img.file = file;
+
+    const removeBtn = document.createElement('button');
+    removeBtn.classList.add('remove-image');
+    removeBtn.textContent = 'x';
+    removeBtn.addEventListener('click', () => {
+      imageShelf.removeChild(container);
+      imageContainers = imageContainers.filter(c => c !== container);
+    });
+
+    container.appendChild(img);
+    container.appendChild(removeBtn);
+    imageShelf.appendChild(container);
+    imageContainers.push(container);
+
+    container.addEventListener('dragstart', () => {
+      container.classList.add('dragging');
+      e.stopPropagation();
+    });
+
+    container.addEventListener('dragend', () => {
+      container.classList.remove('dragging');
+      e.stopPropagation();
+      updateImageContainerOrder();
+    });
+
+    container.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      const dragging = document.querySelector('.dragging');
+      e.stopPropagation();
+      if (dragging && dragging !== container) {
+        const rect = container.getBoundingClientRect();
+        const offset = e.clientX - rect.left;
+        if (offset > rect.width / 2) {
+          imageShelf.insertBefore(dragging, container.nextSibling);
+        } else {
+          imageShelf.insertBefore(dragging, container);
+        }
+      }
+    });
+
+    // Add touch support
+    container.addEventListener('touchstart', startTouchDrag);
+    container.addEventListener('touchmove', dragTouch);
+    container.addEventListener('touchend', endTouchDrag);
+  }
+
+  function updateImageContainerOrder() {
+    imageContainers = [...imageShelf.children];
+  }
+  function startTouchDrag(event) {
+        const target = event.target;
+        if (target.classList.contains('image-container')) {
+            target.addEventListener('touchmove', dragTouch);
+            target.addEventListener('touchend', endTouchDrag);
+            event.preventDefault();
+        }
+    }
+
+    function dragTouch(event) {
+        const target = event.target;
+        const touch = event.touches[0];
+        target.style.left = `${touch.pageX - target.offsetWidth / 2}px`;
+        target.style.top = `${touch.pageY - target.offsetHeight / 2}px`;
+        event.preventDefault();
+    }
+
+    function endTouchDrag(event) {
+        const target = event.target;
+        target.removeEventListener('touchmove', dragTouch);
+        target.removeEventListener('touchend', endTouchDrag);
+        event.preventDefault();
+    }
     const platformSelect = document.getElementById('platform-select');
 
     clearContainers();
@@ -127,6 +274,11 @@ document.addEventListener("DOMContentLoaded", function() {
        popupContent.style.maxWidth = '700px';
        popupContent.style.maxHeight = '90vh'; // Ensure it doesn't exceed viewport height
        popupContent.style.aspectRatio = `${aspectRatio.width} / ${aspectRatio.height}`;
+       // Adjust video dimensions within the popup
+        if (generatedVideo) {
+            generatedVideo.style.maxWidth = '100%';
+            generatedVideo.style.maxHeight = '80vh';
+        }
     }
 
     // Event listener for platform selection change
@@ -177,88 +329,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
-// Add event listener for file input
-imageInput.addEventListener('change', previewImages);
-
-// Preview selected images
-function previewImages() {
-  const files = this.files;
-
-  if (files.length > 5) {
-    alert('You can only select up to 5 images.');
-    this.value = '';
-    return;
-  }
-
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    const reader = new FileReader();
-
-    reader.onload = function () {
-      const img = imageContainers[i].querySelector('.image-preview');
-      img.file = file;
-      img.src = reader.result;
-      imageContainers[i].querySelector('.move-left').disabled = i === 0;
-      imageContainers[i].querySelector('.move-right').disabled = i === files.length - 1;
-    }
-
-    reader.readAsDataURL(file);
-  }
-
-  // Clear remaining image containers
-  for (let i = files.length; i < imageContainers.length; i++) {
-    const img = imageContainers[i].querySelector('.image-preview');
-    img.src = '';
-    img.file = null;
-  }
-}
-
-// Move image left or right
-imageShelf.addEventListener('click', (e) => {
-  if (e.target.classList.contains('move-left')) {
-    moveImageLeft(e.target.closest('.image-container')); // Adjusted to find the closest .image-container
-  } else if (e.target.classList.contains('move-right')) {
-    moveImageRight(e.target.closest('.image-container')); // Adjusted to find the closest .image-container
-  }
-});
-
-function moveImageLeft(container) {
-  const index = Array.from(imageContainers).indexOf(container);
-  if (index > 0) {
-    const prevContainer = imageContainers[index - 1];
-    const tempSrc = container.querySelector('.image-preview').src;
-    const tempFile = container.querySelector('.image-preview').file;
-    container.querySelector('.image-preview').src = prevContainer.querySelector('.image-preview').src;
-    container.querySelector('.image-preview').file = prevContainer.querySelector('.image-preview').file;
-    prevContainer.querySelector('.image-preview').src = tempSrc;
-    prevContainer.querySelector('.image-preview').file = tempFile;
-    updateButtonStates();
-  }
-}
-
-function moveImageRight(container) {
-  const index = Array.from(imageContainers).indexOf(container);
-  if (index < imageContainers.length - 1) {
-    const nextContainer = imageContainers[index + 1];
-    const tempSrc = container.querySelector('.image-preview').src;
-    const tempFile = container.querySelector('.image-preview').file;
-    container.querySelector('.image-preview').src = nextContainer.querySelector('.image-preview').src;
-    container.querySelector('.image-preview').file = nextContainer.querySelector('.image-preview').file;
-    nextContainer.querySelector('.image-preview').src = tempSrc;
-    nextContainer.querySelector('.image-preview').file = tempFile;
-    updateButtonStates();
-  }
-}
-
-function updateButtonStates() {
-  imageContainers.forEach((container, index) => {
-    const moveLeft = container.querySelector('.move-left');
-    const moveRight = container.querySelector('.move-right');
-    moveLeft.disabled = index === 0;
-    moveRight.disabled = index === imageContainers.length - 1 || container.querySelector('.image-preview').src === '';
-  });
-}
-
 
 
 
@@ -266,20 +336,26 @@ function updateButtonStates() {
 form.addEventListener('submit', function (e) {
   e.preventDefault();
   clearContainers();
-  const formData = new FormData(form);
+  const formData = new FormData();
 
-  // First, remove the existing file entries from formData if they exist
-  formData.delete('images');
-
-  // Get image sources in the correct order and append them to formData
-  const imageFiles = Array.from(imageContainers)
-    .filter(container => container.querySelector('.image-preview').src !== '')
-    .map(container => container.querySelector('.image-preview').file);
+  // Dynamically get the current list of image containers
+  const currentImageContainers = imageShelf.querySelectorAll('.image-container');
 
   // Append each image file to formData
-  imageFiles.forEach(file => {
-    if (file) {
-      formData.append('images', file);
+  Array.from(currentImageContainers).forEach(container => {
+    const img = container.querySelector('.image-preview');
+    if (img && img.file) {  // Ensure the file exists and is not null
+      formData.append('images', img.file);
+    }
+  });
+
+  // Append other form data dynamically
+  const inputs = form.querySelectorAll('input, select, textarea');
+  inputs.forEach(input => {
+    if (input.type === 'file') {
+      // Assuming you handle file inputs separately as shown above
+    } else if (input.type !== 'submit' && input.name) {
+      formData.append(input.name, input.value);
     }
   });
 
@@ -288,20 +364,20 @@ form.addEventListener('submit', function (e) {
     method: 'POST',
     body: formData
   })
-	.then(response => {
-	    //console.log('Response:',response)
-        if (response.ok) {
-            return response.json();
-        } else {
-            throw new Error('Failed to initiate video generation process.');
-        }
+    .then(response => {
+      if (response.ok) {
+        return response.json();
+      } else {
+        throw new Error('Failed to initiate video generation process.');
+      }
     })
     .then(data => {
-        const sessionId = data.session_id; // Capture the session_id
-        setupEventSource(sessionId); // Pass the session_id to the setupEventSource function
+      const sessionId = data.session_id; // Capture the session_id
+      setupEventSource(sessionId); // Pass the session_id to the setupEventSource function
     })
     .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while generating the video.');
+      console.error('Error:', error);
+      alert('An error occurred while generating the video.');
     });
 });
+
