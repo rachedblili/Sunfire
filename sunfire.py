@@ -241,7 +241,8 @@ def generate_video_route():
     session_data = {
         'unique_prefix': unique_prefix,
         'company_name': request.form.get('company-name'),
-        'company_url': request.form.get('company-url'),
+        'emphasis': request.form.get('emphasis'),
+        'avoid': request.form.get('avoid'),
         'topic': request.form.get('press-release'),
         'tone_age_gender': request.form.get('tone_age_gender'),
         'mood': request.form.get('mood'),
