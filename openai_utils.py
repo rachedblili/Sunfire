@@ -147,6 +147,21 @@ def create_narration(client, session_data):
             "content": "\n".join(video_section)
         }
     )
+
+    # Fine tune with emphasis and avoids
+    if session_data['emphasis'] or session_data['avoid']:
+        fine_tuning_section = ["[Additional Instructions]\n"]
+        if session_data['emphasis']:
+            fine_tuning_section.append(f"The narrative should emphasize the following: {session_data['emphasis']}\n")
+        if session_data['avoid']:
+            fine_tuning_section.append(f"The narrative should avoid the following: {session_data['avoid']}")
+        messages.append(
+            {
+                "role": "user",
+                "content": "\n".join(fine_tuning_section)
+            }
+        )
+
     narrative = generic_query(client, messages)
     return narrative
 
