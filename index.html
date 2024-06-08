@@ -17,10 +17,12 @@
           <label for="company-name">Company Name</label>
           <input type="text" id="company-name" name="company-name" required>
         </div>
+        <!--
         <div class="form-group">
           <label for="company-url">Company URL</label>
           <input type="url" id="company-url" name="company-url" required>
         </div>
+        -->
         <div class="form-group">
           <label for="press-release">Press Release/Product Description</label>
           <textarea id="press-release" name="press-release" required></textarea>
@@ -35,6 +37,18 @@
             <input type="file" id="image-input" name="images" accept="image/*" multiple style="display: none;">
             <div id="image-shelf"></div>
           </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="card">
+        <legend>Fine Tuning (Optional)</legend>
+        <div class="form-group">
+          <label for="emphasis">What should be emphasized? (leave blank if you dont know)</label>
+          <input type="text" id="emphasis" name="emphasis" required>
+        </div>
+        <div class="form-group">
+          <label for="avoid">Anything to avoid, like words or phrases? (leave blank if you dont know)</label>
+          <input type="text" id="avoid" name="avoid" required>
         </div>
       </fieldset>
 
