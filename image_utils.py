@@ -144,7 +144,8 @@ def get_platform_specs(platform):
         'instagram': (1080, 1920, '9:16'),
         'tiktok': (1080, 1920, '9:16'),
         'twitter': (1280, 720, '16:9'),
-        'television': (1920, 1080, '16:9')
+        'television': (1920, 1080, '16:9'),
+        'square': (1080, 1080, '1:1')
     }
 
     return specs.get(platform, (1920, 1080, '16:9'))
