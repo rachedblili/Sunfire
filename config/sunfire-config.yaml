@@ -10,3 +10,4 @@
   image-to-text: openai
   text-to-voice: elevenlabs
   text-to-music: sunfire
+  music-data: config/music-data.yaml

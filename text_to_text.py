@@ -15,3 +15,7 @@ def create_narration(*args, **kwargs):
 
 def generate_music_prompt(*args, **kwargs):
     return openai_utils.generate_music_prompt(*args, **kwargs)
+
+
+def generic_query(*args, **kwargs):
+    return openai_utils.generic_query(*args, **kwargs)
