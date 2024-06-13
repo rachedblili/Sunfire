@@ -5,29 +5,33 @@ import os
 import uuid
 from dotenv import load_dotenv
 from audio_utils import trim_and_fade, combine_audio_clips
-from s3_utils import get_s3_client, upload_images_from_disk_to_s3, upload_audio_from_disk_to_s3
-from openai_utils import get_openai_client, describe_and_recommend, create_narration, generate_music_prompt
 import requests
 from PIL import Image
+from config_utils import get_config
 from image_utils import modify_image, compatible_image_format, convert_image_to_png, get_platform_specs
 from messaging_utils import message_manager, logger
-from elevenlabs_utils import get_elevenlabs_client, get_voice_tone_data, find_voice, generate_audio_narration
-from suno_utils import make_music
-
+from cloud_storage import get_cloud_storage_client, upload_images_from_disk_to_cloud, upload_audio_from_disk_to_cloud
+from text_to_text import get_text_to_text_client, describe_and_recommend, create_narration, generate_music_prompt
+from text_to_voice import get_text_to_voice_client, get_voice_tone_data, find_voice, generate_audio_narration
+from text_to_music import get_text_to_music_client, make_music
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'uploads/'
-app.config['VIDEOS_FOLDER'] = 'videos/'
-app.config['AUDIO_FOLDER'] = 'audio/'
+# Load the YAML file
+config = get_config()
+
+app.config['UPLOAD_FOLDER'] = config['uploads_folder']
+app.config['VIDEOS_FOLDER'] = config['videos_folder']
+app.config['AUDIO_FOLDER'] = config['audio_folder']
 executor = Executor(app)
 
 
 # Set up environment
 load_dotenv()
 
-SOURCE_BUCKET_NAME = 'sunfire-source-bucket'
-DESTINATION_BUCKET_NAME = 'sunfire-destination-bucket'
-API_GATEWAY_URL = 'https://0h8a50ruye.execute-api.us-east-1.amazonaws.com/sunfire-generate-video-from-images'
+SOURCE_BUCKET_NAME = config['source_bucket_name']
+DESTINATION_BUCKET_NAME = config['destination_bucket_name']
+API_GATEWAY_URL = config['api_gateway_url']
+SERVER_ADDR = config['server_addr']
 
 
 def generate_unique_prefix():
@@ -37,7 +41,7 @@ def generate_unique_prefix():
 def call_api_gateway(session_data):
     # scheme = request.headers.get('X-Forwarded-Proto', request.scheme)
     # host = request.headers.get('Host', request.host)
-    callback_url = "http://54.166.183.35/api/video-callback"
+    callback_url = f"http://{SERVER_ADDR}/api/video-callback"
     session_data['callback_url'] = callback_url
     payload = session_data
     response = requests.post(API_GATEWAY_URL, json=payload)
@@ -66,41 +70,53 @@ def modify_images(session_data, images):
 def initialize_clients(session_data):
     session_data['clients'] = {}
 
+    # Initialize S3 client
     try:
-        s3 = get_s3_client()
-        if not s3:
-            raise RuntimeError("S3 client initialization returned an invalid object")
-        session_data['clients']['s3'] = s3
+        cloud_storage = get_cloud_storage_client()
+        if not cloud_storage:
+            raise RuntimeError("cloud_storage client initialization returned an invalid object")
+        session_data['clients']['cloud_storage'] = cloud_storage
     except Exception as e:
-        raise RuntimeError(f"Failed to initialize S3 client: {e}")
+        raise RuntimeError(f"Failed to initialize cloud_storage client: {e}")
 
+    # Initialize OpenAI client
     try:
-        openai = get_openai_client()
-        if not openai:
-            raise RuntimeError("OpenAI client initialization returned an invalid object")
-        session_data['clients']['openai'] = openai
+        text_to_text = get_text_to_text_client()
+        if not text_to_text:
+            raise RuntimeError("text_to_text client initialization returned an invalid object")
+        session_data['clients']['text_to_text'] = text_to_text
     except Exception as e:
-        raise RuntimeError(f"Failed to initialize OpenAI client: {e}")
+        raise RuntimeError(f"Failed to initialize text_to_text client: {e}")
 
+    # Initialize Voice Generation client
     try:
-        elevenlabs = get_elevenlabs_client()
-        if not elevenlabs:
+        text_to_voice = get_text_to_voice_client()
+        if not text_to_voice:
             raise RuntimeError("Voice Generation client initialization returned an invalid object")
-        session_data['clients']['elevenlabs'] = elevenlabs
+        session_data['clients']['text_to_voice'] = text_to_voice
     except Exception as e:
         raise RuntimeError(f"Failed to initialize Voice Generation client: {e}")
+
+    # Initialize Music Generation client
+    try:
+        text_to_music = get_text_to_music_client()
+        if not text_to_music:
+            raise RuntimeError("Music Generation client initialization returned an invalid object")
+        session_data['clients']['text-to-music'] = text_to_music
+    except Exception as e:
+        raise RuntimeError(f"Failed to initialize Music Generation client: {e}")
 
     return session_data
 
 
 def process_images(session_data, images):
-    s3 = session_data['clients']['s3']
-    openai = session_data['clients']['openai']
+    cloud_storage = session_data['clients']['cloud_storage']
+    text_to_text = session_data['clients']['text_to_text']
     session_id = session_data['unique_prefix']
     try:
-        images = upload_images_from_disk_to_s3(s3, images, session_id)
+        images = upload_images_from_disk_to_cloud(cloud_storage, images, session_id)
         logger(session_id, 'log', 'Launching Image Analysis...')
-        images = describe_and_recommend(session_id, openai, images, s3.generate_presigned_url)
+        images = describe_and_recommend(session_id, text_to_text, images, cloud_storage.generate_presigned_url)
 
         for image in images:
             print(f"Image: {image['filename']}")
@@ -110,14 +126,14 @@ def process_images(session_data, images):
         modified_images = modify_images(session_data, images)
 
         logger(session_id, 'log', 'Uploading Images to the cloud...')
-        modified_images = upload_images_from_disk_to_s3(s3, modified_images, session_id)
+        modified_images = upload_images_from_disk_to_cloud(cloud_storage, modified_images, session_id)
 
-        s3_keys = [{'bucket': item['bucket'], 'key': item['s3_key']} for item in modified_images]
+        cloud_storage_keys = [{'bucket': item['bucket'], 'key': item['cloud_storage_key']} for item in modified_images]
 
         video_data = {'duration': 30, 'fps': 24, 'aspect_ratio': session_data['video']['aspect_ratio']}
         session_data['video'] = video_data
         session_data['images'] = modified_images
-        session_data['s3_objects'] = s3_keys
+        session_data['cloud_storage_objects'] = cloud_storage_keys
         session_data['write_bucket'] = DESTINATION_BUCKET_NAME
 
         return session_data
@@ -126,8 +142,8 @@ def process_images(session_data, images):
 
 
 def generate_narrative(session_data):
-    openai = session_data['clients']['openai']
-    elevenlabs = session_data['clients']['elevenlabs']
+    text_to_text = session_data['clients']['text_to_text']
+    text_to_voice = session_data['clients']['text_to_voice']
     try:
         session_data['audio'] = {
             'clips': {'voice': None, 'music': None, 'combined': None},
@@ -137,7 +153,7 @@ def generate_narrative(session_data):
         }
 
         logger(session_data['unique_prefix'], 'log', 'Generating the narration script...')
-        narration_script = create_narration(openai, session_data)
+        narration_script = create_narration(text_to_text, session_data)
         print("Script: ", narration_script)
         session_data['audio']['narration_script'] = narration_script
 
@@ -149,7 +165,7 @@ def generate_narrative(session_data):
         session_data['voice'] = voice
 
         logger(session_data['unique_prefix'], 'log', 'Generating audio narration...')
-        new_audio_clip = generate_audio_narration(elevenlabs, session_data)
+        new_audio_clip = generate_audio_narration(text_to_voice, session_data)
         session_data['audio']['clips']['voice'] = new_audio_clip
 
         return session_data
@@ -158,10 +174,10 @@ def generate_narrative(session_data):
 
 
 def generate_music(session_data):
-    openai = session_data['clients']['openai']
+    text_to_text = session_data['clients']['text_to_text']
     try:
         logger(session_data['unique_prefix'], 'log', 'Designing Music...')
-        music_prompt = generate_music_prompt(openai, session_data)
+        music_prompt = generate_music_prompt(text_to_text, session_data)
         logger(session_data['unique_prefix'], 'log', music_prompt)
 
         logger(session_data['unique_prefix'], 'log', 'Generating Music...')
@@ -177,7 +193,7 @@ def generate_music(session_data):
 
 
 def combine_audio(session_data):
-    s3 = session_data['clients']['s3']
+    cloud_storage = session_data['clients']['cloud_storage']
     try:
         logger(session_data['unique_prefix'], 'log', 'Mixing Audio...')
         combined_clips = combine_audio_clips(session_data)
@@ -185,7 +201,8 @@ def combine_audio(session_data):
         logger(session_data['unique_prefix'], 'log', 'Audio Mixing Complete')
 
         logger(session_data['unique_prefix'], 'log', 'Uploading Audio to the cloud...')
-        session_data['audio'] = upload_audio_from_disk_to_s3(s3, session_data['audio'], session_data['unique_prefix'])
+        session_data['audio'] = upload_audio_from_disk_to_cloud(cloud_storage, session_data['audio'],
+                                                                session_data['unique_prefix'])
 
         return session_data
     except Exception as e:
@@ -205,7 +222,6 @@ def handoff_to_lambda(session_data):
 
 
 def generate_video(session_data, images):
-    from flask import current_app
     with app.app_context():
         try:
             print('Executing the background')
@@ -248,8 +264,13 @@ def generate_video_route():
         'mood': request.form.get('mood'),
         'platform': request.form.get('platform'),
         'audio': {},
-        'video': {}
+        'video': {},
+        'text_to_text': 'openai',
+        'image_to_text': 'openai',
+        'text_to_voice': 'elevenlabs',
+        'text_to_music': 'sunfire'
     }
+
     (session_data['target_width'],
      session_data['target_height'],
      session_data['video']['aspect_ratio']) = (get_platform_specs(session_data['platform']))

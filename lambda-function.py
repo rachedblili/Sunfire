@@ -75,7 +75,7 @@ def process_images_and_generate_video(session_data):
             local_files = []
             for image in images:
                 bucket = image['bucket']
-                key = image['s3_key']
+                key = image['cloud_storage_key']
                 local_path = os.path.join(tmp_dir, os.path.basename(key))
 
                 try:
@@ -140,7 +140,7 @@ def process_images_and_generate_video(session_data):
 
             # Let's grab the audio file
             bucket = audio_data['bucket']
-            key = audio_data['clips']['combined']['s3_key']
+            key = audio_data['clips']['combined']['cloud_storage_key']
             local_path = os.path.join(tmp_dir, os.path.basename(key))
             try:
                 # Download image from S3
@@ -222,16 +222,16 @@ def lambda_handler(event, context):
             body = event.get('body')
             if body:
                 session_data = json.loads(body)
-                s3_objects = session_data.get('s3_objects')
+                cloud_storage_objects = session_data.get('cloud_storage_objects')
                 video_data = session_data.get('video')
                 duration = video_data.get('duration')
                 output_bucket = session_data.get('write_bucket')
                 callback_url = session_data.get('callback_url')
 
-                if not s3_objects or not duration or not output_bucket or not callback_url:
+                if not cloud_storage_objects or not duration or not output_bucket or not callback_url:
                     return {'statusCode': 400,
                             'body': json.dumps(
-                                {'message': 'S3 objects, duration, output bucket, and callback URL must be provided'})}
+                                {'message': 'cloud_storage objects, duration, output bucket, and callback URL must be provided'})}
 
                 # Return success immediately after validation
                 response = {

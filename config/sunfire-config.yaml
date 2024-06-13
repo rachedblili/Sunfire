@@ -1,0 +1,12 @@
+---
+  server_addr: 54.166.183.35
+  uploads_folder: uploads/
+  videos_folder: videos/
+  audio_folder: audio/
+  source_bucket_name: sunfire-source-bucket
+  destination_bucket_name: sunfire-destination-bucket
+  api_gateway_url: https://0h8a50ruye.execute-api.us-east-1.amazonaws.com/sunfire-generate-video-from-images
+  text-to-text: openai
+  image-to-text: openai
+  text-to-voice: elevenlabs
+  text-to-music: sunfire

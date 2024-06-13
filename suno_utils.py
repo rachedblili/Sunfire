@@ -7,6 +7,11 @@ import requests
 base_url = 'http://127.0.0.1:3000'
 
 
+def get_text_to_music_client():
+    url = base_url
+    return url
+
+
 def custom_generate_audio(payload):
     url = f"{base_url}/api/custom_generate"
     response = requests.post(url, json=payload, headers={'Content-Type': 'application/json'})

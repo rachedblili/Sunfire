@@ -1,5 +1,4 @@
 import os
-from flask import current_app
 from openai import OpenAI
 import json
 from messaging_utils import logger
@@ -13,10 +12,10 @@ def get_openai_client():
 def describe_and_recommend(session_id, client, images, url_maker):
     for image in images:
 
-        # Create pre-signed URL to the S3 objects
+        # Create pre-signed URL to the cloud_storage objects
         image_url = url_maker(
                 'get_object',
-                Params={'Bucket': image['bucket'], 'Key': image['s3_key']},
+                Params={'Bucket': image['bucket'], 'Key': image['cloud_storage_key']},
                 ExpiresIn=120  # URL expires in 2 minutes
             )
         describe_response = client.chat.completions.create(

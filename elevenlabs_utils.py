@@ -1,5 +1,4 @@
 import os
-from flask import current_app
 from elevenlabs import save, VoiceSettings
 from elevenlabs.client import ElevenLabs
 import requests
