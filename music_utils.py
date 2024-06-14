@@ -1,5 +1,6 @@
 import os
 import shutil
+import json
 from text_to_text import generic_query
 from config_utils import get_config, get_music_data
 config = get_config()
@@ -23,7 +24,7 @@ def make_music(session_data, prompt):
         "content": prompt
     }, {
         "role": "user",
-        "content": "Here is my music data: \n" + music_data['Songs']
+        "content": "Here is my music data: \n" + json.dumps(music_data['Songs'])
     }]
 
     song = generic_query(session_data['client']['text-to-text'], messages)
