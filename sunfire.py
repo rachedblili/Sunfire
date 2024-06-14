@@ -291,12 +291,18 @@ def generate_video_route():
         image_path = os.path.join(upload_folder, image_file.filename)
         image_file.save(image_path)
         if not compatible_image_format(image_path):
-            with Image.open(image_path) as img:
-                img = convert_image_to_png(img)
-                new_filename = os.path.splitext(image_file.filename)[0] + '.png'
-                file_path = os.path.join(upload_folder, new_filename)
-                img.save(file_path, format='PNG')
-                image_file.filename = new_filename
+            try:
+                with Image.open(image_path) as img:
+                    img = convert_image_to_png(img)
+                    new_filename = os.path.splitext(image_file.filename)[0] + '.png'
+                    file_path = os.path.join(upload_folder, new_filename)
+                    img.save(file_path, format='PNG')
+                    image_file.filename = new_filename
+            except Exception as e:
+                print(f"Error converting image: {str(e)}")
+                logger(unique_prefix, 'log', 'Got an incompatible image. Skipping it...')
+                os.remove(image_path)
+                continue
 
     # Keep track of image attributes
     images = []
