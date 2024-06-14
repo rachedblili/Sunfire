@@ -10,6 +10,8 @@ const videoPopup = document.getElementById('video-popup');
 const closePopup = document.getElementById('close-popup');
 const testPopupBtn = document.getElementById('test-popup-btn');
 const dropArea = document.getElementById('drop-area');
+const progressBarContainer = document.getElementById('progressBarContainer');
+const progressBar = document.getElementById('progressBar');
 
 function clearContainers() {
         if (logContainer) {
@@ -20,6 +22,23 @@ function clearContainers() {
             generatedVideo.src = '';
         }
 }
+
+// Progress Bar Functions
+function showProgressBar() {
+    progressBarContainer.style.display = 'block';
+}
+function hideProgressBar() {
+    progressBarContainer.style.display = 'none';
+}
+function fillProgressBar() {
+    let currentWidth = parseInt(progressBar.style.width);
+    if (isNaN(currentWidth)) currentWidth = 10; // Initial width is 5px
+    if (currentWidth < 200) { // Ensure the width does not exceed 200
+        currentWidth += 10;
+        progressBar.style.width = currentWidth + 'px';
+    }
+}
+
 // Function to show the popup
 function showPopup() {
     videoPopup.style.display = 'flex';
@@ -47,6 +66,7 @@ function setupEventSource(sessionId) {
             if (receivedSessionId === sessionId) { // Check if the message is for the correct session
                 if (facility === "log") {
                     if (logContainer) {
+                        fillProgressBar();
                         var messageElement = document.createElement('p');
                         messageElement.textContent = message;
                         logContainer.appendChild(messageElement);
@@ -55,6 +75,7 @@ function setupEventSource(sessionId) {
                         console.error("log-container not found");
                     }
                 } else if (facility === "video") {
+                    hideProgressBar()
                     if (generatedVideo) {
                         generatedVideo.src = message;
                         showPopup();
@@ -364,7 +385,7 @@ form.addEventListener('submit', function (e) {
       formData.append(input.name, input.value);
     }
   });
-
+  showProgressBar();
   // Send data to Flask backend
   fetch('/api/generate-video', {
     method: 'POST',
@@ -374,6 +395,7 @@ form.addEventListener('submit', function (e) {
       if (response.ok) {
         return response.json();
       } else {
+        hideProgressBar();
         throw new Error('Failed to initiate video generation process.');
       }
     })
@@ -382,6 +404,7 @@ form.addEventListener('submit', function (e) {
       setupEventSource(sessionId); // Pass the session_id to the setupEventSource function
     })
     .catch(error => {
+      hideProgressBar();
       console.error('Error:', error);
       alert('An error occurred while generating the video.');
     });

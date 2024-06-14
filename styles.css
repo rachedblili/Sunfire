@@ -184,6 +184,7 @@ button.move-left, button.move-right {
 }
 
 #results-area {
+  width: 80%;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 8px var(--shadow-color);
@@ -255,4 +256,28 @@ button[type="submit"] {
 
 button[type="submit"]:hover {
   background-color: var(--accent-color);
+}
+
+#progressBarContainer {
+  display: none;
+  width: 200px; /* Full width of the progress bar */
+  height: 10px; /* Height of the progress bar */
+  background-color: var(--background-color); /* Background color of the container */
+  border: 1px solid #ccc; /* Border of the container */
+  position: relative; /* Relative positioning for the progress bar */
+  overflow: hidden; /* Hide overflow to make the animation look good */
+}
+
+#progressBar {
+  width: 10px; /* Initial width of the progress bar */
+  height: 100%; /* Full height of the container */
+  background-color: var(--accent-color); /* Color of the progress bar */
+  position: absolute; /* Absolute positioning within the container */
+  animation: pulse 1s ease-in-out infinite; /* Add pulsing animation */
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
 }
