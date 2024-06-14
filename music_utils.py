@@ -28,12 +28,11 @@ def make_music(session_data, prompt):
     }]
 
     song = generic_query(session_data['clients']['text_to_text'], messages)
-    song_library = music_data['Song Library']
+    song_library = music_data['Data Directory']
     if not os.path.exists(song_library + song):
         raise FileNotFoundError(f"Song not found in library: {song_library}{song}")
     filename = session_data['company_name'] + "_" + session_data['mood'] + "_music.mp3"
     print("Saving Music to Disk...")
-    song_library = music_data['Data Directory']
     dir_name = session_data['audio']['local_dir']
     try:
         shutil.copy(song_library + song, dir_name + filename)
