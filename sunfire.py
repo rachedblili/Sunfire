@@ -265,10 +265,10 @@ def generate_video_route():
         'platform': request.form.get('platform'),
         'audio': {},
         'video': {},
-        'text_to_text': 'openai',
-        'image_to_text': 'openai',
-        'text_to_voice': 'elevenlabs',
-        'text_to_music': 'sunfire'
+        'text_to_text': config['text-to-text'],
+        'image_to_text': config['image-to-text'],
+        'text_to_voice': config['text-to-voice'],
+        'text_to_music': config['text-to-music']
     }
 
     (session_data['target_width'],

@@ -8,10 +8,10 @@ def get_text_to_music_client():
 
 
 def make_music(*args, **kwargs):
-    if config['text_to_music'] == 'sunfire':
+    if config['text-to-music'] == 'sunfire':
         import music_utils
         return music_utils.make_music(*args, **kwargs)
-    elif config['text_to_music'] == 'suno':
+    elif config['text-to-music'] == 'suno':
         import suno_utils
         return suno_utils.make_music(*args, **kwargs)
     else:
