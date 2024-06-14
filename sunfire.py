@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from audio_utils import trim_and_fade, combine_audio_clips
 import requests
 from PIL import Image
+import pillow_avif
 from config_utils import get_config
 from image_utils import modify_image, compatible_image_format, convert_image_to_png, get_platform_specs
 from messaging_utils import message_manager, logger
