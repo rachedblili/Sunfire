@@ -27,7 +27,7 @@ def make_music(session_data, prompt):
         "content": "Here is my music data: \n" + json.dumps(music_data['Songs'])
     }]
 
-    song = generic_query(session_data['client']['text-to-text'], messages)
+    song = generic_query(session_data['clients']['text_to_text'], messages)
     song_library = music_data['Song Library']
     if not os.path.exists(song_library + song):
         raise FileNotFoundError(f"Song not found in library: {song_library}{song}")

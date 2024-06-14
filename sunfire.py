@@ -102,7 +102,7 @@ def initialize_clients(session_data):
         text_to_music = get_text_to_music_client()
         if not text_to_music:
             raise RuntimeError("Music Generation client initialization returned an invalid object")
-        session_data['clients']['text-to-music'] = text_to_music
+        session_data['clients']['text_to_music'] = text_to_music
     except Exception as e:
         raise RuntimeError(f"Failed to initialize Music Generation client: {e}")
 
