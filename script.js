@@ -38,6 +38,9 @@ function fillProgressBar() {
         progressBar.style.width = currentWidth + 'px';
     }
 }
+function resetProgressBar(){
+    progressBar.style.width = '10px';
+}
 
 // Function to show the popup
 function showPopup() {
@@ -75,7 +78,8 @@ function setupEventSource(sessionId) {
                         console.error("log-container not found");
                     }
                 } else if (facility === "video") {
-                    hideProgressBar()
+                    hideProgressBar();
+                    resetProgressBar();
                     if (generatedVideo) {
                         generatedVideo.src = message;
                         showPopup();
