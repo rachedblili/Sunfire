@@ -117,25 +117,21 @@ document.addEventListener("DOMContentLoaded", function() {
     dropArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         dropArea.classList.add('dragging');
-        console.log('dragover event:', e);
     });
 
     dropArea.addEventListener('dragleave', () => {
         dropArea.classList.remove('dragging');
-        console.log('dragleave event:');
     });
 
     dropArea.addEventListener('dragstart', (e) => {
         dragStarted = true; // Set the flag indicating a drag has started
         initialContainerCount = imageContainers.length; // Record the number of containers at drag start
-        console.log('dragstart event:', e);
     });
 
     dropArea.addEventListener('drop', (e) => {
         e.preventDefault();
         dropArea.classList.remove('dragging');
         const files = e.dataTransfer.files;
-        console.log('drop event:', e);
 
         if (dragStarted) { // Check if it's a reorder by ensuring no new files are added
           setTimeout(() => {
@@ -353,11 +349,17 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('age-gender-select').addEventListener('change', function() {
         const toneSelect = document.getElementById('tone-select').value.toLowerCase();
         const ageGenderSelect = this.value;
-        const formInput = document.createElement('input');
-        formInput.type = 'hidden';
-        formInput.name = 'tone_age_gender';
-        formInput.value = `${toneSelect}:${ageGenderSelect}`;
-        document.querySelector('form').appendChild(formInput);
+        const hiddenInput = document.querySelector('form input[name="tone_age_gender"]');
+
+        if (hiddenInput) {
+            hiddenInput.value = `${toneSelect}:${ageGenderSelect}`;
+        } else {
+            const formInput = document.createElement('input');
+            formInput.type = 'hidden';
+            formInput.name = 'tone_age_gender';
+            formInput.value = `${toneSelect}:${ageGenderSelect}`;
+            document.querySelector('form').appendChild(formInput);
+        }
     });
 });
 
@@ -381,7 +383,6 @@ form.addEventListener('submit', function (e) {
   });
 
   // Append other form data dynamically
-  const inputs = form.querySelectorAll('input, select, textarea');
   inputs.forEach(input => {
     if (input.type === 'file') {
       // Assuming you handle file inputs separately as shown above
