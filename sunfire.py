@@ -3,6 +3,8 @@ from flask import Flask, request, jsonify, Response, copy_current_request_contex
 from flask_executor import Executor
 import os
 import uuid
+import hashlib
+from pathlib import Path
 from dotenv import load_dotenv
 from audio_utils import trim_and_fade, combine_audio_clips
 import requests
@@ -290,6 +292,13 @@ def generate_video_route():
     image_files = request.files.getlist('images')
     print("Image Files:", image_files)
     for image_file in image_files:
+        # Clean up file names
+        stem = Path(image_file.filename).stem
+        ext = Path(image_file.filename).suffix
+        safe_stem = hashlib.sha256(stem.encode()).hexdigest()[:20]
+        safe_filename = safe_stem + ext
+        image_file.filename = safe_filename
+
         image_path = os.path.join(upload_folder, image_file.filename)
         image_file.save(image_path)
         if not compatible_image_format(image_path):
