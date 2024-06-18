@@ -345,6 +345,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 `<option value="${option}">${option}</option>`
             ).join('');
         ageGenderSelect.style.visibility = 'visible';
+        ageGenderSelect.required = true;
     });
 
     document.getElementById('age-gender-select').addEventListener('change', function() {
