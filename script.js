@@ -370,6 +370,8 @@ form.addEventListener('submit', function (e) {
   e.preventDefault();
   clearContainers();
   const formData = new FormData();
+  const inputs = form.querySelectorAll('input, select, textarea');
+
 
   // Dynamically get the current list of image containers
   const currentImageContainers = imageShelf.querySelectorAll('.image-container');
