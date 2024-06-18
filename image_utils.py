@@ -1,7 +1,6 @@
 import os
-from flask import current_app
 import base64
-from PIL import Image, ExifTags
+from PIL import Image, ExifTags, ImageFilter
 from pillow_heif import register_heif_opener
 import imghdr
 from messaging_utils import logger
@@ -70,29 +69,40 @@ def modify_image(image_path, desired_width, desired_height, pad_color, output_pa
     new_width = int(original_width * scaling_factor)
     new_height = int(original_height * scaling_factor)
 
-    image = image.resize((new_width, new_height), Image.LANCZOS)
-    # Try to fill transparency
-    if image.mode in ('RGBA', 'LA'):
-        print("Trying to fix transparency in:", image_path)
-        base_mode = image.mode[:-1]
-        background = Image.new(base_mode, image.size, pad_color)
-        background.paste(image, image.split()[-1])  # Paste using alpha channel as mask
-        image = background
-    elif image.mode == 'P' and 'transparency' in image.info:
-        print("Trying to fix transparency in:", image_path)
-        image = image.convert("RGBA")
-        base_mode = "RGB"
-        background = Image.new(base_mode, image.size, pad_color)
-        alpha = image.split()[-1]  # Get the alpha channel
-        background.paste(image, (0, 0), alpha)  # Use alpha channel as mask
-        image = background
-
-    # Create a new image with the desired dimensions
-    new_img = Image.new("RGB", (desired_width, desired_height), hex_to_rgb(pad_color))
-
     # Calculate the position to paste the scaled image
     paste_x = (desired_width - new_width) // 2
     paste_y = (desired_height - new_height) // 2
+
+    # Resize the image
+    image = image.resize((new_width, new_height), Image.LANCZOS)
+    # Try to fill transparency
+    if (image.mode in ('RGBA', 'LA')) or (image.mode == 'P' and 'transparency' in image.info):
+        if image.mode in ('RGBA', 'LA'):
+            print("Trying to fix transparency in:", image_path)
+            base_mode = image.mode[:-1]
+            background = Image.new(base_mode, image.size, pad_color)
+            background.paste(image, image.split()[-1])  # Paste using alpha channel as mask
+            image = background
+        elif image.mode == 'P' and 'transparency' in image.info:
+            print("Trying to fix transparency in:", image_path)
+            image = image.convert("RGBA")
+            base_mode = "RGB"
+            background = Image.new(base_mode, image.size, pad_color)
+            alpha = image.split()[-1]  # Get the alpha channel
+            background.paste(image, (0, 0), alpha)  # Use alpha channel as mask
+            image = background
+
+        # Create a new image with the desired dimensions
+        new_img = Image.new("RGB", (desired_width, desired_height), hex_to_rgb(pad_color))
+    else:
+        # Blur radius calculation
+        blur_radius = ((paste_x + paste_y) // 2) // 4
+        blurred_background = image.resize((desired_width, desired_height), Image.LANCZOS).filter(
+            ImageFilter.GaussianBlur(blur_radius))
+
+        # Create a new image with extended edges
+        new_img = Image.new('RGB', (desired_width, desired_height))
+        new_img.paste(blurred_background)
 
     # Paste the scaled image onto the new image
     new_img.paste(image, (paste_x, paste_y))
