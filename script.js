@@ -287,7 +287,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 aspectRatio = { width: 9, height: 16 };
                 break;
             case 'square':
-                aspectRatio = { width: 1, height: 1}
+                aspectRatio = { width: 1, height: 1};
+                break;
             default:
                 aspectRatio = { width: 16, height: 9 };
        }
