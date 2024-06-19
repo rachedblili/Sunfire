@@ -10,6 +10,9 @@ def fit_clip_length(clip, local_dir, desired_duration):
 
     current_duration = len(audio) / 1000.0  # In seconds
     speed_factor = current_duration / desired_duration
+    # Limit the speed_factor to be between 0.85 and 1.2
+    speed_factor = max(0.85, min(speed_factor, 1.2))
+
     input_file = clip['filename']
     output_file = f"adjusted_{input_file}"
     # Construct the ffmpeg command

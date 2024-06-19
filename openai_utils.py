@@ -106,7 +106,8 @@ def create_narration(client, session_data):
     duration = session_data['video']['duration']
     word_speed = 135
     max_words = int((word_speed/60) * (duration - 1))  # Allow for silence at the ends of the video.
-    target_words = int(0.9 * max_words)  # Aim for about 95% of the words you'd expect
+    target_words = int(0.9 * max_words)  # Aim for about 90% of the words you'd expect
+    min_words = int(0.8 * max_words)  # Aim for about 80% of the words you'd expect
     images = session_data['images']
     messages = [{
         "role": "system",
@@ -126,7 +127,8 @@ def create_narration(client, session_data):
                 enhance the narrative, not as the primary inspiration for it.
 
                 [HARD REQUIREMENTS] The narrative should fit inside the allotted {duration - 2} seconds. That means your 
-                narrative must be about {target_words} words long. DO NOT EXCEED {max_words} words!"""
+                narrative must be about {target_words} words long. DO NOT EXCEED {max_words} words but have at 
+                least {min_words} words!"""
     }, {
         "role": "user",
         "content": f"""
