@@ -190,7 +190,8 @@ document.addEventListener("DOMContentLoaded", function() {
         const removeBtn = document.createElement('button');
         removeBtn.classList.add('remove-image');
         removeBtn.textContent = 'x';
-        removeBtn.addEventListener('click', () => {
+        removeBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
           imageShelf.removeChild(container);
           imageContainers = imageContainers.filter(c => c !== container);
         });
@@ -202,12 +203,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
         container.addEventListener('dragstart', () => {
           container.classList.add('dragging');
-          e.stopPropagation();
+          //e.stopPropagation();
         });
 
         container.addEventListener('dragend', () => {
           container.classList.remove('dragging');
-          e.stopPropagation();
+          //e.stopPropagation();
           updateImageContainerOrder();
         });
 
