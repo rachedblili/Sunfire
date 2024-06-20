@@ -23,6 +23,16 @@ def fit_clip_length(clip, local_dir, desired_duration):
 
     # Execute the command
     subprocess.run(cmd, check=True)
+
+    # Due to limits we have set, the length might be too short.  If so, pad
+    # it with silence
+    audio = AudioSegment.from_file(local_dir+output_file)
+    current_duration = len(audio) / 1000.0  # In seconds
+    if current_duration < desired_duration:
+        padding = desired_duration - current_duration
+        audio = audio.append(AudioSegment.silent(duration=padding*1000), crossfade=1000)
+        audio.export(local_dir+output_file, format="mp3")
+
     clip['filename'] = output_file
     return clip
 
@@ -113,7 +123,8 @@ def combine_audio_clips(session_data: dict):
         # Construct the ffmpeg command
 
         output_filename = f"{session_data['company_name']}_combined_audio.mp3"
-        cmd = ["ffmpeg", "-y", "-i", save_dir+audio_data['clips']['voice']['filename'],
+        cmd = ["ffmpeg", "-y", "-i",
+               save_dir+audio_data['clips']['voice']['filename'],
                "-i", save_dir + volume_adjusted_clip['filename'],
                "-filter_complex", "amerge=inputs=2", save_dir + output_filename]
         # Execute the command

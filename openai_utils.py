@@ -104,10 +104,10 @@ def generic_query(client, messages: list, response_type: str = 'txt'):
 
 def create_narration(client, session_data):
     duration = session_data['video']['duration']
-    word_speed = 135
+    word_speed = 140
     max_words = int((word_speed/60) * (duration - 1))  # Allow for silence at the ends of the video.
-    target_words = int(0.9 * max_words)  # Aim for about 90% of the words you'd expect
-    min_words = int(0.8 * max_words)  # Aim for about 80% of the words you'd expect
+    target_words = int(0.92 * max_words)  # Aim for about 92% of the words you'd expect
+    min_words = int(0.85 * max_words)  # Aim for about 80% of the words you'd expect
     images = session_data['images']
     messages = [{
         "role": "system",
