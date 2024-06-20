@@ -117,7 +117,7 @@ def create_narration(client, session_data):
     }, {
         "role": "user",
         "content": f"""
-                Please generate a narrative for me.
+                Please generate a narrative for {session_data['company_name']}.
                 
                 [General Instructions] 
                 The video is {duration} seconds long. 
