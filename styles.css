@@ -26,6 +26,29 @@ body {
   border-radius: 8px;
 }
 
+.banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    padding: 10px;
+}
+
+.left-logo {
+    max-height: 40px;
+}
+
+.right-logo {
+    max-height: 60px; /* Adjust as needed */
+}
+
+.center-logo {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    max-height: 90px; /* Adjust as needed */
+}
+
 h1 {
   font-size: 24px;
   color: var(--primary-color);
