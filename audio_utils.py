@@ -30,7 +30,7 @@ def fit_clip_length(clip, local_dir, desired_duration):
     current_duration = len(audio) / 1000.0  # In seconds
     if current_duration < desired_duration:
         padding = desired_duration - current_duration
-        audio = audio.append(AudioSegment.silent(duration=padding*1000), crossfade=1000)
+        audio = audio.append(AudioSegment.silent(duration=padding*1000))
         audio.export(local_dir+output_file, format="mp3")
 
     clip['filename'] = output_file
