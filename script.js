@@ -77,6 +77,12 @@ function setupEventSource(sessionId) {
                     } else {
                         console.error("log-container not found");
                     }
+                } else if (facility == "error") {
+                        hideProgressBar();
+                        var messageElement = document.createElement('p');
+                        messageElement.textContent = "ERROR:" + message;
+                        logContainer.appendChild(messageElement);
+                        logContainer.scrollTop = logContainer.scrollHeight;
                 } else if (facility === "video") {
                     hideProgressBar();
                     resetProgressBar();

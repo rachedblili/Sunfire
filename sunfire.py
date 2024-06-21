@@ -245,7 +245,7 @@ def generate_video(session_data, images):
         except Exception as e:
             print(f"Error in generate_video: {str(e)}")
             print(traceback.format_exc())
-            logger(session_data['unique_prefix'], 'log', 'ERROR: video generation failed')
+            logger(session_data['unique_prefix'], 'error', 'video generation failed - ' + str(e))
             # endregion
 
 #############################################################################################################
