@@ -34,7 +34,7 @@ function fillProgressBar() {
     let currentWidth = parseInt(progressBar.style.width);
     if (isNaN(currentWidth)) currentWidth = 10; // Initial width is 5px
     if (currentWidth < 200) { // Ensure the width does not exceed 200
-        currentWidth += 10;
+        currentWidth += 5;
         progressBar.style.width = currentWidth + 'px';
     }
 }

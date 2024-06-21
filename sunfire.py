@@ -215,7 +215,7 @@ def combine_audio(session_data):
 
 def handoff_to_lambda(session_data):
     try:
-        logger(session_data['unique_prefix'], 'log', 'Generating the video...')
+        logger(session_data['unique_prefix'], 'log', 'Generating the video (please wait)...')
         api_response = call_api_gateway(session_data)
         if api_response:
             return jsonify({'message': 'Video generation initiated'}), 200
