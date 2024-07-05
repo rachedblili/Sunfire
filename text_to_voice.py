@@ -14,9 +14,9 @@ def get_voice_tone_data():
 
 
 def find_voice(tone, age, gender, session_data):
-    if config['find-voice'] == 'elevenlabs':
+    if config['voice-list'] == 'elevenlabs':
         return elevenlabs_utils.find_voice(tone, age, gender)
-    elif config['find-voice'] == 'sunfire':
+    elif config['voice-list'] == 'sunfire':
         return audio_utils.find_voice(tone, age, gender, session_data)
     else:
         raise ValueError(f"Invalid find-voice value: {config['find-voice']}")
