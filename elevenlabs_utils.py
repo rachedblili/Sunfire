@@ -47,6 +47,10 @@ def text_to_speech(client, session_data):
     model = models[parts[0]]
     stability = float(parts[1].split('%')[0]) / 100
     similarity_boost = float(parts[2].split('%')[0]) / 100
+
+    print(f"Model: {model}")
+    print(f"Stability: {stability}")
+    print(f"Similarity Boost: {similarity_boost}")
     # Perform the text-to-speech conversion
     response = client.text_to_speech.convert(
         voice_id=session_data['voice']['voice_id'],
