@@ -37,6 +37,7 @@ def find_voice(session_data):
     }]
 
     voice_names = generic_query(session_data['clients']['text_to_text'], messages)
+    print(voice_names)
     voice_name = random.choice(voice_names)
     voice = [v for v in voices if v['name'] == voice_name][0]
     voice_info = {
