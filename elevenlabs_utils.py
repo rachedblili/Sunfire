@@ -40,8 +40,9 @@ def text_to_speech(client, session_data):
     # Grab settings for model and set defaults if needed
     parts = session_data['voice']['model'].split(' - ')
     if len(parts) < 3:
-        parts[1] = '60% stab'
-        parts[2] = '80% sim'
+        parts.append('60% stab')
+        parts.append('80% sim')
+
     model = models[parts[0]]
     stability = float(parts[1].split('%')[0]) / 100
     similarity_boost = float(parts[2].split('%')[0]) / 100
