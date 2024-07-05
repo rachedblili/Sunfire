@@ -105,9 +105,9 @@ def generic_query(client, messages: list, response_type: str = 'txt'):
 def create_narration(client, session_data):
     duration = session_data['video']['duration']
     if session_data['voice']['speed']:
-        syllable_speed = session_data['voice']['speed']
+        syllable_speed = float(session_data['voice']['speed'])
     else:
-        syllable_speed = 223
+        syllable_speed = 223.0
     max_syllables = int((syllable_speed/60) * (duration - 1))  # Allow for silence at the ends of the video.
     target_syllables = int(0.92 * max_syllables)  # Aim for about 92% of the words you'd expect
     min_syllables = int(0.85 * max_syllables)  # Aim for about 80% of the words you'd expect
