@@ -131,8 +131,8 @@ def create_narration(client, session_data):
                 to enhance the narrative, not as the primary inspiration for it.
 
                 [HARD REQUIREMENTS] The narrative should fit inside the allotted {duration - 2} seconds. That means your 
-                narrative must be about {target_syllables} words long. DO NOT EXCEED {max_syllables} syllables but have 
-                at least {min_syllables} syllables!"""
+                narrative must be about {target_syllables} syllables long. DO NOT EXCEED {max_syllables} syllables but 
+                have at least {min_syllables} syllables!"""
     }, {
         "role": "user",
         "content": f"""
