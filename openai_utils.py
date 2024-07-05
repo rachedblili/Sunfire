@@ -166,7 +166,7 @@ def create_narration(client, session_data):
                 "content": "\n".join(fine_tuning_section)
             }
         )
-
+    print(messages)
     narrative = generic_query(client, messages)
     return narrative
 
