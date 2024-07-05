@@ -172,7 +172,6 @@ def create_narration(client, session_data):
 
 
 def generate_music_prompt(client, session_data):
-    tone, age_gender = session_data['tone_age_gender'].split(':')
     mood = session_data['mood']
     topic = session_data['audio']['narration_script']
     messages = [{
@@ -190,7 +189,6 @@ def generate_music_prompt(client, session_data):
                 prompt.
                 [DATA]
                 Requested mood: {mood} (if 'ai' then use your own judgement)
-                Tone: {tone}
                 Topic: {topic}
                 
                 Please keep the prompt to under 30 words and only include tightly worded instructions to the LLM."""
