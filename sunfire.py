@@ -157,9 +157,10 @@ def generate_narrative(session_data):
         }
 
         logger(session_data['unique_prefix'], 'log', 'Choosing a voice...')
-        tone, age_gender = session_data['tone_age_gender'].split(':')
-        age, gender = age_gender.split()
-        voice = find_voice(tone, age, gender, session_data)
+        # tone, age_gender = session_data['tone_age_gender'].split(':')
+        # age, gender = age_gender.split()
+        # voice = find_voice(tone, age, gender, session_data)
+        voice = find_voice(session_data)
         logger(session_data['unique_prefix'], 'log', f"Your narrator is: {voice['name']}")
         session_data['voice'] = voice
 
@@ -264,7 +265,7 @@ def generate_video_route():
         'emphasis': request.form.get('emphasis'),
         'avoid': request.form.get('avoid'),
         'topic': request.form.get('press-release'),
-        'tone_age_gender': request.form.get('tone_age_gender'),
+        # 'tone_age_gender': request.form.get('tone_age_gender'),
         'mood': request.form.get('mood'),
         'platform': request.form.get('platform'),
         'audio': {},

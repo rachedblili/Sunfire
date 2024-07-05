@@ -147,39 +147,68 @@ def get_voice_tone_data():
     return tones_details
 
 
+def get_slim_voice_data():
+    voice_data = get_voice_data()
+    slim_voice_data = []
+    for voice in voice_data:
+        voice_info = {
+            "voice_id": voice['voice_id'],
+            "name": voice['name'],
+            "description": voice['labels'].get('description', ''),
+            "use": voice['labels'].get('use case', ''),
+            "accent": normalize_attribute(voice['labels'].get('accent', '')),
+            "gender": normalize_attribute(voice['labels'].get('gender', '')),
+            "age": normalize_attribute(voice['labels'].get('age', '')),
+            "speed": 223.0
+        }
+        slim_voice_data.append(voice_info)
+    return slim_voice_data
+
+
 def normalize_attribute(attribute):
     # Normalize attribute values to a consistent format
     normalized = attribute.lower().replace(' ', '-')
     return normalized.capitalize()
 
 
-def find_voice(tone, age, gender):
-    """
-    Retrieve all voices matching the given tone, age, and gender.
+def find_voice(session_data):
+    tone = session_data['mood']
+    print("Looking for: ", tone)
+    voices = get_slim_voice_data()
+    from text_to_text import generic_query
+    import json
+    import random
+    messages = [{
+        "role": "system",
+        "content": "You are the assistant. Your job is to select the THREE best voices to narrate a video."
+                   "You will base your decision on the specified tone of the voice as well as the "
+                   "overall topic of the video. Your response will be parsed by a script and should consist ONLY "
+                   "of a JSON formatted list of voice names.  For example: ['Brian', 'Russell', 'Janine']. "
+                   "If the specified tone is 'ai', then use your judgement to select the appropriate voice. "
+                   "A list of voices and their characteristics can be found below. "
+    }, {
+        "role": "user",
+        "content": "Tone: " + tone
+    }, {
+        "role": "user",
+        "content": "Overall Topic of the Video: " + session_data['topic']
+    }, {
+        "role": "user",
+        "content": "Here is the voice data: \n" + json.dumps(voices)
+    }, {
+        "role": "user",
+        "content": "Respond ONLY with names of the THREE best voices as a JSON formatted list. "
+    }]
 
-    Args:
-        tone (str): The selected tone category.
-        age (str): The age group to filter by.
-        gender (str): The gender to filter by.
+    voice_names = generic_query(session_data['clients']['text_to_text'], messages)
+    voice_name = random.choice(voice_names)
+    voice = [v for v in voices if v['name'] == voice_name][0]
+    voice_info = {
+        "voice_id": voice['id'],
+        "name": voice['name'],
+        "model": voice['model'],
+        "speed": voice['speed']
+    }
 
-    Returns:
-        list: A list of dictionaries, each representing a voice that matches the criteria.
-    """
-    tone = tone.capitalize()
-    print("Looking for: ", tone, age, gender)
-    tones_data = get_voice_tone_data()
-    # Check if the selected tone is in the data structure
-    if tone not in tones_data:
-        print("Couldn't find tone: ", tone)
-        return ""  # Return an empty list if the tone is not found
+    return voice_info
 
-    # Retrieve the list of all voices under the selected tone
-    voices = tones_data[tone]['voices']
-
-    # Filter voices based on the selected age and gender
-    matching_voices = [
-        voice for voice in voices
-        if voice['age'] == age and voice['gender'] == gender
-    ]
-    print("Number of matches:", str(len(matching_voices)))
-    return random.choice(matching_voices)

@@ -8,16 +8,20 @@ config = get_config()
 
 
 # Used when the voice catalog is maintained by the Sunfire team
-def find_voice(tone, age, gender, session_data):
+def find_voice(session_data):
     voices = get_voice_data(config['voice-data'])
+    tone = session_data['mood']
     from text_to_text import generic_query
     import json
+    import random
     messages = [{
         "role": "system",
-        "content": "You are the assistant. Your job is to select an appropriate voice to narrate a video."
+        "content": "You are the assistant. Your job is to select the THREE best voices to narrate a video."
                    "You will base your decision on the specified tone of the voice as well as the "
                    "overall topic of the video. Your response will be parsed by a script and should consist ONLY "
-                   "of the name of the voice.  A list of voices and their characteristics can be found below. "
+                   "of a JSON formatted list of voice names.  For example: ['Brian', 'Russell', 'Janine']. "
+                   "If the specified tone is 'ai', then use your judgement to select the appropriate voice. "
+                   "A list of voices and their characteristics can be found below. "
     }, {
         "role": "user",
         "content": "Tone: " + tone
@@ -29,10 +33,11 @@ def find_voice(tone, age, gender, session_data):
         "content": "Here is the voice data: \n" + json.dumps(voices)
     },  {
         "role": "user",
-        "content": "Respond ONLY with the Name of the best voice to use."
+        "content": "Respond ONLY with names of the THREE best voices as a JSON formatted list. "
     }]
 
-    voice_name = generic_query(session_data['clients']['text_to_text'], messages)
+    voice_names = generic_query(session_data['clients']['text_to_text'], messages)
+    voice_name = random.choice(voice_names)
     voice = [v for v in voices if v['name'] == voice_name][0]
     voice_info = {
         "voice_id": voice['id'],
