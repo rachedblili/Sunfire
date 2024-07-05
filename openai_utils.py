@@ -109,8 +109,8 @@ def create_narration(client, session_data):
     else:
         syllable_speed = 223.0
     max_syllables = int((syllable_speed/60) * (duration - 1))  # Allow for silence at the ends of the video.
-    target_syllables = int(0.92 * max_syllables)  # Aim for about 92% of the words you'd expect
-    min_syllables = int(0.85 * max_syllables)  # Aim for about 80% of the words you'd expect
+    target_syllables = int(0.98 * max_syllables)  # Aim for about 92% of the words you'd expect
+    min_syllables = int(0.95 * max_syllables)  # Aim for about 80% of the words you'd expect
     print(f"Max syllables: {max_syllables}, Target syllables: {target_syllables}, Min syllables: {min_syllables}")
     images = session_data['images']
     messages = [{
