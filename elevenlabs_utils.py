@@ -124,7 +124,8 @@ def get_voice_tone_data():
             "description": voice['labels'].get('description', ''),
             "accent": normalize_attribute(voice['labels'].get('accent', '')),
             "gender": normalize_attribute(voice['labels'].get('gender', '')),
-            "age": normalize_attribute(voice['labels'].get('age', ''))
+            "age": normalize_attribute(voice['labels'].get('age', '')),
+            "speed": 223.0
         }
 
         use_case = voice['labels'].get('use case')

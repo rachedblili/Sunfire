@@ -104,10 +104,13 @@ def generic_query(client, messages: list, response_type: str = 'txt'):
 
 def create_narration(client, session_data):
     duration = session_data['video']['duration']
-    word_speed = 140
-    max_words = int((word_speed/60) * (duration - 1))  # Allow for silence at the ends of the video.
-    target_words = int(0.92 * max_words)  # Aim for about 92% of the words you'd expect
-    min_words = int(0.85 * max_words)  # Aim for about 80% of the words you'd expect
+    if session_data['voice']['speed']:
+        syllable_speed = session_data['voice']['speed']
+    else:
+        syllable_speed = 223
+    max_syllables = int((syllable_speed/60) * (duration - 1))  # Allow for silence at the ends of the video.
+    target_syllables = int(0.92 * max_syllables)  # Aim for about 92% of the words you'd expect
+    min_syllables = int(0.85 * max_syllables)  # Aim for about 80% of the words you'd expect
     images = session_data['images']
     messages = [{
         "role": "system",
@@ -122,13 +125,13 @@ def create_narration(client, session_data):
                 [General Instructions] 
                 The video is {duration} seconds long. 
                 The narration should start 1 second into the video and finish one second before the end. The speaking 
-                rate should be assumed to be {word_speed} words per minute.   Base your narrative on the information
-                provided in the "Overall Topic of the Video" section below.  Only use the image descriptions to 
-                enhance the narrative, not as the primary inspiration for it.
+                rate should be assumed to be {syllable_speed} syllables per minute.   Base your narrative on the 
+                information provided in the "Overall Topic of the Video" section below.  Only use the image descriptions
+                to enhance the narrative, not as the primary inspiration for it.
 
                 [HARD REQUIREMENTS] The narrative should fit inside the allotted {duration - 2} seconds. That means your 
-                narrative must be about {target_words} words long. DO NOT EXCEED {max_words} words but have at 
-                least {min_words} words!"""
+                narrative must be about {target_syllables} words long. DO NOT EXCEED {max_syllables} syllables but have 
+                at least {min_syllables} syllables!"""
     }, {
         "role": "user",
         "content": f"""

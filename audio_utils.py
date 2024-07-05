@@ -36,7 +36,8 @@ def find_voice(tone, age, gender, session_data):
     voice_info = {
         "voice_id": voice['id'],
         "name": voice['name'],
-        "model": voice['model']
+        "model": voice['model'],
+        "speed": voice['speed']
     }
 
     return voice_info
