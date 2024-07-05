@@ -24,6 +24,7 @@ def text_to_speech(client, session_data):
     filename = f'{session_data['company_name']}_{session_data['voice']['name']}_narration.mp3'
     dir_name = session_data['audio']['local_dir']
     # Voice data might contain model settings.  Check for that and apply defaults if needed
+    print(session_data['voice'])
     if 'model' not in session_data['voice']:
         session_data['voice']['model'] = 'Eleven Turbo v2 - 60% stab - 80% sim'
 
