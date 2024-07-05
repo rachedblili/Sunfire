@@ -32,7 +32,7 @@ def find_voice(tone, age, gender, session_data):
     }]
 
     voice_name = generic_query(session_data['clients']['text_to_text'], messages)
-    voice = [v for v in voices if v['Name'] == voice_name][0]
+    voice = [v for v in voices if v['name'] == voice_name][0]
     voice_info = {
         "voice_id": voice['id'],
         "name": voice['name'],
