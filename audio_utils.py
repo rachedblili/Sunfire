@@ -34,6 +34,7 @@ def find_voice(session_data):
     },  {
         "role": "user",
         "content": "Respond ONLY with names of the THREE best voices as a JSON formatted list. "
+                   "ONLY provide the list. NO extra characters or formatting. "
     }]
 
     voice_names = generic_query(session_data['clients']['text_to_text'], messages)
