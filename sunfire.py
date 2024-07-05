@@ -156,17 +156,17 @@ def generate_narrative(session_data):
             'local_dir': session_data['audio']['local_dir']
         }
 
+        logger(session_data['unique_prefix'], 'log', 'Choosing a voice...')
+        tone, age_gender = session_data['tone_age_gender'].split(':')
+        age, gender = age_gender.split()
+        voice = find_voice(tone, age, gender, session_data)
+        logger(session_data['unique_prefix'], 'log', f"Your narrator is: {voice['name']}")
+        session_data['voice'] = voice
+
         logger(session_data['unique_prefix'], 'log', 'Generating the narration script...')
         narration_script = create_narration(text_to_text, session_data)
         print("Script: ", narration_script)
         session_data['audio']['narration_script'] = narration_script
-
-        logger(session_data['unique_prefix'], 'log', 'Choosing a voice...')
-        tone, age_gender = session_data['tone_age_gender'].split(':')
-        age, gender = age_gender.split()
-        voice = find_voice(tone, age, gender)
-        logger(session_data['unique_prefix'], 'log', f"Your narrator is: {voice['name']}")
-        session_data['voice'] = voice
 
         logger(session_data['unique_prefix'], 'log', 'Generating audio narration...')
         new_audio_clip = generate_audio_narration(text_to_voice, session_data)

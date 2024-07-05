@@ -1,4 +1,5 @@
 import elevenlabs_utils
+import audio_utils
 from config_utils import get_config
 
 config = get_config()
@@ -12,8 +13,13 @@ def get_voice_tone_data():
     return elevenlabs_utils.get_voice_tone_data()
 
 
-def find_voice(*args, **kwargs):
-    return elevenlabs_utils.find_voice(*args, **kwargs)
+def find_voice(tone, age, gender, session_data):
+    if config['find-voice'] == 'elevenlabs':
+        return elevenlabs_utils.find_voice(tone, age, gender)
+    elif config['find-voice'] == 'sunfire':
+        return audio_utils.find_voice(tone, age, gender, session_data)
+    else:
+        raise ValueError(f"Invalid find-voice value: {config['find-voice']}")
 
 
 def generate_audio_narration(*args, **kwargs):

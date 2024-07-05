@@ -2,6 +2,44 @@ from pydub import AudioSegment
 import subprocess
 import os
 import math
+from config_utils import get_config, get_voice_data
+
+config = get_config()
+
+
+def find_voice(tone, age, gender, session_data):
+    voices = get_voice_data(config['voice-data'])
+    from text_to_text import generic_query
+    import json
+    messages = [{
+        "role": "system",
+        "content": "You are the assistant. Your job is to select an appropriate voice to narrate a video."
+                   "You will base your decision on the specified tone, age, and gender of the voice as well as the "
+                   "overall topic of the video. Your response will be parsed by a script and should consist ONLY "
+                   "of the name of the voice.  A list of voices and their characteristics can be found below. "
+    }, {
+        "role": "user",
+        "content": "Tone, Age, Gender: " + tone + ", " + age + ", " + gender
+    }, {
+        "role": "user",
+        "content": "Overall Topic of the Video: " + session_data['topic']
+    }, {
+        "role": "user",
+        "content": "Here is the voice data: \n" + json.dumps(voices)
+    },  {
+        "role": "user",
+        "content": "Respond ONLY with the Name of the best voice to use."
+    }]
+
+    voice_name = generic_query(session_data['clients']['text_to_text'], messages)
+    voice = [v for v in voices if v['Name'] == voice_name][0]
+    voice_info = {
+        "voice_id": voice['id'],
+        "name": voice['name'],
+        "model": voice['model']
+    }
+
+    return voice_info
 
 
 # Use this to change the length without changing the content

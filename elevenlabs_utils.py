@@ -23,17 +23,38 @@ def get_voice_data():
 def text_to_speech(client, session_data):
     filename = f'{session_data['company_name']}_{session_data['voice']['name']}_narration.mp3'
     dir_name = session_data['audio']['local_dir']
+    # Voice data might contain model settings.  Check for that and apply defaults if needed
+    if 'model' not in session_data['voice']:
+        session_data['voice']['model'] = 'Eleven Turbo v2 - 60% stab - 80% sim'
 
+    models = {
+        'Eleven Turbo v2 English': 'eleven_turbo_v2',
+        'Eleven Turbo v2': 'eleven_turbo_v2',
+        'Eleven English v1': 'eleven_monolingual_v1',
+        'Eleven English v2': 'eleven_monolingual_v2',
+        'Eleven Multilingual v2': 'eleven_multilingual_v2',
+        'Eleven Multilingual v1': 'eleven_multilingual_v1',
+        'Eleven Multi v2': 'eleven_multilingual_v2',
+        'Eleven Multi v1': 'eleven_multilingual_v1',
+    }
+    # Grab settings for model and set defaults if needed
+    parts = session_data['voice']['model'].split(' - ')
+    if len(parts) < 3:
+        parts[1] = '60% stab'
+        parts[2] = '80% sim'
+    model = models[parts[0]]
+    stability = float(parts[1].split('%')[0]) / 100
+    similarity_boost = float(parts[2].split('%')[0]) / 100
     # Perform the text-to-speech conversion
     response = client.text_to_speech.convert(
         voice_id=session_data['voice']['voice_id'],
         optimize_streaming_latency="0",
         output_format="mp3_22050_32",
         text=f' ... {session_data["audio"]["narration_script"]} ... ',
-        model_id="eleven_turbo_v2",
+        model_id=model,
         voice_settings=VoiceSettings(
-            stability=0.6,
-            similarity_boost=0.8,
+            stability=stability,
+            similarity_boost=similarity_boost,
             style=0.0,
             use_speaker_boost=True,
         ),
