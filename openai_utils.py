@@ -105,13 +105,13 @@ def generic_query(client, messages: list, response_type: str = 'txt'):
 def create_narration(client, session_data):
     duration = session_data['video']['duration']
     if session_data['voice']['speed']:
-        syllable_speed = float(session_data['voice']['speed'])
+        word_speed = float(session_data['voice']['speed'])
     else:
-        syllable_speed = 223.0
-    max_syllables = int((syllable_speed/60) * (duration - 2))  # Allow for silence at the ends of the video.
-    target_syllables = int(0.98 * max_syllables)  # Aim for about 92% of the words you'd expect
-    min_syllables = int(0.95 * max_syllables)  # Aim for about 80% of the words you'd expect
-    print(f"Max syllables: {max_syllables}, Target syllables: {target_syllables}, Min syllables: {min_syllables}")
+        word_speed = 223.0
+    max_words = int((word_speed/60) * (duration - 2))  # Allow for silence at the ends of the video.
+    target_words = int(0.95 * max_words)  # Aim for about 95% of the words you'd expect
+    min_words = int(0.90 * max_words)  # Aim for about 90% of the words you'd expect
+    print(f"Max words: {max_words}, Target words: {target_words}, Min words: {min_words}")
     images = session_data['images']
     messages = [{
         "role": "system",
@@ -126,13 +126,13 @@ def create_narration(client, session_data):
                 [General Instructions] 
                 The video is {duration} seconds long. 
                 The narration should start 1 second into the video and finish one second before the end. The speaking 
-                rate should be assumed to be {syllable_speed} syllables per minute.   Base your narrative on the 
+                rate should be assumed to be {word_speed} words per minute.   Base your narrative on the 
                 information provided in the "Overall Topic of the Video" section below.  Only use the image descriptions
                 to enhance the narrative, not as the primary inspiration for it.
 
                 [HARD REQUIREMENTS] The narrative should fit inside the allotted {duration - 2} seconds. That means your 
-                narrative must be about {target_syllables} syllables long. DO NOT EXCEED {max_syllables} syllables but 
-                have at least {min_syllables} syllables!"""
+                narrative must be about {target_words} words long. DO NOT EXCEED {max_words} words but 
+                have at least {min_words} words!"""
     }, {
         "role": "user",
         "content": f"""
