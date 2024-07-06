@@ -104,6 +104,7 @@ def generic_query(client, messages: list, response_type: str = 'txt'):
 
 def create_narration(client, session_data):
     duration = session_data['video']['duration']
+    mood = session_data['mood']
     if session_data['voice']['speed']:
         word_speed = float(session_data['voice']['speed'])
     else:
@@ -124,7 +125,7 @@ def create_narration(client, session_data):
                 Please generate a narrative for {session_data['company_name']}.
                 
                 [General Instructions] 
-                The video is {duration} seconds long. 
+                The video is {duration} seconds long. The emotional tone of the video should be {mood}.
                 The narration should start 1 second into the video and finish one second before the end. The speaking 
                 rate should be assumed to be {word_speed} words per minute.   Base your narrative on the 
                 information provided in the "Overall Topic of the Video" section below.  Only use the image descriptions
