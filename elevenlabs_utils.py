@@ -131,7 +131,7 @@ def get_voice_tone_data():
             "accent": normalize_attribute(voice['labels'].get('accent', '')),
             "gender": normalize_attribute(voice['labels'].get('gender', '')),
             "age": normalize_attribute(voice['labels'].get('age', '')),
-            "speed": 223.0
+            "speed": 161.0
         }
 
         use_case = voice['labels'].get('use case')
@@ -159,7 +159,7 @@ def get_slim_voice_data():
             "accent": normalize_attribute(voice['labels'].get('accent', '')),
             "gender": normalize_attribute(voice['labels'].get('gender', '')),
             "age": normalize_attribute(voice['labels'].get('age', '')),
-            "speed": 223.0
+            "speed": 161.0
         }
         slim_voice_data.append(voice_info)
     return slim_voice_data
@@ -183,7 +183,7 @@ def find_voice(session_data):
         "content": "You are the assistant. Your job is to select the THREE best voices to narrate a video."
                    "You will base your decision on the specified tone of the voice as well as the "
                    "overall topic of the video. Your response will be parsed by a script and should consist ONLY "
-                   "of a JSON formatted list of voice names.  For example: ['Brian', 'Russell', 'Janine']. "
+                   "of a comma-separated list of voice names.  For example: Brian,Russell,Janine "
                    "If the specified tone is 'ai', then use your judgement to select the appropriate voice. "
                    "A list of voices and their characteristics can be found below. "
     }, {
@@ -197,10 +197,11 @@ def find_voice(session_data):
         "content": "Here is the voice data: \n" + json.dumps(voices)
     }, {
         "role": "user",
-        "content": "Respond ONLY with names of the THREE best voices as a JSON formatted list. "
+        "content": "Respond ONLY with names of the THREE best voices as a comma-separated list. "
+                   "ONLY provide the list. NO extra characters or formatting. "
     }]
 
-    voice_names = generic_query(session_data['clients']['text_to_text'], messages)
+    voice_names = generic_query(session_data['clients']['text_to_text'], messages).split(',')
     voice_name = random.choice(voice_names)
     voice = [v for v in voices if v['name'] == voice_name][0]
     voice_info = {
