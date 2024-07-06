@@ -17,14 +17,14 @@ def find_voice(session_data):
     messages = [{
         "role": "system",
         "content": "You are the assistant. Your job is to select the THREE best voices to narrate a video."
-                   "You will base your decision on the specified tone of the voice as well as the "
+                   "You will base your decision primarily on the specified tone of the voice but also the "
                    "overall topic of the video. Your response will be parsed by a script and should consist ONLY "
                    "of a comma-separated list of voice names.  For example: Brian,Russell,Janine "
                    "If the specified tone is 'ai', then use your judgement to select the appropriate voice. "
                    "A list of voices and their characteristics can be found below. "
     }, {
         "role": "user",
-        "content": "Tone: " + tone
+        "content": "The voice should be: " + tone
     }, {
         "role": "user",
         "content": "Overall Topic of the Video: " + session_data['topic']
