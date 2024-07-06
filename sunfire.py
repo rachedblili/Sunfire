@@ -280,7 +280,7 @@ def generate_video_route():
         'avoid': request.form.get('avoid'),
         'topic': request.form.get('press-release'),
         # 'tone_age_gender': request.form.get('tone_age_gender'),
-        'mood': request.form.get('mood'),
+        'mood': " and ".join(request.form.get('mood').split('-')),
         'platform': request.form.get('platform'),
         'audio': {},
         'video': {},
