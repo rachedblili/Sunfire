@@ -159,7 +159,7 @@ def combine_audio_clips(session_data: dict):
         print("Music RMS:", music_rms)
 
         # Calculate the desired RMS for the music based on the desired_ratio
-        desired_music_rms = narration_rms * 0.3  # 0.3 = 30% as loud as the voice
+        desired_music_rms = narration_rms * 0.35  # 0.35 = 35% as loud as the voice
 
         # Calculate the required change in volume in dB
         change_in_volume_db = 20 * math.log10(desired_music_rms / music_rms) if music_rms != 0 else 0
