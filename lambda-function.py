@@ -38,15 +38,12 @@ def generate_filter_complex(images, total_duration):
     filters = [
         "xfade=duration",
         "xfade=transition=dissolve:duration",
-        "xfade=duration",
         "xfade=transition=wipeleft:duration",
         "xfade=duration",
         "xfade=transition=circleopen:duration",
-        "xfade=duration",
         "xfade=transition=slideup:duration",
         "xfade=duration",
         "xfade=transition=slideleft:duration",
-        "xfade=duration",
         "xfade=transition=slideright:duration"
     ]
     # Prepare the filter graph
@@ -59,8 +56,8 @@ def generate_filter_complex(images, total_duration):
         filter_type = random.choice(filters)
         video_length += duration_per_image
         next_fade_output = "v%d%d" % (i, i + 1)
-        video_fades.append("[%s][%d:v]%s=0.5:offset=%.3f[%s]; " %
-                           (last_fade_output, i + 1, filter_type, video_length - 1, next_fade_output))
+        this_filter = f"[{last_fade_output}][{i + 1}:v]{filter_type}=0.5:offset={video_length - 1}[{next_fade_output}]"
+        video_fades.append(this_filter)
         last_fade_output = next_fade_output
     return "; ".join(video_fades), last_fade_output
 
