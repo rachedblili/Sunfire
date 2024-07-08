@@ -35,20 +35,34 @@ def generate_filter_complex(images, total_duration):
     """
     duration_per_image = total_duration / len(images)  # Calculate duration per image
 
+    filters = [
+        "xfade=duration",
+        "xfade=transition=dissolve:duration",
+        "xfade=duration",
+        "xfade=transition=wipeleft:duration",
+        "xfade=duration",
+        "xfade=transition=circleopen:duration",
+        "xfade=duration",
+        "xfade=transition=slideup:duration",
+        "xfade=duration",
+        "xfade=transition=slideleft:duration",
+        "xfade=duration",
+        "xfade=transition=slideright:duration"
+    ]
     # Prepare the filter graph
-    video_fades = ""
-    # audio_fades = ""
+    video_fades = []
     last_fade_output = "0:v"
     # last_audio_output = "0:a"
     video_length = 0
     for i in range(len(images) - 1):
         # Video graph: chain the xfade operator together
+        filter_type = random.choice(filters)
         video_length += duration_per_image
         next_fade_output = "v%d%d" % (i, i + 1)
-        video_fades += "[%s][%d:v]xfade=duration=0.5:offset=%.3f[%s]; " % \
-                       (last_fade_output, i + 1, video_length - 1, next_fade_output)
+        video_fades.append("[%s][%d:v]%s=0.5:offset=%.3f[%s]; " %
+                           (last_fade_output, i + 1, filter_type, video_length - 1, next_fade_output))
         last_fade_output = next_fade_output
-    return video_fades, last_fade_output
+    return "; ".join(video_fades), last_fade_output
 
 
 def process_images_and_generate_video(session_data):
