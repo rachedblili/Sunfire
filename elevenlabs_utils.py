@@ -4,7 +4,6 @@ from elevenlabs.client import ElevenLabs
 import requests
 import json
 from io import BytesIO
-import random
 from audio_utils import fit_clip_length
 
 
@@ -88,26 +87,6 @@ def generate_audio_narration(client, session_data):
     return clip
 
 
-def dump_voice_stats():
-    url = "https://api.elevenlabs.io/v1/voices"
-    response = requests.request("GET", url)
-    d = json.loads(response.text)
-    voices = d['voices']
-    # Extract unique values for each label category
-    for gender in ['male', 'female']:
-        accents = {voice['labels'].get('accent') for voice in voices if voice['labels']['gender'] == gender and voice['labels']['accent'] in ['american', 'british', 'american-southern']}
-        descriptions = {voice['labels'].get('description') for voice in voices if voice['labels']['gender'] == gender and voice['labels']['accent'] in ['american', 'british', 'american-southern']}
-        ages = {voice['labels'].get('age') for voice in voices if voice['labels']['gender'] == gender and voice['labels']['accent'] in ['american', 'british', 'american-southern']}
-        use_cases = {voice['labels'].get('use case') for voice in voices if voice['labels']['gender'] == gender and voice['labels']['accent'] in ['american', 'british', 'american-southern']}
-
-        # Print the lists
-        print(f"========= {gender} =========")
-        print("Accents:", list(accents))
-        print("Descriptions:", list(descriptions))
-        print("Ages:", list(ages))
-        print("Use Cases:", list(use_cases))
-
-
 def get_voice_tone_data():
     voice_data = get_voice_data()
     tones_to_use_cases = {
@@ -175,35 +154,12 @@ def find_voice(session_data):
     tone = session_data['mood']
     print("Looking for: ", tone)
     voices = get_slim_voice_data()
-    from text_to_text import generic_query
-    import json
-    import random
-    messages = [{
-        "role": "system",
-        "content": "You are the assistant. Your job is to select the THREE best voices to narrate a video."
-                   "You will base your decision on the specified tone of the voice as well as the "
-                   "overall topic of the video. Your response will be parsed by a script and should consist ONLY "
-                   "of a comma-separated list of voice names.  For example: Brian,Russell,Janine "
-                   "If the specified tone is 'ai', then use your judgement to select the appropriate voice. "
-                   "A list of voices and their characteristics can be found below. "
-    }, {
-        "role": "user",
-        "content": "Tone: " + tone
-    }, {
-        "role": "user",
-        "content": "Overall Topic of the Video: " + session_data['topic']
-    }, {
-        "role": "user",
-        "content": "Here is the voice data: \n" + json.dumps(voices)
-    }, {
-        "role": "user",
-        "content": "Respond ONLY with names of the THREE best voices as a comma-separated list. "
-                   "ONLY provide the list. NO extra characters or formatting. "
-    }]
+    from text_to_text import get_matching_voice
 
-    voice_names = generic_query(session_data['clients']['text_to_text'], messages).split(',')
-    voice_name = random.choice(voice_names)
-    voice = [v for v in voices if v['name'] == voice_name][0]
+    voice = get_matching_voice(
+                    session_data['clients']['text_to_text'],
+                    tone, voices, session_data['topic'])
+
     voice_info = {
         "voice_id": voice['id'],
         "name": voice['name'],
@@ -212,4 +168,3 @@ def find_voice(session_data):
     }
 
     return voice_info
-

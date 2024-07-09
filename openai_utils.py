@@ -1,6 +1,7 @@
 import os
 from openai import OpenAI
 import json
+import random
 from messaging_utils import logger
 
 
@@ -200,3 +201,32 @@ def generate_music_prompt(client, session_data):
 
     return prompt
         
+
+def get_matching_voice(client, tone, voices, topic):
+    messages = [{
+        "role": "system",
+        "content": "You are the assistant. Your job is to select the THREE best voices to narrate a video."
+                   "You will base your decision primarily on the specified tone of the voice but also the "
+                   "overall topic of the video. Your response will be parsed by a script and should consist ONLY "
+                   "of a comma-separated list of voice names.  For example: Brian,Russell,Janine "
+                   "If the specified tone is 'ai', then use your judgement to select the appropriate voice. "
+                   "A list of voices and their characteristics can be found below. "
+    }, {
+        "role": "user",
+        "content": "The voice should be: " + tone
+    }, {
+        "role": "user",
+        "content": "Overall Topic of the Video: " + topic
+    }, {
+        "role": "user",
+        "content": "Here is the voice data: \n" + json.dumps(voices)
+    },  {
+        "role": "user",
+        "content": "Respond ONLY with names of the THREE best voices as a comma-separated list. "
+                   "ONLY provide the list. NO extra characters or formatting. "
+    }]
+    voice_names = generic_query(client, messages).split(',')
+    voice_name = random.choice(voice_names)
+    voice = [v for v in voices if v['name'] == voice_name][0]
+
+    return voice

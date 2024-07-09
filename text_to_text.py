@@ -19,3 +19,9 @@ def generate_music_prompt(*args, **kwargs):
 
 def generic_query(*args, **kwargs):
     return openai_utils.generic_query(*args, **kwargs)
+
+
+def get_matching_voice(*args, **kwargs):
+    return openai_utils.get_matching_voice(*args, **kwargs)
+
+
