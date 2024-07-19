@@ -211,18 +211,6 @@ def combine_audio(session_data):
         raise RuntimeError(f"Error combining or uploading audio: {e}")
 
 
-def cleanup(session_data):
-    try:
-        logger(session_data['unique_prefix'], 'log', 'Cleaning up...')
-        import shutil
-        import os
-        if os.path.exists(config['uploads_folder'] + session_data['unique_prefix']):
-            shutil.rmtree(config['uploads_folder'] + session_data['unique_prefix'])
-        return
-    except Exception as e:
-        raise RuntimeError(f"Error in cleanup: {e}")
-
-
 def handoff_to_lambda(session_data):
     try:
         logger(session_data['unique_prefix'], 'log', 'Generating the video (please wait)...')
@@ -250,8 +238,7 @@ def generate_video(session_data, images):
 
             # Before handing off to Lambda, clear out the client objects
             session_data['clients'] = {}
-            # And clean up temp files
-            cleanup(session_data)
+            # And clean up
             return handoff_to_lambda(session_data)
 
         except Exception as e:
@@ -277,7 +264,7 @@ def generate_video_route():
         'avoid': request.form.get('avoid'),
         'topic': request.form.get('press-release'),
         # 'tone_age_gender': request.form.get('tone_age_gender'),
-        'mood': " and ".join(request.form.get('mood').split('-')),
+        'mood': request.form.get('mood'),
         'platform': request.form.get('platform'),
         'audio': {},
         'video': {},
@@ -302,10 +289,6 @@ def generate_video_route():
 
     # Get the uploaded images from the request
     image_files = request.files.getlist('images')
-    if len(image_files) == 0:
-        logger(unique_prefix, 'error', 'No images were uploaded')
-        return jsonify({'error': 'No images were uploaded'}), 400
-
     print("Image Files:", image_files)
     for image_file in image_files:
         # Clean up file names
