@@ -132,12 +132,9 @@ def process_images(session_data, images):
         logger(session_id, 'log', 'Uploading Images to the cloud...')
         modified_images = upload_images_from_disk_to_cloud(cloud_storage, modified_images, session_id)
 
-        cloud_storage_keys = [{'bucket': item['bucket'], 'key': item['cloud_storage_key']} for item in modified_images]
-
         video_data = {'duration': 30, 'fps': 24, 'aspect_ratio': session_data['video']['aspect_ratio']}
         session_data['video'] = video_data
         session_data['images'] = modified_images
-        session_data['cloud_storage_objects'] = cloud_storage_keys
         session_data['write_bucket'] = DESTINATION_BUCKET_NAME
 
         return session_data
@@ -305,6 +302,10 @@ def generate_video_route():
 
     # Get the uploaded images from the request
     image_files = request.files.getlist('images')
+    if len(image_files) == 0:
+        logger(unique_prefix, 'error', 'No images were uploaded')
+        return jsonify({'error': 'No images were uploaded'}), 400
+
     print("Image Files:", image_files)
     for image_file in image_files:
         # Clean up file names

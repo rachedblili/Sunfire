@@ -36,7 +36,6 @@ def generate_filter_complex(images, total_duration):
     duration_per_image = total_duration / len(images)  # Calculate duration per image
 
     filters = [
-        "xfade=duration",
         "xfade=transition=dissolve:duration",
         "xfade=transition=wipeleft:duration",
         "xfade=duration",
@@ -233,13 +232,13 @@ def lambda_handler(event, context):
             body = event.get('body')
             if body:
                 session_data = json.loads(body)
-                cloud_storage_objects = session_data.get('cloud_storage_objects')
+                images = session_data.get('image')
                 video_data = session_data.get('video')
                 duration = video_data.get('duration')
                 output_bucket = session_data.get('write_bucket')
                 callback_url = session_data.get('callback_url')
 
-                if not cloud_storage_objects or not duration or not output_bucket or not callback_url:
+                if not images or not duration or not output_bucket or not callback_url:
                     return {'statusCode': 400,
                             'body': json.dumps(
                                 {'message': 'cloud_storage objects, duration, output bucket, and callback URL must be provided'})}
