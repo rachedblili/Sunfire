@@ -11,7 +11,7 @@ def get_text_to_music_client():
     return "sunfire"
 
 
-def make_music(session_data, prompt):
+def make_music(text_to_text, dir_name, prompt):
     messages = [{
         "role": "system",
         "content": "You are the assistant. Your job is to select an appropriate piece of music based on a "
@@ -27,13 +27,12 @@ def make_music(session_data, prompt):
         "content": "Here is my music data: \n" + json.dumps(music_data['Songs'])
     }]
 
-    song = generic_query(session_data['clients']['text_to_text'], messages)
+    song = generic_query(text_to_text, messages)
     song_library = music_data['Data Directory']
     if not os.path.exists(song_library + song):
         raise FileNotFoundError(f"Song not found in library: {song_library}{song}")
-    filename = session_data['company_name'] + "_" + session_data['mood'] + "_music.mp3"
+    filename = "music.mp3"
     print("Saving Music to Disk...")
-    dir_name = session_data['audio']['local_dir']
     try:
         shutil.copy(song_library + song, dir_name + filename)
     except FileNotFoundError:

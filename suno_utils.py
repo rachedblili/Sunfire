@@ -49,9 +49,8 @@ def generate_whole_song(clip_id):
     return response.json()
 
 
-def make_music(session_data, prompt):
-    filename = f'{session_data['company_name']}_{session_data['voice']['name']}_music.mp3'
-    dir_name = session_data['audio']['local_dir']
+def make_music(dir_name, prompt):
+    filename = 'music.mp3'
     data = generate_audio_by_prompt({
             "prompt": prompt,
             "make_instrumental": True,
@@ -68,7 +67,6 @@ def make_music(session_data, prompt):
         time.sleep(5)
     # ids = f"{data[0]['id']},{data[1]['id']}"
     # print(f"ids: {ids}")
-    logger(session_data['unique_prefix'], "log", "Downloading Music...")
     response = requests.get(data[0]['audio_url'])
     response.raise_for_status()
     print("Saving Music to Disk...")

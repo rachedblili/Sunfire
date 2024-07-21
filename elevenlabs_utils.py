@@ -19,13 +19,12 @@ def get_voice_data():
     return d['voices']
 
 
-def text_to_speech(client, session_data):
-    filename = f'{session_data['company_name']}_{session_data['voice']['name']}_narration.mp3'
-    dir_name = session_data['audio']['local_dir']
+def text_to_speech(client, dir_name, voice, narration_script):
+    filename = f'{voice['name']}_narration.mp3'
     # Voice data might contain model settings.  Check for that and apply defaults if needed
-    print(session_data['voice'])
-    if 'model' not in session_data['voice']:
-        session_data['voice']['model'] = 'Eleven Turbo v2 - 60% stab - 80% sim'
+    print(voice)
+    if 'model' not in voice:
+        voice['model'] = 'Eleven Turbo v2 - 60% stab - 80% sim'
 
     models = {
         'Eleven Turbo v2 English': 'eleven_turbo_v2',
@@ -38,7 +37,7 @@ def text_to_speech(client, session_data):
         'Eleven Multi v1': 'eleven_multilingual_v1',
     }
     # Grab settings for model and set defaults if needed
-    parts = session_data['voice']['model'].split(' - ')
+    parts = voice['model'].split(' - ')
     if len(parts) < 3:
         parts.append('60% stab')
         parts.append('80% sim')
@@ -52,10 +51,10 @@ def text_to_speech(client, session_data):
     print(f"Similarity Boost: {similarity_boost}")
     # Perform the text-to-speech conversion
     response = client.text_to_speech.convert(
-        voice_id=session_data['voice']['voice_id'],
+        voice_id=voice['voice_id'],
         optimize_streaming_latency="0",
         output_format="mp3_22050_32",
-        text=f' ... {session_data["audio"]["narration_script"]} ... ',
+        text=f' ... {narration_script} ... ',
         model_id=model,
         voice_settings=VoiceSettings(
             stability=stability,
@@ -79,10 +78,10 @@ def text_to_speech(client, session_data):
     return {'filename': filename}
 
 
-def generate_audio_narration(client, session_data):
+def generate_audio_narration(client, dir_name, voice, narration_script, duration):
     # Generate the actual audio first
-    clip = text_to_speech(client, session_data)
-    clip = fit_clip_length(clip, session_data['audio']['local_dir'], session_data['video']['duration'])
+    clip = text_to_speech(client, dir_name, voice, narration_script)
+    clip = fit_clip_length(clip, dir_name, duration)
     clip['type'] = 'narration'
     return clip
 
@@ -150,15 +149,12 @@ def normalize_attribute(attribute):
     return normalized.capitalize()
 
 
-def find_voice(session_data):
-    tone = session_data['mood']
+def find_voice(client, tone, topic):
     print("Looking for: ", tone)
     voices = get_slim_voice_data()
     from text_to_text import get_matching_voice
 
-    voice = get_matching_voice(
-                    session_data['clients']['text_to_text'],
-                    tone, voices, session_data['topic'])
+    voice = get_matching_voice(client, tone, voices, topic)
 
     voice_info = {
         "voice_id": voice['id'],

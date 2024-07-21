@@ -55,7 +55,7 @@ def call_api_gateway(session_data):
         return None
 
 
-def modify_images(session_data, images):
+def modify_images(target_width, target_height, images):
     modified_images = images
     for image in modified_images:
         original_name = image['filename']
@@ -63,23 +63,23 @@ def modify_images(session_data, images):
         new_name = "modified"+original_name
         pad_color = image['color']
         modify_image(local_dir+original_name,
-                     session_data['target_width'],
-                     session_data['target_height'],
+                     target_width,
+                     target_height,
                      pad_color,
                      local_dir+new_name)
         image['filename'] = new_name
     return modified_images
 
 
-def initialize_clients(session_data):
-    session_data['clients'] = {}
+def initialize_clients():
+    clients = {}
 
     # Initialize S3 client
     try:
         cloud_storage = get_cloud_storage_client()
         if not cloud_storage:
             raise RuntimeError("cloud_storage client initialization returned an invalid object")
-        session_data['clients']['cloud_storage'] = cloud_storage
+        clients['cloud_storage'] = cloud_storage
     except Exception as e:
         raise RuntimeError(f"Failed to initialize cloud_storage client: {e}")
 
@@ -88,7 +88,7 @@ def initialize_clients(session_data):
         text_to_text = get_text_to_text_client()
         if not text_to_text:
             raise RuntimeError("text_to_text client initialization returned an invalid object")
-        session_data['clients']['text_to_text'] = text_to_text
+        clients['text_to_text'] = text_to_text
     except Exception as e:
         raise RuntimeError(f"Failed to initialize text_to_text client: {e}")
 
@@ -97,7 +97,7 @@ def initialize_clients(session_data):
         text_to_voice = get_text_to_voice_client()
         if not text_to_voice:
             raise RuntimeError("Voice Generation client initialization returned an invalid object")
-        session_data['clients']['text_to_voice'] = text_to_voice
+        clients['text_to_voice'] = text_to_voice
     except Exception as e:
         raise RuntimeError(f"Failed to initialize Voice Generation client: {e}")
 
@@ -106,17 +106,16 @@ def initialize_clients(session_data):
         text_to_music = get_text_to_music_client()
         if not text_to_music:
             raise RuntimeError("Music Generation client initialization returned an invalid object")
-        session_data['clients']['text_to_music'] = text_to_music
+        clients['text_to_music'] = text_to_music
     except Exception as e:
         raise RuntimeError(f"Failed to initialize Music Generation client: {e}")
 
-    return session_data
+    return clients
 
 
-def process_images(session_data, images):
-    cloud_storage = session_data['clients']['cloud_storage']
-    text_to_text = session_data['clients']['text_to_text']
-    session_id = session_data['unique_prefix']
+def process_images(session_id, clients, target_width, target_height, aspect_ratio, images):
+    cloud_storage = clients['cloud_storage']
+    text_to_text = clients['text_to_text']
     try:
         images = upload_images_from_disk_to_cloud(cloud_storage, images, session_id)
         logger(session_id, 'log', 'Launching Image Analysis...')
@@ -127,22 +126,20 @@ def process_images(session_data, images):
             print(f"Description: {image['description']}")
 
         logger(session_id, 'log', 'Modifying Images...')
-        modified_images = modify_images(session_data, images)
+        modified_images = modify_images(target_width, target_height, images)
 
         logger(session_id, 'log', 'Uploading Images to the cloud...')
         modified_images = upload_images_from_disk_to_cloud(cloud_storage, modified_images, session_id)
 
-        video_data = {'duration': 30, 'fps': 24, 'aspect_ratio': session_data['video']['aspect_ratio']}
-        session_data['video'] = video_data
-        session_data['images'] = modified_images
-        session_data['write_bucket'] = DESTINATION_BUCKET_NAME
+        video_data = {'duration': 30, 'fps': 24, 'aspect_ratio': aspect_ratio}
 
-        return session_data
+        return video_data, modified_images, DESTINATION_BUCKET_NAME
     except Exception as e:
         raise RuntimeError(f"Error in image processing: {e}")
 
 
 def generate_narrative(session_data):
+    session_id = session_data['unique_prefix']
     text_to_text = session_data['clients']['text_to_text']
     text_to_voice = session_data['clients']['text_to_voice']
     try:
@@ -153,21 +150,20 @@ def generate_narrative(session_data):
             'local_dir': session_data['audio']['local_dir']
         }
 
-        logger(session_data['unique_prefix'], 'log', 'Choosing a voice...')
-        # tone, age_gender = session_data['tone_age_gender'].split(':')
-        # age, gender = age_gender.split()
-        # voice = find_voice(tone, age, gender, session_data)
-        voice = find_voice(session_data)
-        logger(session_data['unique_prefix'], 'log', f"Your narrator is: {voice['name']}")
+        logger(session_id, 'log', 'Choosing a voice...')
+        voice = find_voice(text_to_text, session_data['mood'], session_data['topic'])
+        logger(session_id, 'log', f"Your narrator is: {voice['name']}")
         session_data['voice'] = voice
 
-        logger(session_data['unique_prefix'], 'log', 'Generating the narration script...')
+        logger(session_id, 'log', 'Generating the narration script...')
         narration_script = create_narration(text_to_text, session_data)
         print("Script: ", narration_script)
         session_data['audio']['narration_script'] = narration_script
 
-        logger(session_data['unique_prefix'], 'log', 'Generating audio narration...')
-        new_audio_clip = generate_audio_narration(text_to_voice, session_data)
+        logger(session_id, 'log', 'Generating audio narration...')
+        new_audio_clip = generate_audio_narration(text_to_voice, session_data['audio']['local_dir'],
+                                                  session_data['voice'], session_data['audio']['narration_script'],
+                                                  session_data['video']['duration'])
         session_data['audio']['clips']['voice'] = new_audio_clip
 
         return session_data
@@ -175,38 +171,37 @@ def generate_narrative(session_data):
         raise RuntimeError(f"Error in narrative section: {e}")
 
 
-def generate_music(session_data):
-    text_to_text = session_data['clients']['text_to_text']
+def generate_music(session_id, clients, mood, topic, audio_data):
+    text_to_text = clients['text_to_text']
+    save_dir = audio_data['local_dir']
     try:
-        logger(session_data['unique_prefix'], 'log', 'Designing Music...')
-        music_prompt = generate_music_prompt(text_to_text, session_data)
-        logger(session_data['unique_prefix'], 'log', music_prompt)
+        logger(session_id, 'log', 'Designing Music...')
+        music_prompt = generate_music_prompt(text_to_text, mood, topic)
+        logger(session_id, 'log', music_prompt)
 
-        logger(session_data['unique_prefix'], 'log', 'Generating Music...')
-        clip = make_music(session_data, music_prompt)
+        logger(session_id, 'log', 'Generating Music...')
+        clip = make_music(clients, save_dir, music_prompt)
 
-        logger(session_data['unique_prefix'], 'log', 'Making Adjustments...')
-        clip = trim_and_fade(session_data, clip)
-        session_data['audio']['clips']['music'] = clip
+        logger(session_id, 'log', 'Making Adjustments...')
+        clip = trim_and_fade(save_dir, clip)
+        audio_data['clips']['music'] = clip
 
-        return session_data
+        return audio_data
     except Exception as e:
         raise RuntimeError(f"Error in music section: {e}")
 
 
-def combine_audio(session_data):
-    cloud_storage = session_data['clients']['cloud_storage']
+def combine_audio(session_id, cloud_storage, audio_data):
     try:
-        logger(session_data['unique_prefix'], 'log', 'Mixing Audio...')
-        combined_clips = combine_audio_clips(session_data)
-        session_data['audio']['clips']['combined'] = combined_clips
-        logger(session_data['unique_prefix'], 'log', 'Audio Mixing Complete')
+        logger(session_id, 'log', 'Mixing Audio...')
+        combined_clips = combine_audio_clips(audio_data)
+        audio_data['combined'] = combined_clips
+        logger(session_id, 'log', 'Audio Mixing Complete')
 
-        logger(session_data['unique_prefix'], 'log', 'Uploading Audio to the cloud...')
-        session_data['audio'] = upload_audio_from_disk_to_cloud(cloud_storage, session_data['audio'],
-                                                                session_data['unique_prefix'])
+        logger(session_id, 'log', 'Uploading Audio to the cloud...')
+        audio_data = upload_audio_from_disk_to_cloud(cloud_storage, audio_data, session_id)
 
-        return session_data
+        return audio_data
     except Exception as e:
         raise RuntimeError(f"Error combining or uploading audio: {e}")
 
@@ -224,17 +219,29 @@ def handoff_to_lambda(session_data):
 
 
 def generate_video(session_data, images):
-    with app.app_context():
+    with ((app.app_context())):
         try:
             print('Executing the background')
 
-            session_data = initialize_clients(session_data)
+            session_data['clients'] = initialize_clients()
 
             print('Processing Images...')
-            session_data = process_images(session_data, images)
+            (session_data['video'],
+             session_data['images'],
+             session_data['write_bucket']) = process_images(session_data['unique_prefix'],
+                                                            session_data['clients'],
+                                                            session_data['target_width'],
+                                                            session_data['target_height'],
+                                                            session_data['video']['aspect_ratio'], images)
             session_data = generate_narrative(session_data)
-            session_data = generate_music(session_data)
-            session_data = combine_audio(session_data)
+            session_data['audio'] = generate_music(session_data['unique_prefix'],
+                                                   session_data['clients'],
+                                                   session_data['mood'],
+                                                   session_data['topic'],
+                                                   session_data['audio'])
+            session_data['audio'] = combine_audio(session_data['unique_prefix'],
+                                                  session_data['clients']['cloud_storage'],
+                                                  session_data['audio'])
 
             # Before handing off to Lambda, clear out the client objects
             session_data['clients'] = {}

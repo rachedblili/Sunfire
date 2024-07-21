@@ -84,7 +84,7 @@ def describe_and_recommend(session_id, client, images, url_maker):
     return images
 
 
-def generic_query(client, messages: list, response_type: str = 'txt'):
+def generic_query(client: OpenAI, messages: list, response_type: str = 'txt'):
     response = client.chat.completions.create(
         model='gpt-4o',
         messages=messages,
@@ -173,9 +173,7 @@ def create_narration(client, session_data):
     return narrative
 
 
-def generate_music_prompt(client, session_data):
-    mood = session_data['mood']
-    topic = session_data['audio']['narration_script']
+def generate_music_prompt(client, mood, topic):
     messages = [{
         "role": "system",
         "content": "You are the assistant. Your job is to be create excellent prompts for other LLMs. Your response "
@@ -202,7 +200,7 @@ def generate_music_prompt(client, session_data):
     return prompt
         
 
-def get_matching_voice(client, tone, voices, topic):
+def get_matching_voice(client: OpenAI, tone: str, voices: list, topic: str):
     messages = [{
         "role": "system",
         "content": "You are the assistant. Your job is to select the THREE best voices to narrate a video."

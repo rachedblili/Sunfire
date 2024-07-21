@@ -8,14 +8,11 @@ config = get_config()
 
 
 # Used when the voice catalog is maintained by the Sunfire team
-def find_voice(session_data):
+def find_voice(client, tone, topic):
     voices = get_voice_data(config['voice-data'])
-    tone = session_data['mood']
     from text_to_text import get_matching_voice
 
-    voice = get_matching_voice(
-                    session_data['clients']['text_to_text'],
-                    tone, voices, session_data['topic'])
+    voice = get_matching_voice(client, tone, voices, topic)
 
     voice_info = {
         "voice_id": voice['id'],
@@ -94,8 +91,7 @@ def fade_out_audio(clip, local_dir):
 
 
 # Intended for use with the music
-def trim_and_fade(session_data, clip):
-    local_dir = session_data['audio']['local_dir']
+def trim_and_fade(local_dir, clip):
     trimmed_clip = trim_clip(clip, local_dir)
     faded_clip = fade_out_audio(trimmed_clip, local_dir)
     return faded_clip
@@ -118,9 +114,8 @@ def modify_volume(clip, factor, local_dir):
     return clip
 
 
-def combine_audio_clips(session_data: dict):
-    audio_data = session_data['audio']
-    save_dir = session_data['audio']['local_dir']
+def combine_audio_clips(audio_data):
+    save_dir = audio_data['local_dir']
     narration_clip = AudioSegment.from_file(save_dir+audio_data['clips']['voice']['filename'])
     music_clip = AudioSegment.from_file(save_dir+audio_data['clips']['music']['filename'])
 
@@ -146,7 +141,7 @@ def combine_audio_clips(session_data: dict):
         volume_adjusted_clip = modify_volume(audio_data['clips']['music'], volume_factor, save_dir)
         # Construct the ffmpeg command
 
-        output_filename = f"{session_data['company_name']}_combined_audio.mp3"
+        output_filename = "combined_audio.mp3"
         cmd = ["ffmpeg", "-y", "-i",
                save_dir+audio_data['clips']['voice']['filename'],
                "-i", save_dir + volume_adjusted_clip['filename'],
