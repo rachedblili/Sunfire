@@ -24,6 +24,8 @@ The Sunfire Video App is an AI-powered tool that enables anyone to create vibran
 - Serverless Computing: AWS Lambda
 - AI Services: OpenAI, ElevenLabs
 
+![High Level Architectural View](Sunfire-High-Level.png)
+
 ## Prerequisites
 
 - Python 3.x (specific version to be determined)
@@ -56,21 +58,22 @@ server {
 }
 ```
 4. Configure your environment variables with your API keys:
+The tool expects these to either be in the environment or in a .env file in the same directory as the application.
 5. (Optional) Install the music archive file for stored songs.
 
 ## Configuration
 
 The `config` directory contains several configuration files that you may need to adjust:
 
-- `config/app_config.py`: Main application settings
-- `config/aws_config.py`: AWS-related configurations
-- `config/ai_config.py`: AI service configurations
+- `config/sunfire-config.yaml`: Main application settings
+- `config/music-data.yaml`: File describing the locally stored music library if applicable.
+- `config/voice-data.tsv`: File describing available voices if needed.
 
 Please review these files and adjust the settings as needed for your environment.
 
-## Usage
+## Call Hierarchy Diagram
 
-[Provide basic usage instructions here]
+[Cick Here](https://docs.google.com/presentation/d/1Z9xU9yCZ8OVrkfkmGtSL03Z8XghXYA4QEjkP_4j5Lk4/edit?usp=sharing)
 
 ## Contributing
 
