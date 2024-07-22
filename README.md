@@ -89,7 +89,7 @@ Future releases of The Sunfire Video App will be community-driven. The core team
 
 ## License
 
-[To be determined - see licensing options below]
+This project is licensed under the Apache License, Version 2.0.
 
 ## Contact
 
