@@ -3,6 +3,11 @@ import audio_utils
 from config_utils import get_config
 
 config = get_config()
+# This module is meant to be the implementation-independent interface for the
+# main script.  If other text to voice providers are desired, they can be selected here
+# based on the configuration in the config file.
+
+
 
 
 def get_text_to_voice_client():

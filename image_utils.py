@@ -11,6 +11,15 @@ register_heif_opener()
 
 # Function to encode the image as base64
 def encode_image(image_path: str):
+    """
+    A function that encodes an image file at the specified path to a base64 encoded string.
+
+    Args:
+        image_path (str): The path to the image file to be encoded.
+
+    Returns:
+        str: The base64 encoded representation of the image file.
+    """
     # check if the image exists
     if not os.path.exists(image_path):
         raise FileNotFoundError(f"Image file not found: {image_path}")
@@ -19,6 +28,15 @@ def encode_image(image_path: str):
 
 
 def rotate_image_according_to_exif(image):
+    """
+    A function that rotates an image based on its EXIF orientation metadata.
+
+    Args:
+        image: The image to be rotated based on its EXIF orientation.
+
+    Returns:
+        The rotated image.
+    """
     try:
         exif = image._getexif()
         if exif is not None:
@@ -55,6 +73,21 @@ def hex_to_rgb(hex_color):
 
 
 def modify_image(image_path, desired_width, desired_height, pad_color, output_path):
+    """
+    Modifies an image by resizing it and adding padding to match the desired dimensions. If the image has transparency,
+    it will be filled with the specified color. If the image does not have transparency, it will be blurred to create
+    extended edges. The modified image is then saved to the specified output path.
+
+    Args:
+        image_path (str): The path to the image file.
+        desired_width (int): The desired width of the modified image.
+        desired_height (int): The desired height of the modified image.
+        pad_color (str): The color to use for padding the image, in hexadecimal format (e.g., "#FF5733").
+        output_path (str): The path to save the modified image.
+
+    Returns:
+        None
+    """
     # Open the image
     image = Image.open(image_path)
     # Correct for image orientation based on EXIF data

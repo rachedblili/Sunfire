@@ -11,6 +11,18 @@ def get_openai_client():
 
 
 def describe_and_recommend(session_id, client, images, url_maker):
+    """
+    Function to describe and recommend images based on their color, dimensions, and content.
+
+    Args:
+        session_id (str): The session ID for the operation.
+        client: The client object for interacting with the chat completions API.
+        images (list): A list of images to describe and recommend.
+        url_maker: A function to generate pre-signed URLs for images.
+
+    Returns:
+        list: A list of images updated with color, dimensions, and description.
+    """
     for image in images:
 
         # Create pre-signed URL to the cloud_storage objects
@@ -85,6 +97,19 @@ def describe_and_recommend(session_id, client, images, url_maker):
 
 
 def generic_query(client: OpenAI, messages: list, response_type: str = 'txt'):
+    """
+    A function to query the OpenAI client with messages, retrieve a response, and handle the response type.
+
+    Parameters:
+        client (OpenAI): The OpenAI client used for querying.
+        messages (list): A list of messages to send for the query.
+        response_type (str): The type of response expected, either 'json' or 'txt'. Defaults to 'txt'.
+
+    Returns:
+        str or dict: The response content based on the response_type. If response_type is 'json', returns a dictionary
+                     with the content parsed from the JSON content.
+                     If response_type is 'txt', returns the content as plain text.
+    """
     response = client.chat.completions.create(
         model='gpt-4o',
         messages=messages,
@@ -104,6 +129,29 @@ def generic_query(client: OpenAI, messages: list, response_type: str = 'txt'):
 
 
 def create_narration(client, session_data):
+    """
+    Creates a narrative for a short video based on the given session data.
+
+    Args:
+        client (OpenAI): The OpenAI client used for querying.
+        session_data (dict): A dictionary containing the session data including the video duration, mood, voice speed,
+            images, emphasis, and avoids.
+
+    Returns:
+        str: The generated narrative for the short video.
+
+    Raises:
+        None
+
+    Description:
+        This function takes in a client object and a session data dictionary as input. It retrieves the video duration,
+        mood, voice speed, images, emphasis, and avoids from the session data. It calculates the maximum number of words
+        based on the word speed and video duration. It constructs a list of messages including the system message, user
+        message with general instructions, user message with overall topic of the video, and user message with video
+        section details. If there is emphasis or avoids provided in the session data, it adds additional user messages
+        with fine-tuning instructions. It then queries the OpenAI client with the constructed messages and retrieves
+        the generated narrative. Finally, it returns the generated narrative.
+    """
     duration = session_data['video']['duration']
     mood = session_data['mood']
     if session_data['voice']['speed']:
@@ -174,6 +222,17 @@ def create_narration(client, session_data):
 
 
 def generate_music_prompt(client, mood, topic):
+    """
+    Generates a music prompt for a music generation LLM based on the specified mood and topic.
+
+    Args:
+        client: The client for the music generation LLM.
+        mood: The specified mood for the music prompt.
+        topic: The topic for the music prompt.
+
+    Returns:
+        The generated music prompt for the LLM.
+    """
     messages = [{
         "role": "system",
         "content": "You are the assistant. Your job is to be create excellent prompts for other LLMs. Your response "
@@ -201,6 +260,19 @@ def generate_music_prompt(client, mood, topic):
         
 
 def get_matching_voice(client: OpenAI, tone: str, voices: list, topic: str):
+    """
+    Generates a matching voice based on the specified tone and topic.
+
+    Args:
+        client (OpenAI): The OpenAI client.
+        tone (str): The specified tone for the voice.
+        voices (list): A list of available voices.
+        topic (str): The overall topic of the video.
+
+    Returns:
+        dict: The matching voice.
+
+    """
     messages = [{
         "role": "system",
         "content": "You are the assistant. Your job is to select the THREE best voices to narrate a video."

@@ -9,6 +9,20 @@ config = get_config()
 
 # Used when the voice catalog is maintained by the Sunfire team
 def find_voice(client, tone, topic):
+    """
+    Finds a voice based on the provided tone and topic.
+
+    Args:
+        client (object): The client object.
+        tone (str): The desired tone.
+        topic (str): The topic.
+
+    Returns:
+        dict: A dictionary containing the voice information.
+
+    Raises:
+        None.
+    """
     voices = get_voice_data(config['voice-data'])
     from text_to_text import get_matching_voice
 
@@ -26,6 +40,17 @@ def find_voice(client, tone, topic):
 
 # Use this to change the length without changing the content
 def fit_clip_length(clip, local_dir, desired_duration):
+    """
+    Fits the length of the audio clip to the desired duration by adjusting the speed factor and padding with silence if needed.
+
+    Args:
+        clip (dict): The clip information.
+        local_dir (str): The directory where the audio clip is located.
+        desired_duration (float): The desired duration of the audio clip.
+
+    Returns:
+        dict: The updated clip information.
+    """
     audio = AudioSegment.from_file(local_dir+clip['filename'])
 
     current_duration = len(audio) / 1000.0  # In seconds
@@ -60,6 +85,19 @@ def fit_clip_length(clip, local_dir, desired_duration):
 
 # This is intended to be used with the music.  It just cuts the end off.
 def trim_clip(clip, local_dir):
+    """
+    Trims the audio clip to the target length if it's long enough.
+
+    Args:
+        clip (dict): The clip information.
+        local_dir (str): The directory where the audio clip is located.
+
+    Returns:
+        dict: The updated clip information after trimming.
+
+    Raises:
+        ValueError: If the audio clip is shorter than the target length.
+    """
     clip_length = 30 * 1000  # in ms
     audio = AudioSegment.from_file(local_dir+clip['filename'])
 
@@ -78,6 +116,16 @@ def trim_clip(clip, local_dir):
 
 # Intended for use with the music
 def fade_out_audio(clip, local_dir):
+    """
+    Fades out the audio clip provided in the 'clip' dictionary using the specified fade duration.
+
+    Args:
+        clip (dict): Dictionary containing information about the audio clip.
+        local_dir (str): The directory path where the audio clip is located.
+
+    Returns:
+        dict: The updated clip information after applying the fade out effect.
+    """
     fade_duration = 2000
     audio = AudioSegment.from_file(local_dir+clip['filename'])
 
@@ -92,12 +140,42 @@ def fade_out_audio(clip, local_dir):
 
 # Intended for use with the music
 def trim_and_fade(local_dir, clip):
+    """
+    Trims and fades out an audio clip.
+
+    Args:
+        local_dir (str): The directory path where the audio clip is located.
+        clip (dict): A dictionary containing information about the audio clip.
+
+    Returns:
+        dict: The updated clip information after applying the trim and fade out effects.
+    """
     trimmed_clip = trim_clip(clip, local_dir)
     faded_clip = fade_out_audio(trimmed_clip, local_dir)
     return faded_clip
 
 
 def modify_volume(clip, factor, local_dir):
+    """
+    Modifies the volume of an audio clip.
+
+    Args:
+        clip (dict): A dictionary containing information about the audio clip.
+        factor (float): The factor by which to adjust the volume. A value greater than 1 increases the volume, while a value less than 1 decreases the volume.
+        local_dir (str): The directory path where the audio clip is located.
+
+    Returns:
+        dict: The updated clip information after applying the volume adjustment.
+
+    Raises:
+        subprocess.CalledProcessError: If the ffmpeg command fails to execute successfully.
+
+    Notes:
+        - The function uses the ffmpeg command-line tool to modify the volume of the audio clip.
+        - The new audio clip is saved with the filename 'volume_change_{original_filename}'.
+        - If the new audio clip is successfully created, the 'filename' key in the clip dictionary is updated to the new filename.
+        - If the new audio clip fails to be created, a message is printed to indicate the failure.
+    """
     new_file = f'volume_change_{clip['filename']}'
     # Construct the ffmpeg com0and
     cmd = ["ffmpeg", "-y",
@@ -115,6 +193,20 @@ def modify_volume(clip, factor, local_dir):
 
 
 def combine_audio_clips(audio_data):
+    """
+    Combines two audio clips, adjusts the loudness of the music clip based on the voice clip's loudness, and returns
+    information about the combined audio file.
+
+    Args:
+        audio_data (dict): A dictionary containing information about the audio clips, including local directory,
+        voice clip, and music clip.
+
+    Returns:
+        dict: A dictionary containing the filename of the combined audio file and its type.
+
+    Raises:
+        FileNotFoundError: If one or both audio clips are missing.
+    """
     save_dir = audio_data['local_dir']
     narration_clip = AudioSegment.from_file(save_dir+audio_data['clips']['voice']['filename'])
     music_clip = AudioSegment.from_file(save_dir+audio_data['clips']['music']['filename'])

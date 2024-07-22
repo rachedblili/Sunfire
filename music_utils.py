@@ -12,6 +12,16 @@ def get_text_to_music_client():
 
 
 def make_music(text_to_text, dir_name, prompt):
+    """
+    Retrieves an appropriate piece of music based on a given prompt and music data.
+    Generates a JSON message structure, queries for the music, and saves the selected music to a specified directory.
+    Parameters:
+        - text_to_text: The input text to generate the music.
+        - dir_name: The directory path to save the generated music file.
+        - prompt: The prompt for selecting the music.
+    Returns:
+        A dictionary containing the filename of the saved music and its type.
+    """
     messages = [{
         "role": "system",
         "content": "You are the assistant. Your job is to select an appropriate piece of music based on a "

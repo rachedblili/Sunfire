@@ -6,7 +6,18 @@ message_queue = Queue()
 
 
 def message_manager():
-    """Generator function to yield progress messages."""
+    """
+    Generates a message manager that continuously yields messages from the message queue.
+
+    This function uses a global message queue to retrieve messages and yields them in a specific format.
+    The yielded messages consist of the session ID, facility, and message separated by colons.
+    If the message queue is empty, the function checks if a certain count has been reached.
+    If the count is greater than or equal to 10, it yields a keepalive message and resets the count.
+    The function sleeps for 1 second between each iteration.
+
+    Returns:
+        Generator: A generator that yields messages in the format "data: session_id : facility : message\n\n".
+    """
     global message_queue
     count = 0
     while True:
