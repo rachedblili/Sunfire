@@ -232,7 +232,7 @@ def lambda_handler(event, context):
             body = event.get('body')
             if body:
                 session_data = json.loads(body)
-                images = session_data.get('image')
+                images = session_data.get('images')
                 video_data = session_data.get('video')
                 duration = video_data.get('duration')
                 output_bucket = session_data.get('write_bucket')

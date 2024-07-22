@@ -23,7 +23,6 @@ def upload_images_from_disk_to_s3(s3, images, unique_prefix):
 
 
 def upload_audio_from_disk_to_s3(s3, audio_data, unique_prefix):
-    print("Audio Data: ", audio_data)
     local_dir = audio_data.get('local_dir')
     clips = audio_data.get('clips')
     filename = clips['combined']['filename']
