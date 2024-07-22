@@ -239,14 +239,15 @@ def generate_music_prompt(client, mood, topic):
         "content": "You are the assistant. Your job is to be create excellent prompts for other LLMs. Your response "
                    "contain ONLY the requested prompt. Your response will be parsed by a script and should "
                    "have no formatting characters or extraneous artifacts.  It MUST NOT EXCEED 30 words. "
-                   "If the specified mood is 'ai', use other context clues to choose the music mood."
+                   "If the requested mood is 'ai', use other context clues to choose the music mood."
     }, {
         "role": "user",
         "content": f"""
                 Please generate a prompt that I can use with a music generation LLM to generate a short musical
                 piece that will serve as the background music for a promotional video.  The prompt should primarily
-                specify genre, vibe and tempo.  Examine the following data and create then return the appropriate
-                prompt.
+                specify genre, vibe and tempo.  The requested mood is a very important part of the prompt.  Examine the 
+                following data and create then return the appropriate prompt.
+                
                 [DATA]
                 Requested mood: {mood} (if 'ai' then use your own judgement)
                 Topic: {topic}
