@@ -12,7 +12,7 @@ The Sunfire Video App is an AI-powered tool that enables anyone to create vibran
 
 ## Demo
 
-[Link to demo video]
+[Click here to watch the video demo](https://www.strikerit.com/static/sunfire-demo.mp4)
 
 [Screenshots of the application]
 
