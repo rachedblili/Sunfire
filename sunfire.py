@@ -194,8 +194,8 @@ def generate_music(session_id, clients, mood, topic, audio_data):
 def combine_audio(session_id, cloud_storage, audio_data):
     try:
         logger(session_id, 'log', 'Mixing Audio...')
-        combined_clips = combine_audio_clips(audio_data)
-        audio_data['combined'] = combined_clips
+        combined_clip = combine_audio_clips(audio_data)
+        audio_data['combined'] = combined_clip
         logger(session_id, 'log', 'Audio Mixing Complete')
 
         logger(session_id, 'log', 'Uploading Audio to the cloud...')
