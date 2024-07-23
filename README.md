@@ -58,7 +58,7 @@ server {
 }
 ```
 4. Configure your environment variables with your API keys:
-The tool expects these to either be in the environment or in a .env file in the same directory as the application.
+The tool expects these to either be in the environment or in a `.env` file in the same directory as the application.
 5. (Optional) Install the music archive file for stored songs.
 
 ## Configuration
@@ -85,15 +85,34 @@ Contributions to The Sunfire Video App are welcome! Here are ways you can contri
 4. Share your experience and help others in the issues section.
 
 Please read our [Contributing Guidelines](CONTRIBUTING.md) for more details.
+### We Develop with Github
+We use GitHub to host code, to track issues and feature requests, as well as accept pull requests.
 
+### We Use [Github Flow](https://guides.github.com/introduction/flow/index.html)
+Pull requests are the best way to propose changes to the codebase.
+
+### Report bugs using Github's [issues](https://github.com/yourusername/sunfire-video-app/issues)
+We use GitHub issues to track public bugs.
+
+## License
+By contributing, you agree that your contributions will be licensed under its Apache License 2.0.
+
+## Code of Conduct
+This project and everyone participating in it is governed by the [Sunfire Video App Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
 ## Future Plans
 
 Future releases of The Sunfire Video App will be community-driven. The core team will be focusing on a proprietary version with advanced features.
 
 ## License
 
-This project is licensed under the Apache License, Version 2.0.
+The Sunfire Video App is licensed under the Apache License, Version 2.0. See the [LICENSE](LICENSE) file for the full license text.
 
+For additional information:
+- [NOTICE](NOTICE) file for copyright notices and third-party acknowledgments.
+- [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute to this project.
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for our community standards.
+
+Please note that this project may use third-party components with different licenses. See the [NOTICE](NOTICE) file for details.
 ## Contact
 
 [Your contact information or preferred method of contact]
