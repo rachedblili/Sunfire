@@ -323,60 +323,24 @@ document.addEventListener("DOMContentLoaded", function() {
         setAspectRatio(event.target.value);
     });
 
-    //let tonesData;
-
-    // fetch('/api/get_tones_data')
-    //    .then(response => {
-    //        return response.json();
-    //    })
-    //    .then(data => {
-    //        tonesData = data;
-    //        console.log("Received tonesData:", tonesData);  // Check the structure
-    //        const toneSelect = document.getElementById('tone-select');
-    //        toneSelect.innerHTML = '<option value="" disabled selected>Select One</option>' +
-    //            Object.keys(tonesData).map(tone =>
-    //                `<option value="${tone}">${tone}</option>`
-    //            ).join('');
-    //    })
-    //    .catch(error => {
-    //        console.error('Error fetching tones data:', error);
-    //    });
-
-    //document.getElementById('tone-select').addEventListener('change', function() {
-    //    const selectedTone = this.value;
-    //    console.log("Selected tone:", selectedTone);
-    //    const ageGenderOptions = tonesData[selectedTone]['age_gender']; // Directly use 'age_gender' from the new data structure
-    //    console.log("Age/Gender options for selected tone:", ageGenderOptions);
-    //    const ageGenderSelect = document.getElementById('age-gender-select');
-    //    ageGenderSelect.innerHTML = '<option value="" disabled selected>Select One</option>' +
-    //        ageGenderOptions.map(option =>
-    //            `<option value="${option}">${option}</option>`
-    //        ).join('');
-    //    ageGenderSelect.style.visibility = 'visible';
-    //    ageGenderSelect.required = true;
-    //});
-
-    //document.getElementById('age-gender-select').addEventListener('change', function() {
-    //    const toneSelect = document.getElementById('tone-select').value.toLowerCase();
-    //    const ageGenderSelect = this.value;
-    //    const hiddenInput = document.querySelector('form input[name="tone_age_gender"]');
-
-    //    if (hiddenInput) {
-    //        hiddenInput.value = `${toneSelect}:${ageGenderSelect}`;
-    //    } else {
-    //        const formInput = document.createElement('input');
-    //        formInput.type = 'hidden';
-    //        formInput.name = 'tone_age_gender';
-    //        formInput.value = `${toneSelect}:${ageGenderSelect}`;
-    //        document.querySelector('form').appendChild(formInput);
-    //    }
-    //});
 });
 
 
 
 // Handle form submission
 form.addEventListener('submit', function (e) {
+
+  const imageCount = imageShelf.querySelectorAll('.image-container').length;
+
+  // Check if there are at least 1 image and no more than 6 images
+  if (imageCount === 0) {
+    alert('Please attach at least one image before submitting.');
+    return; // Prevent form submission
+  } else if (imageCount > 6) {
+    alert('You cannot attach more than 6 images.');
+    return; // Prevent form submission
+  }
+
   e.preventDefault();
   clearContainers();
   const formData = new FormData();
