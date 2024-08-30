@@ -242,6 +242,7 @@ def generate_music(session_id, clients, mood, topic, audio_data):
 
         logger(session_id, 'log', 'Generating Music...')
         clip = make_music(clients, save_dir, music_prompt)
+        logger(session_id, 'log', f'Song: {clip["filename"]}')
 
         logger(session_id, 'log', 'Making Adjustments...')
         clip = trim_and_fade(save_dir, clip)
