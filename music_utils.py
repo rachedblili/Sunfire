@@ -33,7 +33,8 @@ def make_music(text_to_text, dir_name, prompt):
                    "Your task is to analyze all these properties and select the three songs that best match the "
                    "user's prompt."
                    "Return the filenames of these three songs as a comma-separated list, with no additional text or "
-                   "formatting.  Example output: 'song1.mp3,song2.mp3,song3.mp3'"
+                   "formatting.  Example output: 'song1.mp3,song2.mp3,song3.mp3'\n"
+                   "DO NOT PUT SPACES AFTER THE COMMA."
     }, {
         "role": "user",
         "content": prompt
