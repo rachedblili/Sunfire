@@ -27,7 +27,8 @@ def make_music(text_to_text, dir_name, prompt):
         "content": "You are the assistant. Your job is to select an appropriate piece of music based on a "
                    "prompt and a JSON file containing music data. Your response will be parsed by a script and should "
                    "have no formatting characters or extraneous artifacts.  Reply only with the value associated with "
-                   "the 'Filename' of the song.  Pay particular attention to the emotional tone of the song.  "
+                   "the 'Filename' of the song. It would be good for you to identify 3 suitable songs and randomly "
+                   "select one of them whose 'Filename' is returned."
                    "IMPORTANT: Though the prompt is asking you to generate a song, "
                    "the the task is to look through the music data and select an appropriate song.  "
     }, {
