@@ -1,20 +1,17 @@
 Data Directory: music-library/
 Songs:
-- Descr: '"Positive Chill nice rhythm forward good energy summer Electronic Downtempo
-    Chillout Trip hop Mellow Rhythmic Lush Atmospheric Calm Nocturnal Instrumental"'
+- Descr: "Positive, chill with a nice rhythm. Ideal for summer vibes and mellow moods. Atmospheric and calm, but not very remarkable."
   Energy: Low
   File: EmeraldHorizon.mp3
   Genre: Jazz
   Instrumentation:
   - Drums
-  - Eletronic
+  - Electronic
   Mood:
   - Relaxing
   - Calm
   Tempo: Slow
-- Descr: '"VERY MINIMAL sparse piano new age Instrumental New age Ambient Modern classical
-    Western classical music Classical music Post-minimalism Calm Atmospheric Melancholic
-    Ethereal"'
+- Descr: "Minimalist piano, new age, and ambient with a melancholic and ethereal feel."
   Energy: Low
   File: RandomEtherealPiano.mp3
   Genre: Classical
@@ -23,18 +20,14 @@ Songs:
   - Calm
   - Relaxing
   Tempo: Slow
-- Descr: '"sound w DRAMA end ambient strings film Instrumental Ambient Strings Film
-    score Cinematic classical Classical music Western classical music Melodic Orchestral
-    Bittersweet Uplifting Playful"'
+- Descr: "Dramatic ambient strings, cinematic and bittersweet. Uplifting and playful."
   Energy: Medium
   File: TheShire.mp3
   Genre: Classical
   Instrumentation: Orchestral
   Mood: Professional
   Tempo: Slow
-- Descr: '"Lonesome jazzy tenor sax piano dark smokey bar Bourbon neat Instrumental
-    Drums Keyboard Strings Piano Smooth jazz Jazz Jazz fusion Introspective Mellow
-    Repetitive Melancholic Romantic Peaceful Melodic Atmospheric Soothing Soft"'
+- Descr: "Lonesome jazz with a smoky, dark vibe. Ideal for night or romantic themes."
   Energy: Low
   File: SmoothJazz.mp3
   Genre: Jazz
@@ -47,8 +40,7 @@ Songs:
   - Relaxing
   - Cool
   Tempo: Slow
-- Descr: '"Bosa sax guitar rim chill relaxing Instrumental Smooth jazz Easy listening
-    Lounge Jazz Calm"'
+- Descr: "Bossa nova with sax and guitar, relaxing but not for general use."
   Energy: Low
   File: SmoothLatin.mp3
   Genre: Lounge
@@ -59,8 +51,7 @@ Songs:
   - Calm
   - Relaxing
   Tempo: Mid
-- Descr: '"Instrumental SAX heavy trombone big band upbeat Swing Jazz Playful Mellow
-    Acoustic"'
+- Descr: "Upbeat swing jazz with heavy sax and trombone. Playfully energetic."
   Energy: Medium
   File: CafeGroove.mp3
   Genre: Jazz
@@ -71,8 +62,7 @@ Songs:
   - Upbeat
   - Energetic
   Tempo: Fast
-- Descr: '"SNARE VERY uptempo w sax drum kit nice swingy melody pop upbeat piano section
-    vaudville scene change intermission music"'
+- Descr: "Uptempo swing with sax and drums. Adds a humorous touch."
   Energy: Medium
   File: DixieSwing.mp3
   Genre: Jazz
@@ -81,8 +71,7 @@ Songs:
   - Upbeat
   - Energetic
   Tempo: Fast
-- Descr: '"mechanical tin piano high dixiland uptempo ragtime clarinet horn piano
-    snare"'
+- Descr: "Ragtime with a mechanical, tinny sound. Choose for an innocent, upbeat feel."
   Energy: Medium
   File: DixieSwing2.mp3
   Genre: Jazz
@@ -91,8 +80,7 @@ Songs:
   - Upbeat
   - Energetic
   Tempo: Fast
-- Descr: '"Starts acoustic guitar lovely acoustic guitar sweet gentle spring lyrical
-    piano line soft electric guitar contemplative whistful"'
+- Descr: "Gentle acoustic guitar with a contemplative, wistful feel."
   Energy: Low
   File: SweetGuitar.mp3
   Genre: Casual
@@ -103,8 +91,7 @@ Songs:
   - Relaxing
   - Calm
   Tempo: Mid
-- Descr: '"guitar slap start chill easy road-trip windows warm afternoon hand window
-    air nice electric guitar keys trade"'
+- Descr: "Chill road-trip vibe with a warm, easy-going sound. Professional and soft."
   Energy: Low
   File: SweetGuitar2.mp3
   Genre: Casual
@@ -116,19 +103,19 @@ Songs:
   - Upbeat
   - Relaxing
   Tempo: Mid
-- Descr: '"super-treble w beat energetic pop-techno synth FAST"'
+- Descr: "Energetic pop-techno with a fast, driving beat. Great for high-energy themes."
   Energy: High
   File: ClimbingHigher1.mp3
   Genre: Dance
   Instrumentation:
   - Drums
-  - Eletronic
+  - Electronic
   Mood:
   - Inspirational
   - Upbeat
   - Energetic
   Tempo: Fast
-- Descr: '"easy listening energetic mellow piano drum really nice groove"'
+- Descr: "Mellow piano and drums with a nice groove. Slightly generic."
   Energy: Medium
   File: ClimbingHigher2.mp3
   Genre: Pop
@@ -139,8 +126,7 @@ Songs:
   - Inspirational
   - Upbeat
   Tempo: Mid
-- Descr: '"BIG right gate drama climactic anticipation time-ticking chase scene suspense
-    cello strings"'
+- Descr: "Dramatic orchestral with a climactic, suspenseful feel. Great for intense scenes."
   Energy: High
   File: BigAndBold.mp3
   Genre: Rock
@@ -152,59 +138,57 @@ Songs:
   - Exciting
   - Energetic
   Tempo: Fast
-- Descr: '"big drum heavy electric guitar synth great rhythm"'
+- Descr: "Heavy drum and guitar with a serious, dramatic vibe."
   Energy: High
   File: BigAndBold2.mp3
   Genre: Rock
   Instrumentation:
   - Drums
   - Guitar
-  - Eletronic
+  - Electronic
   Mood:
   - Exciting
   - Inspirational
   - Energetic
   Tempo: Mid
-- Descr: '"Energetic dance music suitable party atmosphere exciting event product"'
+- Descr: "Energetic dance music for party atmospheres."
   Energy: High
   File: CatWalk.mp3
   Genre: Dance
   Instrumentation:
   - Drums
-  - Eletronic
+  - Electronic
   Mood:
   - Exciting
   - Upbeat
   - Energetic
   - Fun
   Tempo: Fast
-- Descr: '"Electronic energetic futuristic tune mostly driving kind energy Very professional
-    sounding Suitable business high tech"'
+- Descr: "Futuristic and energetic with a professional sound. Suitable for business."
   Energy: Medium
   File: GetUpAndGo.mp3
   Genre: Dance
   Instrumentation:
   - Drums
-  - Eletronic
+  - Electronic
   Mood:
   - Upbeat
   - Energetic
   - Professional
   Tempo: Fast
-- Descr: '"just electronic riff then beat Pretty good tech positive energy Professional
-    Good what-if possibilities imagination future"'
+- Descr: "Electronic riff with a techy, futuristic vibe. Positive and professional."
   Energy: Medium
   File: ThisIsTheFuture.mp3
   Genre: Electronic
   Instrumentation:
   - Drums
-  - Eletronic
+  - Electronic
   Mood:
   - Professional
   - Futuristic
   - Upbeat
   Tempo: Fast
-- Descr: '"Feminine energy happy family festivals contests"'
+- Descr: "Happy, feminine energy. Great for family and festive scenes."
   Energy: High
   File: SummerParty.mp3
   Genre: Casual
@@ -217,7 +201,7 @@ Songs:
   - Energetic
   - Professional
   Tempo: Fast
-- Descr: '"Jazz random style Very smooth cool Not super melodic"'
+- Descr: "Smooth, jazzy, and eclectic. Choose for very jazzy themes."
   Energy: Low
   File: HonkyTonky.mp3
   Genre: Jazz
@@ -230,8 +214,7 @@ Songs:
   - Professional
   - Upbeat
   Tempo: Mid
-- Descr: '"Very commercial sound kind music many exciting new products/possibilities
-    people"'
+- Descr: "Commercial sound for exciting, new products. Energetic and uplifting."
   Energy: Medium
   File: TogetherWeCan.mp3
   Genre: Casual
@@ -242,8 +225,7 @@ Songs:
   - Upbeat
   - Professional
   Tempo: Fast
-- Descr: '"Dramatic strings music kind normally diamond commericials momentous grand
-    Posh people powerful people rich famous"'
+- Descr: "Dramatic strings for grand, powerful scenes. Ideal for luxury or impactful moments."
   Energy: High
   File: TheRoyals.mp3
   Genre: Classical
@@ -255,8 +237,7 @@ Songs:
   - Energetic
   - Professional
   Tempo: Mid
-- Descr: '"Sounds music memoire telling sweet story love tenderness longing wistfulness
-    tenderness innocense"'
+- Descr: "Sweet and tender music, ideal for storytelling and wistful moments."
   Energy: Low
   File: IWroteYouALetter.mp3
   Genre: Classical
@@ -266,8 +247,7 @@ Songs:
   - Relaxing
   - Professional
   Tempo: Slow
-- Descr: '"little melancholy warm calm slight air sadness Music someone memorium Could
-    also elegance"'
+- Descr: "Warm, calm, slightly melancholic with fond memories. Elegant and serene."
   Energy: Low
   File: AllTheBeautifulThings.mp3
   Genre: Classical
@@ -277,7 +257,7 @@ Songs:
   - Melancholic
   - Relaxing
   Tempo: Slow
-- Descr: '"Elegant energetic music banquet wedding something people"'
+- Descr: "Elegant, energetic music for fancy events like weddings or banquets."
   Energy: High
   File: FancyParty.mp3
   Genre: Classical
@@ -287,8 +267,7 @@ Songs:
   - Upbeat
   - Energetic
   Tempo: Mid
-- Descr: '"Folksy casual Music footage road trip sort outdoor activity maybe bar scene
-    summer nights summer afternoons"'
+- Descr: "Folksy, casual music for road trips or outdoor activities. Perfect for summer scenes."
   Energy: Medium
   File: TruckStop.mp3
   Genre: Country
@@ -300,8 +279,7 @@ Songs:
   - Cool
   - Professional
   Tempo: Mid
-- Descr: '"like music movie danger adventure explosions high drama something very
-    scary dangerous warnings dramatic way"'
+- Descr: "High drama with explosive, adventurous energy. Intense and suspenseful."
   Energy: High
   File: HighDrama.mp3
   Genre: Cinematic
@@ -312,8 +290,7 @@ Songs:
   - Dramatic
   - Exciting
   Tempo: Fast
-- Descr: '"inspirational vibe possibilities Success possible Hard work pays mission
-    people together Community fellowship family Inclusiveness"'
+- Descr: "Inspirational with a focus on success, hard work, and community. Uplifting and motivational."
   Energy: Medium
   File: Possibilities.mp3
   Genre: Classical
@@ -326,18 +303,16 @@ Songs:
   - Inspirational
   - Professional
   Tempo: Mid
-- Descr: '"music spa dream relaxation also about space underwater exploration Anything
-    slow kind feeling"'
+- Descr: "Dreamy, spa-like relaxation with a sense of space and exploration."
   Energy: Low
   File: DreamScape.mp3
   Genre: Ethereal
-  Instrumentation: Eletronic
+  Instrumentation: Electronic
   Mood:
   - Calm
   - Inspirational
   Tempo: Slow
-- Descr: '"Casual cool jazz vibe piano man fun Very professional sounding also quite
-    energetic"'
+- Descr: "Cool jazz vibe, professional and fun. Great for energetic, lively scenes."
   Energy: Medium
   File: JazzyNightOut.mp3
   Genre: Jazz
@@ -347,18 +322,16 @@ Songs:
   - Upbeat
   - Professional
   Tempo: Mid
-- Descr: '"very ethereal Almost woo-woo sounding Space meditation dreams imagination
-    relaxation holistic Religious perhaps"'
+- Descr: "Ethereal, meditative, and slightly mystical. Suitable for relaxation and imagination."
   Energy: Low
   File: DreamScape2.mp3
   Genre: Ethereal
-  Instrumentation: Eletronic
+  Instrumentation: Electronic
   Mood:
   - Calm
   - Relaxing
   Tempo: Slow
-- Descr: '"Very commercial certain longing not quite sad little wistful soft suitable
-    emotional tender mood"'
+- Descr: "Wistful and tender, with a commercial vibe. Soft and emotional."
   Energy: Low
   File: AlwaysRemember.mp3
   Genre: Ambient
@@ -370,7 +343,7 @@ Songs:
   - Melancholic
   - Professional
   Tempo: Mid
-- Descr: '"sounding Emotionally neutral Perhaps slightly serious side Classy Professional"'
+- Descr: "Neutral and slightly serious, classy and professional."
   Energy: Low
   File: Succession.mp3
   Genre: Classical
@@ -379,8 +352,7 @@ Songs:
   - Calm
   - Professional
   Tempo: Fast
-- Descr: '"almost european old world sound Maybe greek footage beach vacation trip
-    abroad"'
+- Descr: "European, old-world sound. Ideal for travel or vacation scenes."
   Energy: Medium
   File: Technicolor.mp3
   Genre: Folk
@@ -389,128 +361,122 @@ Songs:
   - Upbeat
   - Fun
   Tempo: Mid
-- Descr: '"something scene Bladerunner sort futuristic tech innovation vibe specifications
-    new product Prototypes very professional sound"'
+- Descr: "Futuristic and professional with a quiet, techy vibe. Great for innovation or new products."
   Energy: Medium
   File: ThisChangesEverything.mp3
   Genre: Ethereal
   Instrumentation:
   - Drums
-  - Eletronic
+  - Electronic
   Mood:
   - Futuristic
   - Calm
   - Professional
   Tempo: Mid
-- Descr: '"music video game Mario other fast paced game character quickly obstacles
-    enemies energetic playful definitely video-gamy"'
+- Descr: "Fast-paced, energetic music with a video game feel. Playful and exciting."
   Energy: High
   File: MarioKart.mp3
   Genre: Electronic
   Instrumentation:
   - Drums
-  - Eletronic
+  - Electronic
   Mood:
   - Exciting
   - Futuristic
   - Energetic
   - Fun
   Tempo: Fast
-- Descr: '"Very commercial Professional beat calmer finish"'
+- Descr: "Commercial, professional beat with a calm ending. Great for slogans."
   Energy: Medium
   File: ThisIsIt.mp3
   Genre: Dance
   Instrumentation:
   - Drums
-  - Eletronic
+  - Electronic
   Mood:
   - Upbeat
   - Inspirational
   - Professional
   Tempo: Fast
-- Descr: '"Noisy harsh high energy beat Video game sound"'
+- Descr: "Harsh, high-energy beat for intense, impactful themes."
   Energy: High
   File: FastAndHard.mp3
   Genre: Dance
-  Instrumentation: Eletronic
+  Instrumentation: Electronic
   Mood:
   - Exciting
   - Energetic
   - Fun
   Tempo: Fast
-- Descr: '"Very energetic Sporty Lots action Fast scenes Excitement"'
+- Descr: "High-energy, sporty music for fast, exciting scenes."
   Energy: High
   File: Relentless.mp3
   Genre: Dance
   Instrumentation:
   - Drums
-  - Eletronic
+  - Electronic
   Mood:
   - Exciting
   - Energetic
   - Fun
   Tempo: Fast
-- Descr: '"Lovely moment Mindfulness Everything ok"'
+- Descr: "Reassuring and encouraging, with a calming, mindful vibe."
   Energy: Low
   File: CalmingSpirit.mp3
   Genre: Ethereal
-  Instrumentation: Eletronic
+  Instrumentation: Electronic
   Mood:
   - Calm
   - Relaxing
   - Professional
   Tempo: Slow
-- Descr: '"Very high energy also quite professional Night time club scene baller life
-    exotic destinations fancy cars Beautiful people"'
+- Descr: "High-energy, professional vibe for nightlife, luxury, and excitement."
   Energy: High
   File: TakeItAllIn.mp3
   Genre: Electronic
   Instrumentation:
-  - Eletronic
+  - Electronic
   - Drums
   Mood:
   - Energetic
   - Exciting
   - Dramatic
   Tempo: Mid
-- Descr: '"Inspirational uplifting story hard work success Never together Anything
-    possible just hard"'
+- Descr: "Inspirational, uplifting story with a build-up from soft to powerful. Motivates taking chances."
   Energy: High
   File: AsGoodAsItGets.mp3
   Genre: Electronic
-  Instrumentation: Eletronic
+  Instrumentation: Electronic
   Mood:
   - Upbeat
   - Energetic
   - Inspirational
   Tempo: Mid
-- Descr: '"Very energetic video games youthful Girls dressup Party party party Barbie
-    Amusement parks very fun happy tune energy"'
+- Descr: "Fun, energetic tune for youthful, playful scenes. Great for parties and amusement."
   Energy: High
   File: DanceDanceDance.mp3
   Genre: Dance
   Instrumentation:
   - Drums
-  - Eletronic
+  - Electronic
   Mood:
   - Fun
   - Upbeat
   - Professional
   Tempo: Fast
-- Descr: '"Very techy futuristic professional"'
+- Descr: "Techy, futuristic, and professional. Suitable for commercial purposes."
   Energy: Medium
   File: EuroChique.mp3
   Genre: Dance
   Instrumentation:
   - Drums
-  - Eletronic
+  - Electronic
   Mood:
   - Upbeat
   - Fun
   - Professional
   Tempo: Mid
-- Descr: '"Sounds very commerical jingle happy vibe Evokes crowds groups good wholesome
-    time"'
+- Descr: "Commercial, happy vibe with a group-friendly, wholesome feel."
   Energy: Medium
   File: TimeOfOurLives.mp3
   Genre: Rock
@@ -522,8 +488,7 @@ Songs:
   - Fun
   - Professional
   Tempo: Fast
-- Descr: '"Sounds soundtrack Japanese Anime Kind epic battle vibe music several movements
-    explosive epic feel Very fast tempo Adventure action"'
+- Descr: "Epic, battle-like music with fast tempo and multiple movements. Ideal for action."
   Energy: High
   File: RockAnthem.mp3
   Genre: Rock
@@ -535,19 +500,19 @@ Songs:
   - Energetic
   - Dramatic
   Tempo: Fast
-- Descr: '"ridiculously fast-paced Extremely energetic"'
+- Descr: "Extremely fast-paced and extremely energetic."
   Energy: High
   File: HurryUpAndHitIt.mp3
   Genre: Electronic
   Instrumentation:
   - Drums
-  - Eletronic
+  - Electronic
   Mood:
   - Exciting
   - Energetic
   - Fun
   Tempo: Fast
-- Descr: '"Commercial bit country vibe Could almost anything casual positive vibe"'
+- Descr: "Casual, positive vibe with a bit of country influence. Versatile and easygoing."
   Energy: Medium
   File: WhatEveryoneWants.mp3
   Genre: Casual
@@ -559,33 +524,30 @@ Songs:
   - Upbeat
   - Professional
   Tempo: Mid
-- Descr: '"Serious techy futuristic energy beat music little repetitive good background
-    something professional technical"'
+- Descr: "Techy, futuristic energy with a professional tone. Good for background or technical themes."
   Energy: Medium
   File: ListenToTheFuture.mp3
   Genre: Electronic
   Instrumentation:
   - Drums
-  - Eletronic
+  - Electronic
   Mood:
   - Futuristic
   - Energetic
   - Professional
   Tempo: Fast
-- Descr: '"Futuristic not too far there High energy Positive vibe not quite festive
-    ambitious Business night life"'
+- Descr: "Futuristic, high-energy with a positive, ambitious vibe. Great for business."
   Energy: Medium
   File: InMotion.mp3
   Genre: Dance
   Instrumentation:
   - Drums
-  - Eletronic
+  - Electronic
   Mood:
   - Energetic
   - Professional
   Tempo: Fast
-- Descr: '"very Greek sound Definitely old world vibe Only really appropriate things
-    mediterranean old world charm"'
+- Descr: "Greek, old-world sound with Mediterranean charm."
   Energy: Medium
   File: TackyOldTimey.mp3
   Genre: Folk
@@ -596,21 +558,21 @@ Songs:
   - Upbeat
   - Fun
   Tempo: Mid
-- Descr: '"Professional commercial good almost anything good positive energy"'
+- Descr: "Professional, commercial sound with positive energy. High quality."
   Energy: Medium
   File: CheckTheseOut.mp3
   Genre: Pop
-  Instrumentation: Eletronic
+  Instrumentation: Electronic
   Mood:
   - Energetic
   - Futuristic
   - Professional
   Tempo: Mid
-- Descr: '"Very dreamy ethereal space relaxing sleeping dreaming"'
+- Descr: "Dreamy, ethereal music for relaxation or sleep."
   Energy: Low
   File: PeacefulSurrender.mp3
   Genre: Ethereal
-  Instrumentation: Eletronic
+  Instrumentation: Electronic
   Mood:
   - Calm
   - Relaxing
