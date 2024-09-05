@@ -36,7 +36,6 @@ def generate_filter_complex(images, total_duration):
     duration_per_image = total_duration / len(images)  # Calculate duration per image
 
     filters = [
-        "xfade=transition=dissolve:duration",
         "xfade=transition=wipeleft:duration",
         "xfade=duration",
         "xfade=transition=circleopen:duration",
