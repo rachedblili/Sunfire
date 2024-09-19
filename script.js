@@ -423,6 +423,7 @@ form.addEventListener('submit', function (e) {
     .then(data => {
       const sessionId = data.session_id; // Capture the session_id
       setupEventSource(sessionId); // Pass the session_id to the setupEventSource function
+      pollResult(sessionId)
     })
     .catch(error => {
       hideProgressBar();
