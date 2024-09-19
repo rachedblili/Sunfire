@@ -505,6 +505,7 @@ def get_video_url(session_id):
     Returns:
         str: The video URL for the session, or a pending message if the session ID is not found.
     """
+    print("Got polled")
     with video_urls_lock:
         if session_id in video_urls:
             return jsonify({'status': 'success', 'video_url': video_urls[session_id]})

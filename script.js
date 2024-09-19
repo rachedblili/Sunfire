@@ -327,10 +327,15 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 function pollResult(session_id) {
+    console.log(`Polling for session ID: ${session_id}`);  // Add this to check if polling starts
+
     const interval = setInterval(function() {
+        console.log(`Making request to /api/get_video_url/${session_id}`);  // Add this to confirm requests are sent
+
         fetch(`/api/get_video_url/${session_id}`)
             .then(response => response.json())
             .then(data => {
+                console.log('Response from server:', data);  // Log the server's response
                 if (data.status === 'success') {
                     console.log('Result received:', data.video_url);
                     clearInterval(interval);  // Stop polling
@@ -340,7 +345,7 @@ function pollResult(session_id) {
                         generatedVideo.src = data.video_url;
                         showPopup();
                         let hyperlink = document.createElement('a');
-                        hyperlink.href = message;
+                        hyperlink.href = data.video_url;  // Fixed here
                         hyperlink.textContent = "Click Here to Download Video - Link Expires in 60 minutes";
                         let paragraph = document.createElement('p');
                         paragraph.appendChild(hyperlink);
@@ -364,6 +369,7 @@ function pollResult(session_id) {
             });
     }, 5000);  // Poll every 5 seconds
 }
+
 
 
 
