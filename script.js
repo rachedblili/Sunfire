@@ -92,7 +92,7 @@ function setupEventSource(sessionId) {
                         showPopup();
                         let hyperlink = document.createElement('a');
                         hyperlink.href = message;
-                        hyperlink.textContent = "Click Here to Download Video";
+                        hyperlink.textContent = "Click Here to Download Video - Link Expires in 60 minutes";
                         let paragraph = document.createElement('p');
                         paragraph.appendChild(hyperlink);
                         logContainer.appendChild(paragraph)

@@ -11,9 +11,10 @@
   <div class="container">
     <div class="banner">
             <img src="striker-consulting-small.png" class="left-logo">
-            <img src="sunfire-logo-small.jpg" class="center-logo">
+            <img src="sunfire_video_app.png" class="center-logo">
             <img src="suzanne_bayles_small.jpg" class="right-logo">
     </div>
+    <br><br>
     <h1>Create Your Promotional Video</h1>
     <form id="video-form">
       <fieldset class="card">
@@ -29,7 +30,9 @@
         </div>
         -->
         <div class="form-group">
-          <label for="press-release">Press Release/Product Description</label>
+          <label for="press-release">Promotion/Product/Event Description</label>
+          <p>In a few sentences or paragraphs, describe what you want this video to be about.
+            Include as much or as little detail as you want.</p>
           <textarea id="press-release" name="press-release" required></textarea>
         </div>
       </fieldset>
@@ -38,7 +41,7 @@
         <legend>Upload Images</legend>
         <div class="form-group">
           <div id="drop-area" class="drop-area">
-            <p>Drag and drop images here or click to select</p>
+            <p>Drag & Drop images here or Click to Browse and Select</p>
             <input type="file" id="image-input" name="images" accept="image/*" multiple style="display: none;">
             <div id="image-shelf"></div>
           </div>
@@ -48,11 +51,11 @@
       <fieldset class="card">
         <legend>Fine Tuning (Optional)</legend>
         <div class="form-group">
-          <label for="emphasis">What should be emphasized? (leave blank if you dont know)</label>
+          <label for="emphasis">Want something emphasized? Let us know!</label>
           <input type="text" id="emphasis" name="emphasis">
         </div>
         <div class="form-group">
-          <label for="avoid">Anything to avoid, like words or phrases? (leave blank if you dont know)</label>
+          <label for="avoid">Anything we should avoid? Add those words or phrases below.</label>
           <input type="text" id="avoid" name="avoid">
         </div>
       </fieldset>
@@ -61,30 +64,23 @@
         <div id="left-panel">
           <div class="card">
             <legend>Video Settings</legend>
-            <!-- <div class="form-group">
-              <label for="tone-select">Narration Tone and Style</label>
-              <select id="tone-select" name="tone" required>
-              </select>
-              <select id="age-gender-select" name="age_gender" style="visibility:hidden; width:200px;">
-              </select>
-            </div> -->
             <div class="form-group">
-              <label for="mood-select">Tone and Mood</label>
+              <label for="mood-select">Tone / Mood</label>
               <select id="mood-select" name="mood" required>
                 <option value="" disabled selected>Select One</option>
                 <option value="ai">Choose for Me</option>
-                <option value="energetic-positive">Energetic and Positive</option>
-                <option value="relaxed-soothing">Relaxed and Soothing</option>
-                <option value="uplifting-motivational">Inspirational and Motivational</option>
-                <option value="professional-polished">Professional and Polished</option>
-                <option value="intense-powerful">Intense and Powerful</option>
-                <option value="relatable-casual">Relatable and Casual</option>
+                <option value="energetic-positive">Energetic / Positive</option>
+                <option value="relaxed-soothing">Relaxed / Soothing</option>
+                <option value="uplifting-motivational">Inspirational / Motivational</option>
+                <option value="professional-polished">Professional / Polished</option>
+                <option value="intense-powerful">Intense / Powerful</option>
+                <option value="relatable-casual">Relatable / Casual</option>
               </select>
             </div>
             <div class="form-group">
-              <label for="platform-select">Where do you want to display your video? (Choose one)</label>
+              <label for="platform-select">Choose your aspect ratio:</label>
               <select id="platform-select" name="platform" required>
-                <option value="" disabled selected>Choose one</option>
+                <option value="" disabled selected>Choose One</option>
                 <option value="youtube">YouTube (16:9)</option>
                 <option value="facebook">Facebook (16:9)</option>
                 <option value="instagram">Instagram (9:16)</option>
@@ -102,14 +98,14 @@
         </div>
         <div id="right-panel">
           <div id="results-area" class="card">
-            <legend>Log</legend>
+            <legend>Progress Log</legend>
             <div id="log-container"></div>
+            <p><strong>Remember:</strong> Your Download Link Expires in 1 Hour!</p>
           </div>
         </div>
       </fieldset>
     </form>
-    <!-- Temporary button for testing the popup -->
-    <button id="test-popup-btn">Test Popup</button>
+    <button id="test-popup-btn">Open Video Viewer</button>
   </div>
 
   <div id="video-popup" class="popup">

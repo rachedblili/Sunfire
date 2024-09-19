@@ -1,8 +1,8 @@
 /* Define a color palette using CSS variables for consistency */
 :root {
-  --primary-color: #4CAF50;
+  --primary-color: #ff5722;
   --secondary-color: #ffffff;
-  --accent-color: #ff5722;
+  --accent-color: #4CAF50;
   --text-color: #333;
   --background-color: #f9f9f9;
   --card-background: #ffffff;
