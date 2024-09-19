@@ -8,6 +8,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from audio_utils import trim_and_fade, combine_audio_clips
 import requests
+import threading
 from PIL import Image
 # noinspection PyUnresolvedReferences
 import pillow_avif
@@ -36,6 +37,10 @@ SOURCE_BUCKET_NAME = config['source_bucket_name']
 DESTINATION_BUCKET_NAME = config['destination_bucket_name']
 API_GATEWAY_URL = config['api_gateway_url']
 SERVER_ADDR = config['server_addr']
+
+# Thread-safe results storage
+video_urls = {}
+video_urls_lock = threading.Lock()
 
 
 def generate_unique_prefix():
@@ -483,10 +488,28 @@ def video_callback():
     video_url = session_data.get('video_url')
 
     if video_url:
-        # Emit the video URL to all connected clients
-        logger(session_data['unique_prefix'], 'video', video_url)
+        with video_urls_lock:
+            video_urls[session_data['unique_prefix']] = video_url
     # Process the data here
     return jsonify({"message": "Callback received", "data": data}), 200
+
+
+@app.route('/api/get_video_url/<session_id>', methods=['GET'])
+def get_video_url(session_id):
+    """
+    Retrieves the video URL for a given session ID.
+
+    Args:
+        session_id (str): The ID of the session.
+
+    Returns:
+        str: The video URL for the session, or a pending message if the session ID is not found.
+    """
+    with video_urls_lock:
+        if session_id in video_urls:
+            return jsonify({'status': 'success', 'video_url': video_urls[session_id]})
+        else:
+            return jsonify({'status': 'pending'})
 
 
 @app.route('/api/get_tones_data', methods=['GET'])

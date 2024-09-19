@@ -326,6 +326,46 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 
+function pollResult(session_id) {
+    const interval = setInterval(function() {
+        fetch(`/api/get_video_url/${session_id}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    console.log('Result received:', data.video_url);
+                    clearInterval(interval);  // Stop polling
+                    hideProgressBar();
+                    resetProgressBar();
+                    if (generatedVideo) {
+                        generatedVideo.src = data.video_url;
+                        showPopup();
+                        let hyperlink = document.createElement('a');
+                        hyperlink.href = message;
+                        hyperlink.textContent = "Click Here to Download Video - Link Expires in 60 minutes";
+                        let paragraph = document.createElement('p');
+                        paragraph.appendChild(hyperlink);
+                        logContainer.appendChild(paragraph)
+                        logContainer.scrollTop = logContainer.scrollHeight;
+                        generatedVideo.load();
+                        generatedVideo.play().then(() => {
+                            console.log('Video started playing');
+                        }).catch((error) => {
+                            console.error('Error playing video:', error);
+                        });
+                    } else {
+                        console.error("generated-video not found");
+                    }
+                } else {
+                    console.log('Still waiting for result...');
+                }
+            })
+            .catch(err => {
+                console.error('Error fetching result:', err);
+            });
+    }, 5000);  // Poll every 5 seconds
+}
+
+
 
 // Handle form submission
 form.addEventListener('submit', function (e) {
