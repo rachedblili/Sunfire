@@ -1,24 +1,24 @@
-#Video Generation API Project
+# Video Generation API Project
 
-##Project Overview
+## Project Overview
 The Video Generation API provides users with a secure and easy way to create custom videos by uploading their own media files, setting unique parameters for narration, music, and image modifications. Users can access the API to create personalized video content, which can be used for social media, marketing, presentations, and more.
 
-##Project Goals
-###User-Friendly Video Creation: Enable users to seamlessly generate videos by simply uploading images and setting a few parameters.
-###Customization Options: Provide options to modify images, add music, and include narration, allowing users to personalize the final video product.
-###Robust Security: Implement security measures to prevent misuse or abuse of the API, ensuring fair access and protecting server resources.
+## Project Goals
+### User-Friendly Video Creation: Enable users to seamlessly generate videos by simply uploading images and setting a few parameters.
+### Customization Options: Provide options to modify images, add music, and include narration, allowing users to personalize the final video product.
+### Robust Security: Implement security measures to prevent misuse or abuse of the API, ensuring fair access and protecting server resources.
 
-##Key Features
-###Image Upload and Modification: Users can upload images, which are then processed to meet specific size and format requirements.
-###Audio and Music Customization: Generate background music and narrations, creating a professional touch to each video.
-###Video Generation Limits: Limits daily video generation to ensure sustainable resource use and prevent abuse.
+## Key Features
+### Image Upload and Modification: Users can upload images, which are then processed to meet specific size and format requirements.
+### Audio and Music Customization: Generate background music and narrations, creating a professional touch to each video.
+### Video Generation Limits: Limits daily video generation to ensure sustainable resource use and prevent abuse.
 
-##Impact of the Project
+## Impact of the Project
 This API allows individuals, businesses, and organizations to generate custom videos from their own media quickly, with minimal technical requirements. Whether it's for social media marketing, personal storytelling, or professional presentations, the API enables users to create engaging video content efficiently.
 
 By integrating robust security features, the API is designed to provide fair access and prevent misuse, supporting a positive user experience while protecting the API resources from abuse.
 
-##Recent Code Changes and Their Impact
+## Recent Code Changes and Their Impact
 In this recent update, the API's security has been significantly enhanced. Here’s a summary of the code changes and how they impact both the security and reliability of the API.
 
 1. User ID Creation with IP and User-Agent Hashing
@@ -45,6 +45,6 @@ Impact: This improves the API’s reliability and efficiency, allowing it to ser
 8. Debug Mode Disabled for Production
 Change: Disabled debug mode (debug=False) in production.
 
-##Impact: Prevents sensitive information from being exposed in error messages, protecting internal details of the API from potential attackers.
+## Impact: Prevents sensitive information from being exposed in error messages, protecting internal details of the API from potential attackers.
 How These Changes Improve the Product
 These updates make the Video Generation API safer, fairer, and more reliable for all users. By implementing strong security measures, the API now effectively prevents unauthorized or excessive usage, ensuring fair access for everyone. It’s resilient against common forms of exploitation, including automated bot attacks and attempts to bypass rate limits, making it robust enough for production use. This protects both the integrity of the service and the quality of the user experience.
